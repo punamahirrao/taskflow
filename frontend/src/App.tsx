@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Register from './Pages/Register/Register';
 import Login from './Pages/Login/Login';
 import Dashboard from './Pages/Dashboard/Dashboard';
+import ProjectDetail from './Pages/ProjectDetail/ProjectDetail';
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App(){
@@ -13,6 +14,11 @@ function App(){
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/project/:id" element={
+            <ProtectedRoute>
+              <ProjectDetail />
             </ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/register" replace />} />
