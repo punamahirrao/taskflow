@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../../utils/api";
+import TaskCard, { type Task } from "./components/TaskCard";
+import AddTask from "./components/AddTask";
+import ProjectSidebar from "./components/ProjectSidebar";
 
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  status: "todo" | "in_progress" | "done";
-  project: number;
-};
 
 type Project = {
   id: number;
@@ -17,29 +13,28 @@ type Project = {
   owner: number;
 };
 
-const statusLabels: Record<Task["status"], string> = {
-  todo: "To Do",
-  in_progress: "In Progress",
-  done: "Done",
-};
+const columns: { status: Task["status"]; title: string; headerClass: string }[] = [
+  { status: "todo", title: "Todo", headerClass: "bg-purple-100" },
+  { status: "in_progress", title: "In Progress", headerClass: "bg-green-100" },
+  { status: "done", title: "Done", headerClass: "bg-orange-100" },
+];
 
 function ProjectDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<Task["status"]>("todo");
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);  
+  const [showAddTask, setShowAddTask] = useState(false);
 
   useEffect(() => {
     const loadProject = async () => {
       try {
-        const projects = await apiFetch<Project[]>("/projects/");
-        const selectedProject = projects.find((item) => item.id === Number(id));
+        const projectList = await apiFetch<Project[]>("/projects/");
+        setProjects(projectList);
+        const selectedProject = projectList.find((item) => item.id === Number(id));
 
         if (!selectedProject) {
           setError("Project not found.");
@@ -59,35 +54,17 @@ function ProjectDetail() {
     void loadProject();
   }, [id]);
 
-  const handleAddTask = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!project || !title.trim()) {
-      setError("Task title is required.");
-      return;
-    }
+  const handleCreateProject = async (name: string, description: string) => {
+  const newProject = await apiFetch<Project>("/projects/", {
+    method: "POST",
+    body: JSON.stringify({ name, description }),
+  });
 
-    setSubmitting(true);
-    setError("");
-    try {
-      const task = await apiFetch<Task>("/tasks/", {
-        method: "POST",
-        body: JSON.stringify({
-          project_id: project.id,
-          title: title.trim(),
-          description: description.trim(),
-          status,
-        }),
-      });
-      setTasks((currentTasks) => [task, ...currentTasks]);
-      setTitle("");
-      setDescription("");
-      setStatus("todo");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to add task.");
-    } finally {
-      setSubmitting(false);
-    }
+  setProjects((currentProjects) => [...currentProjects, newProject]);
+  navigate(`/project/${newProject.id}`);
   };
+
+  
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-100">Loading project...</div>;
@@ -107,7 +84,18 @@ function ProjectDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100">
+  <div className="min-h-screen md:grid md:grid-cols-[250px_minmax(0,1fr)]">
+    <ProjectSidebar
+      projects={projects}
+      activeProjectId={Number(id)}
+      onSelectProject={(projectId) => navigate(`/project/${projectId}`)}
+      onCreateProject={handleCreateProject}
+    />
+
+    <main className="min-w-0 p-4 md:p-8">
+      {/* Move the existing project header and task columns here */}
+      <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-6xl mx-auto">
         <button
           onClick={() => navigate("/dashboard")}
@@ -137,103 +125,68 @@ function ProjectDetail() {
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-3 lg:grid-cols-[1.3fr_0.7fr] gap-6">
-          <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-5">
+        <div className="mt-6 ">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center  mb-5">
               <h2 className="text-2xl font-semibold text-gray-900">Tasks</h2>
-              <span className="text-sm text-gray-500">{tasks.length} tasks</span>
+              <span className="text-sm text-red-500 ml-2">{tasks.length} </span>
+              <button 
+              type="button"
+              onClick={() => setShowAddTask((isOpen) => !isOpen)}
+              className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 ml-auto">
+                {showAddTask ? "Close" : "+ Add"}
+              </button>
             </div>
-
             {error && <p className="mb-4 text-red-600">{error}</p>}
-            <div className="space-y-4">
-              {tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="border border-gray-200 rounded-xl p-4 hover:shadow-sm transition"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {task.title}
-                    </h3>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        task.status === "done"
-                          ? "bg-green-100 text-green-700"
-                          : task.status === "in_progress"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {statusLabels[task.status]}
-                    </span>
-                  </div>
+            {showAddTask && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <button
+                  type="button"
+                  aria-label="Close add task dialog"
+                  onClick={() => setShowAddTask(false)}
+                  className="absolute inset-0 cursor-default bg-black/50"
+                />
+                <div className="relative z-10 w-full max-w-lg">
+                <AddTask
+                  project={project}
+                  onClose={() => setShowAddTask(false)}
+                  onTaskAdded={(newTask) => {
+                    setTasks((currentTasks) => [...currentTasks, newTask]);
+                    setShowAddTask(false);
+                  }}
+                />
+                </div>
+              </div>
+            )}
 
-                  <p className="text-gray-600 mt-2">{task.description}</p>
+            <div className="grid grid-cols-3 gap-6">
+              {columns.map((column) => (
+                <div key={column.status} className="border border-gray-200 bg-gray-50 rounded-lg">
+                  <h3 className={`text-lg font-semibold text-gray-600 text-center rounded-t-lg mb-2 ${column.headerClass}`}>
+                    {column.title}
+                  </h3>
+                  <div className="flex flex-col gap-2 p-2">
+                    {tasks
+                      .filter((task) => task.status === column.status)
+                      .map((task) => (
+                        <TaskCard key={task.id} task={task} />
+                      ))}
+                  </div>
                 </div>
               ))}
             </div>
-          </section>
-
-          <aside className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Add Task
-            </h2>
-
-            <form className="space-y-4" onSubmit={handleAddTask}>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Enter task title"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  rows={4}
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  placeholder="Describe the task"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  value={status}
-                  onChange={(event) => setStatus(event.target.value as Task["status"])}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                >
-                  <option value="todo">To Do</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="done">Done</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full bg-cyan-500 text-white px-4 py-2.5 rounded-lg hover:bg-cyan-600 disabled:opacity-50"
-              >
-                {submitting ? "Adding task..." : "Add Task"}
-              </button>
-            </form>
-          </aside>
+          </div>
         </div>
       </div>
     </div>
+    </main>
+  </div>
+</div>
+    
   );
 }
 
 export default ProjectDetail;
+
+
+
