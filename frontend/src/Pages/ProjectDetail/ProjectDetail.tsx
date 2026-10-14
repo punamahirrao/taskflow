@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../../utils/api";
 import TaskCard, { type Task } from "./components/TaskCard";
 import AddTask from "./components/AddTask";
-import ProjectSidebar from "./components/ProjectSidebar";
+import { House } from "lucide-react";
 
 
 type Project = {
@@ -26,14 +26,13 @@ function ProjectDetail() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [projects, setProjects] = useState<Project[]>([]);  
   const [showAddTask, setShowAddTask] = useState(false);
+  const [dragOverStatus, setDragOverStatus] = useState<Task["status"] | null>(null);
 
   useEffect(() => {
     const loadProject = async () => {
       try {
         const projectList = await apiFetch<Project[]>("/projects/");
-        setProjects(projectList);
         const selectedProject = projectList.find((item) => item.id === Number(id));
 
         if (!selectedProject) {
@@ -54,17 +53,28 @@ function ProjectDetail() {
     void loadProject();
   }, [id]);
 
-  const handleCreateProject = async (name: string, description: string) => {
-  const newProject = await apiFetch<Project>("/projects/", {
-    method: "POST",
-    body: JSON.stringify({ name, description }),
-  });
+  const handleMoveTask = async (taskId: number, newStatus: Task["status"]) => {
+  const task = tasks.find((t) => t.id === taskId);
+  if (!task || task.status === newStatus) return;
 
-  setProjects((currentProjects) => [...currentProjects, newProject]);
-  navigate(`/project/${newProject.id}`);
-  };
+  const previousStatus = task.status;
+  setError("");
+  setTasks((current) =>
+    current.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
+  );
 
-  
+  try {
+    await apiFetch(`/tasks/${taskId}/`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: newStatus }),
+    });
+  } catch (err) {
+    setTasks((current) =>
+      current.map((t) => (t.id === taskId ? { ...t, status: previousStatus } : t))
+    );
+    setError(err instanceof Error ? err.message : "Unable to move task.");
+  }
+};
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-100">Loading project...</div>;
@@ -84,31 +94,27 @@ function ProjectDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-  <div className="min-h-screen md:grid md:grid-cols-[250px_minmax(0,1fr)]">
-    <ProjectSidebar
-      projects={projects}
-      activeProjectId={Number(id)}
-      onSelectProject={(projectId) => navigate(`/project/${projectId}`)}
-      onCreateProject={handleCreateProject}
-    />
-
-    <main className="min-w-0 p-4 md:p-8">
-      {/* Move the existing project header and task columns here */}
-      <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-6xl mx-auto">
-        <button
+    <main className="min-w-0 ">
+      <div className="min-h-screen bg-gray-100 p-2">
+      <div className="max-w-8xl mx-auto">
+        {/* <button
           onClick={() => navigate("/dashboard")}
           className="mb-6 text-cyan-600 font-medium hover:underline"
         >
-          ← Back to Dashboard
-        </button>
+         <House size={20} />
+        </button> */}
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <p className="text-sm text-gray-500">Project #{id}</p>
-              <h1 className="text-3xl font-bold text-gray-900 mt-1">{project.name}</h1>
+              <button
+          onClick={() => navigate("/dashboard")}
+          className=" text-cyan-600 font-medium hover:underline"
+        >
+         <House size={20} />
+        </button>
+              {/* <p className="text-sm text-gray-500">Project #{id}</p> */}
+              <h1 className="text-xl font-semibold text-gray-800 mt-1">{project.name}</h1>
               <p className="text-gray-600 mt-2 max-w-2xl">
                 {project.description}
               </p>
@@ -125,7 +131,7 @@ function ProjectDetail() {
           </div>
         </div>
 
-        <div className="mt-6 ">
+        <div className="mt-2 ">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <div className="flex items-center  mb-5">
               <h2 className="text-2xl font-semibold text-gray-900">Tasks</h2>
@@ -161,7 +167,24 @@ function ProjectDetail() {
 
             <div className="grid grid-cols-3 gap-6">
               {columns.map((column) => (
-                <div key={column.status} className="border border-gray-200 bg-gray-50 rounded-lg">
+                <div
+                  key={column.status}
+                  onDragOver={(e) => {
+                    e.preventDefault(); // required, otherwise the drop event never fires
+                    setDragOverStatus(column.status);
+                  }}
+                  onDragLeave={() => setDragOverStatus(null)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOverStatus(null);
+                    const taskId = Number(e.dataTransfer.getData("text/plain"));
+                    void handleMoveTask(taskId, column.status);
+                  }}
+                  className={`border rounded-lg bg-gray-50 transition ${
+                    dragOverStatus === column.status
+                      ? "border-cyan-400 ring-2 ring-cyan-300"
+                      : "border-gray-200"
+                  }`}>
                   <h3 className={`text-lg font-semibold text-gray-600 text-center rounded-t-lg mb-2 ${column.headerClass}`}>
                     {column.title}
                   </h3>
@@ -180,13 +203,9 @@ function ProjectDetail() {
       </div>
     </div>
     </main>
-  </div>
-</div>
     
   );
 }
 
 export default ProjectDetail;
-
-
 

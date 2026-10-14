@@ -1,5 +1,15 @@
 # React + TypeScript + Vite
 
+## Workspace navigation
+
+Authenticated pages share a sidebar with Dashboard (`/dashboard`), Projects
+(`/projects`), My Profile, and an expandable Administration section. Projects
+opens the project listing, where users can create projects or open their task
+boards. The Projects item stays highlighted on project-detail pages.
+
+My Profile and the Administration submenu items (Users and Settings) are disabled
+until their destination pages are implemented.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
