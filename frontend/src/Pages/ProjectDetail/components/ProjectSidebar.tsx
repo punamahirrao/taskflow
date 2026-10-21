@@ -68,14 +68,19 @@ function ProjectSidebar() {
             />
           </button>
           <div id="administration-menu" hidden={!isAdministrationOpen} className="ml-5 mt-1 space-y-1 border-l border-gray-200 pl-3">
+            <NavLink
+              to="/users"
+              className={({ isActive }) => menuClass(isActive)}
+            >
+              <UsersRound size={16} aria-hidden="true" />
+              Users
+            </NavLink>
             <button
               type="button"
               disabled
               title="User administration is not available yet"
               className="flex w-full cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-400"
             >
-              <UsersRound size={16} aria-hidden="true" />
-              Users
             </button>
             <button
               type="button"

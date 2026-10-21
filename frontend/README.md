@@ -10,6 +10,13 @@ boards. The Projects item stays highlighted on project-detail pages.
 My Profile and the Administration submenu items (Users and Settings) are disabled
 until their destination pages are implemented.
 
+The Dashboard shows live workspace totals: projects, completed tasks, pending
+tasks (to do and in progress), and task completion rate. The completion rate is
+the rounded percentage of tasks marked done, or 0% when there are no tasks.
+Statistics use the existing project and per-project task endpoints; monthly
+trends and team productivity are not tracked. Failed requests show an error and
+a retry action instead of misleading zero totals.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

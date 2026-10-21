@@ -70,7 +70,7 @@ function AddTask({
       aria-modal="true"
       aria-labelledby="add-task-title"
       className="bg-white rounded-xl shadow-xl border border-gray-200 p-6"
-    >
+      >
             <div className="flex items-center justify-between mb-4">
               <h2 id="add-task-title" className="text-xl font-semibold text-gray-900">
               Add Task

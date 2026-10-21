@@ -96,6 +96,23 @@ export async function apiFetch<T = any>(url: string, options: RequestInit = {}):
         errorMessage = errorData.message;
       } else if (errorData?.error) {
         errorMessage = errorData.error;
+      } else if (
+        typeof errorData === "object" &&
+        errorData !== null
+      ) {
+        const messages = Object.entries(errorData).flatMap(
+          ([field, value]) => {
+            const values = Array.isArray(value) ? value : [value];
+
+            return values
+              .filter((message): message is string => typeof message === "string")
+              .map((message) => `${field}: ${message}`);
+          },
+        );
+
+        if (messages.length > 0) {
+          errorMessage = messages.join(" ");
+        }
       }
     } catch {
       errorMessage = response.statusText || "Request failed.";

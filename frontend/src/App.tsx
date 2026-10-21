@@ -2,10 +2,11 @@ import { BrowserRouter, Route, Routes, Navigate, Outlet } from 'react-router-dom
 import Register from './Pages/Register/Register';
 import Login from './Pages/Login/Login';
 import Dashboard from './Pages/Dashboard/Dashboard';
+import Projects from './Pages/Projects/Projects';
 import ProjectDetail from './Pages/ProjectDetail/ProjectDetail';
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProjectSidebar from "./Pages/ProjectDetail/components/ProjectSidebar";
-
+import Users from './Pages/Users/Users';
 function App(){
   return(
     <BrowserRouter>
@@ -21,7 +22,8 @@ function App(){
             </ProtectedRoute>
           }>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/projects" element={<Dashboard title="Projects" />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/users" element={<Users />} />
             <Route path="/project/:id" element={<ProjectDetail />} />
           </Route>
           <Route path="*" element={<Navigate to="/register" replace />} />
@@ -34,4 +36,3 @@ function App(){
 
 
 export default App;
-
