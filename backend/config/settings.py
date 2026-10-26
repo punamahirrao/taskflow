@@ -105,7 +105,9 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+        ),
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
@@ -135,6 +137,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Uploaded profile photos are stored outside the repo.
+PROFILE_PICS_ROOT = Path(r"C:\MyProject\bucket\profilepics")
+PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024
 
 
 AUTH_USER_MODEL = 'accounts.User'

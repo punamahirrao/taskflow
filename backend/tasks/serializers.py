@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from projects.models import Project
+
 from tasks.models import Task
+
 
 class TaskSerializer(serializers.ModelSerializer):
     project_id = serializers.IntegerField(write_only=True)

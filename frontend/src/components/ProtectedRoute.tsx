@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { refreshAccessToken } from "../utils/api";
+import { refreshAccessToken } from "../api/client";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;

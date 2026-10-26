@@ -1,3 +1,1 @@
-from django.test import TestCase
-
-# Create your tests here.
+"""Task API tests belong in this module or a tasks/tests package."""

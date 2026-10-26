@@ -1,14 +1,13 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
-# Create your models here.
 
 class ProjectRole(models.Model):
     OWNER = "owner"
     ADMIN = "admin"
     MEMBER = "member"
     VIEWER = "viewer"
-    # Site-wide role, held on User.role. Never used in a project membership.
+    # Site-wide role stored on User.role, never on project memberships.
     SITE_ADMIN = "siteadmin"
 
     role_name = models.CharField(max_length=20, unique=True)

@@ -1,38 +1,37 @@
-import { BrowserRouter, Route, Routes, Navigate, Outlet } from 'react-router-dom';
-import Register from './Pages/Register/Register';
-import Login from './Pages/Login/Login';
-import Dashboard from './Pages/Dashboard/Dashboard';
-import Projects from './Pages/Projects/Projects';
-import ProjectDetail from './Pages/ProjectDetail/ProjectDetail';
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ProjectSidebar from "./Pages/ProjectDetail/components/ProjectSidebar";
-import Users from './Pages/Users/Users';
-function App(){
-  return(
-    <BrowserRouter>
-        <Routes>
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route element={
-            <ProtectedRoute>
-              <div className="min-h-screen bg-gray-100 md:grid md:grid-cols-[250px_minmax(0,1fr)]">
-                <ProjectSidebar />
-                <Outlet />
-              </div>
-            </ProtectedRoute>
-          }>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/project/:id" element={<ProjectDetail />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/register" replace />} />
+import DashboardPage from "./pages/DashboardPage";
+import LoginPage from "./pages/LoginPage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
+import ProjectsPage from "./pages/ProjectsPage";
+import ProfilePage from "./pages/ProfilePage";
+import CalendarPage from "./pages/CalendarPage";
+import ReportsPage from "./pages/ReportsPage";
+import TeamPage from "./pages/TeamPage";
+import RegisterPage from "./pages/RegisterPage";
+import ShareProjectPage from "./pages/ShareProjectPage";
+import UsersPage from "./pages/UsersPage";
+import ProjectSidebar from "./sections/projects/ProjectSidebar";
 
-        </Routes>
-    </BrowserRouter>
-   
-  )
+function App() {
+  return <BrowserRouter>
+    <Routes>
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<ProtectedRoute><div className="min-h-screen bg-gray-100 md:grid md:grid-cols-[250px_minmax(0,1fr)]"><ProjectSidebar /><Outlet /></div></ProtectedRoute>}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/team" element={<TeamPage />} />
+        <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/users" element={<UsersPage />} />
+        <Route path="/project/:id" element={<ProjectDetailPage />} />
+        <Route path="/project/:id/share" element={<ShareProjectPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/register" replace />} />
+    </Routes>
+  </BrowserRouter>;
 }
-
 
 export default App;
