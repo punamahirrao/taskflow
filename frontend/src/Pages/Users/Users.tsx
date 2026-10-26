@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, SquarePen, Trash, } from "lucide-react";
 import { apiFetch } from "../../utils/api";
 import AddUser from "./components/AddUser";
+import EditUser from "./components/EditUser";
 
 export type User = {
   id: number;
@@ -21,6 +22,9 @@ function Users() {
   const [role, setRole] = useState("all");
   const [status, setStatus] = useState("all");
   const [showAddUser, setShowAddUser] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [actionError, setActionError] = useState("");
+  const [editingUser, setEditingUser] = useState<User | null>(null);    
 
   useEffect(() => {
     let cancelled = false;
@@ -67,6 +71,18 @@ function Users() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
+  const handleDeleteUser = async (user: User) => {
+    setActionError("");
+    try {
+      await apiFetch(`/accounts/users/${user.id}/`, {
+        method: "DELETE",
+      });
+      setUsers((prevUsers) => prevUsers.filter((u) => u.id !== user.id));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Unable to delete user.");
+    } 
+  };
+
   return (
     <main className="min-h-screen min-w-0 bg-white p-6 md:p-8">
       <div className="mx-auto max-w-7xl">
@@ -108,6 +124,16 @@ function Users() {
               setShowAddUser(false);
             }}
           />
+        )}
+        {editingUser && (
+        <EditUser
+            user={editingUser}
+            onClose={() => setEditingUser(null)}
+            onUpdated={(updated) => {
+            setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+            setEditingUser(null);
+            }}
+        />
         )}
         <div className="mb-4 flex flex-wrap items-end gap-4 rounded-lg border border-gray-200 p-4">
           <label className="flex min-w-0 flex-col gap-1 text-sm text-gray-600">
@@ -173,6 +199,7 @@ function Users() {
                   <th scope="col" className="px-4 py-3 font-medium">Role</th>
                   <th scope="col" className="px-4 py-3 font-medium">Status</th>
                   <th scope="col" className="px-4 py-3 font-medium">Joined</th>
+                  <th scope="col" className="px-4 py-3 font-medium"></th>
                 </tr>
               </thead>
 
@@ -226,13 +253,37 @@ function Users() {
                           },
                         )}
                       </td>
+
+                      <td >
+                        <div className="inline-flex gap-4">
+                        <button 
+                         type="button"
+                         title="Edit User"
+                         onClick={() => setEditingUser(user)}
+                        className="text-green-600 hover:underline">
+                        <SquarePen size={16} aria-hidden="true" />
+                        </button>
+                        <button 
+                         type="button"
+                         title="Delete User"
+                         aria-label={`Delete ${user.first_name} ${user.last_name}`}
+                         onClick={()=> {
+                            if (window.confirm(`Are you sure you want to delete ${user.first_name} ${user.last_name}?`)) {
+                              void handleDeleteUser(user);
+                            }
+                         }}
+                        className="text-red-600 hover:underline">
+                          <Trash size={16} aria-hidden="true" />
+                        </button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
 
                 {filteredUsers.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                       No users found.
                     </td>
                   </tr>

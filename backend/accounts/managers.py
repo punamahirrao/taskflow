@@ -19,7 +19,12 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
+        from projects.models import ProjectRole
+
+        extra_fields.setdefault(
+            "role",
+            ProjectRole.objects.get_or_create(role_name=ProjectRole.SITE_ADMIN)[0],
+        )
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
 

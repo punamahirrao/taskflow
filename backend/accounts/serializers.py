@@ -57,6 +57,9 @@ class LoginSerializer(serializers.Serializer):
     
 
 class UserListSerializer(serializers.ModelSerializer):
+    is_staff = serializers.BooleanField(read_only=True)
+    role = serializers.CharField(source="role.role_name", read_only=True, default=None)
+
     class Meta:
         model = User
         fields = (
@@ -65,6 +68,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "last_name",
             "email",
             "is_staff",
+            "role",
             "is_active",
             "date_joined",
         )
@@ -105,7 +109,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return User.objects.create_user(
             **validated_data,
-            is_staff=False,
             is_superuser=False,
             is_active=True,
+        )
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "first_name",
+            "last_name",
+            "email",
+            "is_active",
         )

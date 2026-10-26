@@ -2,14 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../../utils/api";
 import CreateProject from "../Dashboard/components/CreateProject";
-import { LockKeyhole } from "lucide-react";
+import { LockKeyhole, Search } from "lucide-react";
+import ProjectCard, {type Project} from "./components/ProjectCard";
 
-type Project = {
-  id: number;
-  name: string;
-  description: string;
-  owner: number;
-};
+
 
 type LoggedInUser = {
   id: number;
@@ -22,6 +18,7 @@ function Projects() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [search, setSearch] = useState("");
   const [user] = useState<LoggedInUser | null>(() => {
   const storedUser = sessionStorage.getItem("user");
 
@@ -85,16 +82,35 @@ function Projects() {
     navigate("/login");
   };
 
+  const filteredProjects = projects.filter((project) =>
+    `${project.name} ${project.description}`
+     .toLowerCase().includes(search.toLowerCase().trim())
+  );
+
   return (
     <main className="min-w-0 min-h-screen bg-gray-100  ">
       <div className="max-w-8xl mx-auto p-2">
-        <div className="flex justify-between items-center ">
-          <div>
-            {/* <p className="text-sm text-gray-500 uppercase tracking-wide">Workspace</p> */}
-            <h1 className="text-xl font-semibold text-gray-700">Projects</h1>
-          </div>
+        <header className="grid grid-cols-1 items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
+          <h1 className="text-xl font-semibold text-gray-700">Projects</h1>
 
-          <div className="flex items-center gap-3">
+          <label className="relative w-full sm:w-90">
+            <span className="sr-only">Search projects</span>
+            
+            <input
+              type="search"
+              placeholder="Search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+            <Search
+              size={16}
+              aria-hidden="true"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+          </label>
+
+          <div className="flex items-center justify-end gap-3">
             {user && (
               <span
                 role="img"
@@ -116,7 +132,7 @@ function Projects() {
               <LockKeyhole aria-hidden="true" size={20} />
             </button>
           </div>
-        </div>
+        </header>
         <hr className="my-2 border-gray-300" />
 
         <div className="flex justify-end mb-4">
@@ -138,41 +154,20 @@ function Projects() {
         {loading && <p className="text-gray-600">Loading projects...</p>}
         {error && <p className="text-red-500">{error}</p>}
 
-        {!loading && projects.length === 0 && !error ? (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-gray-600">
-            No projects found. Click “Create Project” to add your first one.
-          </div>
-        ) : (
+        {!loading && filteredProjects.length === 0 && !error ? (
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-gray-600 shadow-sm">
+              {projects.length === 0
+                ? "No projects found. Click “Create Project” to add your first one."
+                : "No projects match your search."}
+            </div>
+          ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {projects.map((project) => (
-              <div
+            {filteredProjects.map((project) => (
+              <ProjectCard
                 key={project.id}
-                onClick={() => navigate(`/project/${project.id}`)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    navigate(`/project/${project.id}`);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-medium uppercase tracking-wide text-cyan-600">
-                    Project
-                  </span>
-                  <span className="text-xs text-gray-400">#{project.id}</span>
-                </div>
-
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  {project.name}
-                </h2>
-
-                <p className="text-gray-600 line-clamp-3">
-                  {project.description || "No description provided."}
-                </p>
-              </div>
+                project={project}
+                onOpen={() => navigate(`/project/${project.id}`)}
+              />
             ))}
           </div>
         )}
