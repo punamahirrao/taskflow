@@ -12,6 +12,7 @@ type CreateProjectProps = {
 function CreateProject({ onClose, onCreated }: CreateProjectProps) {
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -34,7 +35,7 @@ function CreateProject({ onClose, onCreated }: CreateProjectProps) {
     setError("");
 
     try {
-      const newProject = await createProject({ name: projectName, description: projectDescription });
+      const newProject = await createProject({ name: projectName, description: projectDescription, due_date: dueDate || null });
       setProjectName("");
       setProjectDescription("");
       await onCreated(newProject);
@@ -111,6 +112,22 @@ function CreateProject({ onClose, onCreated }: CreateProjectProps) {
                 placeholder="Enter project description"
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
+                className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="project-due-date"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Due date (optional)
+              </label>
+              <input
+                id="project-due-date"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
                 className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
             </div>

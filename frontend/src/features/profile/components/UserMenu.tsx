@@ -13,6 +13,9 @@ export default function UserMenu() {
 
   useEffect(() => {
     getProfile().then(setProfile).catch(() => setProfile(null));
+    const onUpdated = (event: Event) => setProfile((event as CustomEvent<Profile>).detail);
+    window.addEventListener("profile-updated", onUpdated);
+    return () => window.removeEventListener("profile-updated", onUpdated);
   }, []);
 
   useEffect(() => {

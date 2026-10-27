@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getProjects } from "../../../api/projects";
 import { getProjectTasks } from "../../../api/tasks";
 import type { Task } from "../../../entities/task";
+import { useProjectContext } from "../../projects/context/useProjectContext";
 
 export type DashboardStats = {
   totalProjects: number;
@@ -15,12 +15,13 @@ export function useDashboardStats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const { projects: allProjects, loading: projectsLoading, selectedId } = useProjectContext();
 
   useEffect(() => {
     let active = true;
     async function load() {
       try {
-        const projects = await getProjects();
+        const projects = selectedId === null ? allProjects : allProjects.filter((project) => project.id === selectedId);
         const groups = await Promise.all(projects.map((project) => getProjectTasks(project.id)));
         const tasks: Task[] = groups.flat();
         const completedTasks = tasks.filter((task) => task.status === "done").length;
@@ -36,9 +37,9 @@ export function useDashboardStats() {
         if (active) setLoading(false);
       }
     }
-    void load();
+    if (!projectsLoading) void load();
     return () => { active = false; };
-  }, [attempt]);
+  }, [attempt, allProjects, projectsLoading, selectedId]);
 
   const retry = () => {
     setError("");

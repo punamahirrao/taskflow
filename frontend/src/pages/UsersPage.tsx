@@ -32,7 +32,7 @@ export default function UsersPage() {
   }
 
   return <main className="min-h-screen min-w-0 bg-white p-6 md:p-8"><div className="mx-auto max-w-7xl">
-    <header className="mb-6 flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-semibold text-purple-400">Users</h1><p className="mt-1 text-sm text-gray-500">View user accounts, roles, and account status.</p></div><button type="button" onClick={() => setShowAdd(true)} disabled={showAdd || loading || Boolean(error)} className="flex cursor-pointer items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm text-white disabled:opacity-50"><Plus size={16} aria-hidden="true" />Add User</button></header>
+    <header className="mb-6 flex flex-wrap items-center justify-between gap-4"><div><p className="text-sm text-gray-500">View user accounts, roles, and account status.</p></div><button type="button" onClick={() => setShowAdd(true)} disabled={showAdd || loading || Boolean(error)} className="flex cursor-pointer items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm text-white disabled:opacity-50"><Plus size={16} aria-hidden="true" />Add User</button></header>
     {showAdd && <AddUserDialog onClose={() => setShowAdd(false)} onCreated={addUser} />}
     {editing && <EditUserDialog user={editing} onClose={() => setEditing(null)} onUpdated={updateUser} />}
     <UserFilters search={search} setSearch={setSearch} role={role} setRole={setRole} status={status} setStatus={setStatus} />

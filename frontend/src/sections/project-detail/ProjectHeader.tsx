@@ -1,7 +1,6 @@
 import { Globe, Pencil, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Project } from "../../entities/project";
-import UserMenu from "../../features/profile/components/UserMenu";
 
 export function ProjectHeader({ project, completed, total }: { project: Project; completed: number; total: number }) {
   const navigate = useNavigate();
@@ -16,7 +15,6 @@ export function ProjectHeader({ project, completed, total }: { project: Project;
     </div>
     <div className="flex shrink-0 items-center gap-3"><button type="button" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800"><Pencil size={16} />Edit</button>
       {(project.my_role === "owner" || project.my_role === "admin") && <button type="button" onClick={() => navigate(`/project/${project.id}/share`)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white"><Share2 size={16} />Share</button>}
-      <UserMenu />
     </div>
   </header>;
 }

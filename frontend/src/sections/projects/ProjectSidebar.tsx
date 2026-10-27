@@ -11,6 +11,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useState } from "react";
+import ProjectSwitcher from "../../features/projects/components/ProjectSwitcher";
 import { NavLink, useLocation } from "react-router-dom";
 
 function ProjectSidebar() {
@@ -26,9 +27,11 @@ function ProjectSidebar() {
 
   return (
     <aside className="border-b border-gray-200 bg-gray-50 p-5 md:sticky md:top-0 md:h-screen md:overflow-y-auto md:border-r md:border-b-0">
-      <div className="mb-8 px-3">
+      <div className="mb-5 px-3">
         <h2 className="text-2xl font-bold text-purple-700">TaskFlow</h2>
       </div>
+
+      <ProjectSwitcher />
 
       <nav aria-label="Main navigation" className="space-y-1">
         <NavLink

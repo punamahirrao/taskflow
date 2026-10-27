@@ -14,7 +14,7 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export default function CalendarPage() {
   // October 2026 starts on a Thursday, so three blank cells precede day 1.
   const cells = [...Array<null>(3).fill(null), ...Array.from({ length: 31 }, (_, i) => i + 1)];
-  return <PageShell title="Calendar" subtitle="Deadlines and meetings at a glance.">
+  return <PageShell subtitle="Deadlines and meetings at a glance.">
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
       <Card title="October 2026">
         <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 text-xs">

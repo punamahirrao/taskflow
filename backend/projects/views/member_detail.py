@@ -42,7 +42,7 @@ class ProjectMemberDetailView(APIView):
         membership.role = ProjectRole.objects.get(role_name=role_name)
         membership.save(update_fields=["role"])
 
-        return Response(ProjectMemberSerializer(membership).data)
+        return Response(ProjectMemberSerializer(membership, context={"request": request}).data)
 
     def delete(self, request, pk, user_id):
         actor_role, membership = self.get_membership(request, pk, user_id)

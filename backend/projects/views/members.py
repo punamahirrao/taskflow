@@ -27,7 +27,7 @@ class ProjectMemberListView(APIView):
         project = get_object_or_404(visible_projects(request.user), pk=pk)
         memberships = project.memberships.select_related("user", "role").order_by("id")
 
-        return Response(ProjectMemberSerializer(memberships, many=True).data)
+        return Response(ProjectMemberSerializer(memberships, many=True, context={"request": request}).data)
 
     def post(self, request, pk):
         project = get_object_or_404(visible_projects(request.user), pk=pk)
@@ -77,6 +77,6 @@ class ProjectMemberListView(APIView):
         )
 
         return Response(
-            ProjectMemberSerializer(membership).data,
+            ProjectMemberSerializer(membership, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )

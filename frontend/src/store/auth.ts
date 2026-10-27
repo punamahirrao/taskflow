@@ -2,6 +2,7 @@ export function clearAuthSession() {
   sessionStorage.removeItem("access_token");
   sessionStorage.removeItem("refresh_token");
   sessionStorage.removeItem("user");
+  sessionStorage.removeItem("selected_project");
 }
 
 export function hasAccessToken() {

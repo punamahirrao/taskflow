@@ -32,6 +32,24 @@ class ProjectListView(APIView):
         )
 
 
+class DefaultProjectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        project_id = request.data.get("project_id")
+        if project_id is None:
+            request.user.default_project = None
+        else:
+            project = visible_projects(request.user).filter(pk=project_id).first()
+            if project is None:
+                return Response(
+                    {"detail": "Project not found."}, status=status.HTTP_404_NOT_FOUND
+                )
+            request.user.default_project = project
+        request.user.save(update_fields=["default_project"])
+        return Response({"default_project_id": request.user.default_project_id})
+
+
 class ProjectDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, ProjectRolePermission]

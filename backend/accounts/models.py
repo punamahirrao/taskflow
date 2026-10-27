@@ -15,6 +15,14 @@ class User(AbstractUser):
         storage=profile_pics_storage, blank=True, null=True
     )
 
+    default_project = models.ForeignKey(
+        "projects.Project",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
     # Site-wide administrators use the shared project-role table.
     role = models.ForeignKey(
         "projects.ProjectRole",

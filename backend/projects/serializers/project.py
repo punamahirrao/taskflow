@@ -9,6 +9,8 @@ class ProjectSerializer(serializers.ModelSerializer):
     owner = serializers.SerializerMethodField()
     my_role = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
+    is_default = serializers.SerializerMethodField()
+    progress = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -16,9 +18,12 @@ class ProjectSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
+            "due_date",
+            "progress",
             "owner",
             "my_role",
             "members",
+            "is_default",
             "created_at",
             "updated_at",
         )
@@ -55,8 +60,20 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         return None
 
+    def get_progress(self, project):
+        statuses = list(project.tasks.values_list("status", flat=True))
+        if not statuses:
+            return 0
+        return round(100 * statuses.count("done") / len(statuses))
+
+    def get_is_default(self, project):
+        request = self.context.get("request")
+        return request is not None and request.user.default_project_id == project.pk
+
     def get_members(self, project):
-        return ProjectMemberSerializer(self._memberships(project), many=True).data
+        return ProjectMemberSerializer(
+            self._memberships(project), many=True, context=self.context
+        ).data
 
     @transaction.atomic
     def create(self, validated_data):

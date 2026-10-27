@@ -16,7 +16,7 @@ const byProject = [
 ];
 
 export default function ReportsPage() {
-  return <PageShell title="Reports" subtitle="Track progress and productivity across your projects.">
+  return <PageShell subtitle="Track progress and productivity across your projects.">
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {kpis.map((kpi) => <Card key={kpi.label}><p className="text-sm text-slate-500">{kpi.label}</p><p className="mt-2 text-3xl font-bold text-slate-900">{kpi.value}</p><p className="mt-1 text-xs text-slate-500">{kpi.delta}</p></Card>)}
     </div>

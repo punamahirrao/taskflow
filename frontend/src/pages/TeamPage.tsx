@@ -10,7 +10,7 @@ const members = [
 ];
 
 export default function TeamPage() {
-  return <PageShell title="Team" subtitle="See who is on your team and what they are working on.">
+  return <PageShell subtitle="See who is on your team and what they are working on.">
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {members.map((m) => <Card key={m.name}>
         <div className="flex items-center gap-3"><Avatar name={m.name} color={m.color} /><div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-900">{m.name}</p><p className="truncate text-xs text-slate-500">{m.role}</p></div></div>

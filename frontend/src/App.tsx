@@ -1,4 +1,5 @@
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
@@ -11,14 +12,13 @@ import TeamPage from "./pages/TeamPage";
 import RegisterPage from "./pages/RegisterPage";
 import ShareProjectPage from "./pages/ShareProjectPage";
 import UsersPage from "./pages/UsersPage";
-import ProjectSidebar from "./sections/projects/ProjectSidebar";
 
 function App() {
   return <BrowserRouter>
     <Routes>
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route element={<ProtectedRoute><div className="min-h-screen bg-gray-100 md:grid md:grid-cols-[250px_minmax(0,1fr)]"><ProjectSidebar /><Outlet /></div></ProtectedRoute>}>
+      <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
