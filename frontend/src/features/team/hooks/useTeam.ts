@@ -1,17 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { addProjectMember, removeProjectMember, scheduleProjectMemberRemoval } from "../../../api/projectMembers";
 import { getUsers } from "../../../api/users";
-import type { Project } from "../../../entities/project";
 import type { TeamRosterMember } from "../../../entities/team";
 import type { SiteUser } from "../../../entities/user";
 import { useProjectContext } from "../../projects/context/useProjectContext";
-
-const ASSIGNABLE_ROLES: Record<string, string[]> = {
-  owner: ["admin", "member", "viewer"],
-  admin: ["member", "viewer"],
-};
-const NO_ROLES: string[] = [];
-const TEAM_FILTER_KEY = "team_project_filter";
+import { buildTeamRoster, sortTeamRoster } from "../teamRoster";
+import { ASSIGNABLE_ROLES, NO_ROLES, TEAM_FILTER_KEY } from "../teamPolicy";
 
 export function useTeam() {
   const { projects, selectedId, loading: projectsLoading, error: projectsError, reload } = useProjectContext();
@@ -46,11 +40,11 @@ export function useTeam() {
     [projects, projectId],
   );
   const project = projectId === null ? null : scopedProjects[0] ?? null;
-  const allMembers = useMemo(() => buildRoster(projects), [projects]);
+  const allMembers = useMemo(() => buildTeamRoster(projects), [projects]);
   const members = useMemo(() => {
     if (!project) return allMembers;
     const rolesById = new Map((project.members ?? []).map((member) => [member.id, member.role]));
-    return sortRoster(allMembers
+    return sortTeamRoster(allMembers
       .filter((member) => rolesById.has(member.id))
       .map((member) => ({
         ...member,
@@ -125,32 +119,4 @@ export function useTeam() {
     addMember,
     removeMember,
   };
-}
-
-function buildRoster(projects: Project[]): TeamRosterMember[] {
-  const roster = new Map<number, TeamRosterMember>();
-
-  for (const project of projects) {
-    for (const member of project.members ?? []) {
-      const current = roster.get(member.id) ?? {
-        ...member,
-        projects: [],
-        roles: [],
-        can_view_profile: false,
-      };
-      if (!current.projects.some((item) => item.id === project.id)) current.projects.push({ id: project.id, name: project.name });
-      if (!current.roles.includes(member.role)) current.roles.push(member.role);
-      current.can_view_profile ||= project.my_role === "owner" || project.my_role === "admin";
-      roster.set(member.id, current);
-    }
-  }
-
-  return sortRoster([...roster.values()]);
-}
-
-function sortRoster(members: TeamRosterMember[]): TeamRosterMember[] {
-  return members.sort((a, b) => {
-    const ownerOrder = Number(b.roles.includes("owner")) - Number(a.roles.includes("owner"));
-    return ownerOrder || `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`);
-  });
 }

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Activity, AlertTriangle, ArrowDownRight, CheckCheck, CirclePlus, Clock3, Gauge, Layers3, Plus, RefreshCw, Zap } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Activity, AlertTriangle, ArrowDownRight, CheckCheck, CirclePlus, Clock3, Gauge, Plus, RefreshCw, Zap } from "lucide-react";
 import { addBoardColumn, getBoardColumns, getSprints, updateBoardColumn } from "../api/tasks";
 import type { BoardColumn, Sprint, Task } from "../entities/task";
 import { AgileProjectFilter } from "../features/agile/components/AgileProjectFilter";
@@ -8,10 +8,9 @@ import { useAgileProjectScope } from "../features/agile/hooks/useAgileProjectSco
 import { useAgileTasks } from "../features/agile/hooks/useAgileTasks";
 import { EditWorkItemDialog } from "../features/agile/components/EditWorkItemDialog";
 import { SprintInsightsPanel } from "../features/agile/components/SprintInsightsPanel";
-
-const STAGE_ORDER = ["backlog", "todo", "in_progress", "review", "done"];
-const STAGE_COLORS: Record<string, string> = { backlog: "bg-slate-400", todo: "bg-violet-500", in_progress: "bg-sky-500", review: "bg-amber-500", done: "bg-emerald-500" };
-type Swimlane = "project" | "priority" | "assignee" | "epic" | "sprint_goal";
+import { BoardMetric } from "../features/agile/components/BoardMetric";
+import { STAGE_ORDER, averageDays, type Swimlane } from "../features/agile/utils/boardView";
+import { BoardColumnLane } from "../features/agile/components/BoardColumnLane";
 
 export default function BoardsPage() {
   const scope = useAgileProjectScope("boards_project_scope");
@@ -98,15 +97,21 @@ export default function BoardsPage() {
     finally { setColumnBusy(false); }
   }
 
+  function renderBoardTask(task: Task) {
+    const activeSprint = activeSprints.get(task.project);
+    const sprintAction = task.sprint && task.status !== "done" ? "backlog" : task.status === "backlog" ? (activeSprint ? "plan" : undefined) : activeSprint ? "add" : undefined;
+    return <div key={task.id} draggable onDragStart={(event) => { event.dataTransfer.setData("text/plain", String(task.id)); event.dataTransfer.effectAllowed = "move"; }} className="cursor-grab active:cursor-grabbing"><WorkItemCard task={task} candidates={agile.tasks} members={scope.projects.find((item) => item.id === task.project)?.members ?? []} onAssign={(userId) => void agile.update(task.id, { assignee: userId })} onEscalate={() => void agile.update(task.id, { escalated: true })} sprintAction={sprintAction} sprintActionDisabled={sprintAction !== "backlog" && !activeSprint} onSprintAction={() => { if (task.sprint) void agile.update(task.id, { status: "backlog", sprint: null }); else if (activeSprint) void agile.update(task.id, task.status === "backlog" ? { status: "todo", sprint: activeSprint.id } : { sprint: activeSprint.id }); }} onEdit={() => setEditingTaskId(task.id)} /></div>;
+  }
+
   return <main className="min-h-screen bg-[#f7f7fb] p-5 md:p-8"><div className="mx-auto max-w-[1600px]">
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-sky-600">Make value flow</p><h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">Boards</h2><p className="mt-2 max-w-2xl text-sm text-slate-500">See work move through the system. Keep flow visible, surface blockers early, and make the next handoff clear.</p></div><div className="flex flex-wrap items-end gap-3"><AgileProjectFilter projects={scope.projects} value={scope.projectId} onChange={scope.selectProject} /><label className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Swimlanes<select aria-label="Board swimlanes" value={swimlane} onChange={(event) => setSwimlane(event.target.value as Swimlane)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-700"><option value="project">Project</option><option value="priority">Priority</option><option value="assignee">Assignee</option><option value="epic">Epic / initiative</option><option value="sprint_goal">Sprint goal</option></select></label><button type="button" onClick={() => setSprintMode((value) => !value)} aria-pressed={sprintMode} className={`inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold ${sprintMode ? "bg-violet-600 text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}><Zap size={15} />{sprintMode ? "Sprint mode on" : "Sprint mode"}</button><button type="button" onClick={() => void agile.reload()} aria-label="Refresh board" className="rounded-lg border border-slate-200 bg-white p-2.5 text-slate-500 hover:text-violet-700"><RefreshCw size={16} /></button></div></header>
 
     <section className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Flow metrics">
-      <Metric label="Throughput · 7 days" value={completedRecently} note="Items completed" icon={<CheckCheck size={16} />} />
-      <Metric label="Cycle time" value={cycleDays === null ? "—" : `${cycleDays}d`} note="Start to done · average" icon={<Clock3 size={16} />} />
-      <Metric label="Lead time" value={leadDays === null ? "—" : `${leadDays}d`} note="Created to done · average" icon={<Activity size={16} />} />
-      <Metric label="In progress" value={doing} note="Current work in motion" icon={<Gauge size={16} />} tint="blue" />
-      <Metric label="Blockers" value={blockedCount} note={blockedCount ? "Needs a team unblock" : "No blocked work"} icon={<AlertTriangle size={16} />} tint={blockedCount ? "rose" : "green"} />
+      <BoardMetric label="Throughput · 7 days" value={completedRecently} note="Items completed" icon={<CheckCheck size={16} />} />
+      <BoardMetric label="Cycle time" value={cycleDays === null ? "—" : `${cycleDays}d`} note="Start to done · average" icon={<Clock3 size={16} />} />
+      <BoardMetric label="Lead time" value={leadDays === null ? "—" : `${leadDays}d`} note="Created to done · average" icon={<Activity size={16} />} />
+      <BoardMetric label="In progress" value={doing} note="Current work in motion" icon={<Gauge size={16} />} tint="blue" />
+      <BoardMetric label="Blockers" value={blockedCount} note={blockedCount ? "Needs a team unblock" : "No blocked work"} icon={<AlertTriangle size={16} />} tint={blockedCount ? "rose" : "green"} />
     </section>
 
     {blockedCount > 0 && <div className="mb-4 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"><AlertTriangle size={16} />{blockedCount} {blockedCount === 1 ? "item is" : "items are"} blocked. Surface the dependency in stand-up and clear the path.</div>}
@@ -118,61 +123,18 @@ export default function BoardsPage() {
     {canCustomize && <form onSubmit={(event) => { event.preventDefault(); void addColumn(); }} className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white/70 px-4 py-3"><CirclePlus size={17} className="text-violet-600" /><span className="mr-2 text-xs font-semibold text-slate-600">Tune this workflow</span><input value={newColumnName} onChange={(event) => setNewColumnName(event.target.value)} placeholder="New stage name" className="rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-violet-200" /><input type="number" min="1" value={newColumnLimit} onChange={(event) => setNewColumnLimit(event.target.value)} placeholder="WIP limit" aria-label="New stage WIP limit" className="w-24 rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-violet-200" /><button disabled={addingColumn || !newColumnName.trim()} className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-40"><Plus size={13} />Add stage</button><span className="text-[11px] text-slate-400">Owners and managers can customize columns for the selected project.</span></form>}
     {!scope.projectId && <p className="mb-4 rounded-xl bg-white px-4 py-3 text-xs text-slate-500 shadow-sm">Multi-project flow is grouped by project inside each stage. Choose one project to customize workflow and WIP limits.</p>}
 
-    {agile.loading || !columns.length ? <div className="rounded-2xl border border-slate-200 bg-white p-14 text-center text-sm text-slate-500">{agile.loading ? "Loading flow…" : "Setting up project workflow…"}</div> : <div className="flex gap-3 overflow-x-auto pb-4">
-      {columns.map((column) => {
-        const inColumn = boardTasks.filter((task) => task.status === column.key);
-        const overLimit = visibleProjects.some((project) => {
-          const projectColumn = (columnsByProject[project.id] ?? []).find((item) => item.key === column.key);
-          const count = inColumn.filter((task) => task.project === project.id).length;
-          return projectColumn?.wip_limit !== null && projectColumn?.wip_limit !== undefined && count > projectColumn.wip_limit;
-        });
-        const singleProjectColumn = scope.projectId ? (columnsByProject[scope.projectId] ?? []).find((item) => item.key === column.key) : null;
-        const aggregateLimit = visibleProjects.reduce((total, project) => total + ((columnsByProject[project.id] ?? []).find((item) => item.key === column.key)?.wip_limit ?? 0), 0);
-        return <section key={column.key} aria-label={`${column.name} column`} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); const taskId = Number(event.dataTransfer.getData("text/plain")); void moveToColumn(taskId, column.key); }} className="w-[290px] min-w-[290px] rounded-xl border border-slate-200 bg-slate-100/80 p-2.5 transition hover:border-violet-200">
-          <header className="mb-2 flex items-center gap-2 px-1 py-1"><span className={`h-2 w-2 rounded-full ${STAGE_COLORS[column.key] ?? "bg-violet-500"}`} /><h3 className="text-xs font-bold uppercase tracking-wide text-slate-700">{column.name}</h3><span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${overLimit ? "bg-rose-100 text-rose-700" : "bg-white text-slate-500"}`}>{inColumn.length}{singleProjectColumn?.wip_limit ? ` / ${singleProjectColumn.wip_limit}` : !scope.projectId && aggregateLimit ? ` / ${aggregateLimit}` : ""}</span></header>
-          {canCustomize && singleProjectColumn && <label className="mb-2 flex items-center justify-end gap-1 px-1 text-[10px] text-slate-400">WIP<input aria-label={`${column.name} WIP limit`} type="number" min="1" defaultValue={singleProjectColumn.wip_limit ?? ""} key={`${singleProjectColumn.id}-${singleProjectColumn.wip_limit}`} disabled={columnBusy} onBlur={(event) => void saveWipLimit(singleProjectColumn, event.target.value)} className="w-12 rounded border border-slate-200 bg-white px-1 py-0.5 text-center text-[10px] text-slate-600" /></label>}
-          {overLimit && <p role="alert" className="mb-2 rounded-lg border border-rose-200 bg-rose-50 px-2 py-1.5 text-[10px] font-semibold text-rose-700">WIP limit exceeded. Consider swarming on current work before pulling more.</p>}
-          <div className="flex min-h-48 flex-col gap-2">
-            {groupBoardTasks(inColumn, swimlane, scope.projects).map(([lane, name, tasks]) => <div key={lane} className="space-y-2">{(swimlane !== "project" || !scope.projectId) && <h4 className="px-1 pt-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">{name}</h4>}{tasks.map((task) => {
-              const activeSprint = activeSprints.get(task.project);
-              const sprintAction = task.sprint && task.status !== "done" ? "backlog" : task.status === "backlog" ? (activeSprint ? "plan" : undefined) : activeSprint ? "add" : undefined;
-              return <div key={task.id} draggable onDragStart={(event) => { event.dataTransfer.setData("text/plain", String(task.id)); event.dataTransfer.effectAllowed = "move"; }} className="cursor-grab active:cursor-grabbing"><WorkItemCard task={task} candidates={agile.tasks} members={scope.projects.find((item) => item.id === task.project)?.members ?? []} onAssign={(userId) => void agile.update(task.id, { assignee: userId })} onEscalate={() => void agile.update(task.id, { escalated: true })} sprintAction={sprintAction} sprintActionDisabled={sprintAction !== "backlog" && !activeSprint} onSprintAction={() => { if (task.sprint) void agile.update(task.id, { status: "backlog", sprint: null }); else if (activeSprint) void agile.update(task.id, task.status === "backlog" ? { status: "todo", sprint: activeSprint.id } : { sprint: activeSprint.id }); }} onEdit={() => setEditingTaskId(task.id)} /></div>;
-            })}</div>)}
-            {!inColumn.length && <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-slate-300/80 px-3 py-8 text-center"><Layers3 size={17} className="text-slate-300" /><p className="mt-2 text-[11px] text-slate-400">Drop work here</p></div>}
-          </div>
-        </section>;
-      })}
-    </div>}
-
+    {agile.loading || !columns.length ? <div className="rounded-2xl border border-slate-200 bg-white p-14 text-center text-sm text-slate-500">{agile.loading ? "Loading flow…" : "Setting up project workflow…"}</div> : <div className="flex gap-3 overflow-x-auto pb-4">{columns.map((column) => {
+      const inColumn = boardTasks.filter((task) => task.status === column.key);
+      const overLimit = visibleProjects.some((project) => {
+        const projectColumn = (columnsByProject[project.id] ?? []).find((item) => item.key === column.key);
+        const count = inColumn.filter((task) => task.project === project.id).length;
+        return projectColumn?.wip_limit !== null && projectColumn?.wip_limit !== undefined && count > projectColumn.wip_limit;
+      });
+      const singleProjectColumn = scope.projectId ? (columnsByProject[scope.projectId] ?? []).find((item) => item.key === column.key) : null;
+      const aggregateLimit = visibleProjects.reduce((total, project) => total + ((columnsByProject[project.id] ?? []).find((item) => item.key === column.key)?.wip_limit ?? 0), 0);
+      return <BoardColumnLane key={column.key} column={column} tasks={inColumn} swimlane={swimlane} projects={scope.projects} singleProject={singleProjectColumn} projectSelected={Boolean(scope.projectId)} canCustomize={canCustomize} busy={columnBusy} overLimit={overLimit} aggregateLimit={aggregateLimit} onSaveLimit={(item, value) => void saveWipLimit(item, value)} onMove={(taskId, status) => void moveToColumn(taskId, status)} renderTask={renderBoardTask} />;
+    })}</div>}
     {!agile.loading && !boardTasks.length && <div className="mt-2 flex items-center gap-2 text-xs text-slate-400"><ArrowDownRight size={14} />Move an item from Backlog to start execution.</div>}
     {editingTask && editingProject && <EditWorkItemDialog task={editingTask} project={editingProject} candidates={agile.tasks} onClose={() => setEditingTaskId(null)} onSave={(changes) => agile.update(editingTask.id, changes)} />}
   </div></main>;
-}
-
-function Metric({ label, value, note, icon, tint = "violet" }: { label: string; value: string | number; note: string; icon: ReactNode; tint?: string }) {
-  const colors: Record<string, string> = { violet: "bg-violet-50 text-violet-700", blue: "bg-sky-50 text-sky-700", green: "bg-emerald-50 text-emerald-700", rose: "bg-rose-50 text-rose-700" };
-  return <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-medium text-slate-500">{label}</span><span className={`flex h-8 w-8 items-center justify-center rounded-lg ${colors[tint]}`}>{icon}</span></div><p className="mt-2 text-2xl font-bold text-slate-900">{value}</p><p className="mt-1 text-[11px] text-slate-400">{note}</p></div>;
-}
-
-function averageDays(durations: number[]) {
-  if (!durations.length) return null;
-  return Math.round((durations.reduce((total, value) => total + value, 0) / durations.length / 86400000) * 10) / 10;
-}
-
-function groupBoardTasks(tasks: Task[], swimlane: Swimlane, projects: { id: number; name: string }[]) {
-  const groups = new Map<string, { name: string; tasks: Task[] }>();
-  tasks.forEach((task) => {
-    const projectName = task.project_name ?? projects.find((project) => project.id === task.project)?.name ?? `Project ${task.project}`;
-    const name = swimlane === "project" ? projectName
-      : swimlane === "priority" ? task.priority[0].toUpperCase() + task.priority.slice(1)
-      : swimlane === "assignee" ? task.assignee_name || "Unassigned"
-      : swimlane === "epic" ? task.parent_title || "Independent work"
-      : task.sprint_goal || "No sprint goal";
-    const key = swimlane === "project" ? `project-${task.project}` : `${swimlane}-${name}`;
-    const group = groups.get(key) ?? { name, tasks: [] };
-    group.tasks.push(task);
-    groups.set(key, group);
-  });
-  return [...groups.entries()].sort(([, first], [, second]) => first.name.localeCompare(second.name))
-    .map(([key, group]) => [key, group.name, group.tasks] as const);
 }

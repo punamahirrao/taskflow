@@ -1,6 +1,6 @@
 from django.urls import path
 
-from documents.api import DocumentDetailView, DocumentDownloadView, DocumentLibraryView, FolderCreateView, FolderDetailView, ResourceLinkCreateView, ResourceLinkDetailView
+from documents.views import DocumentDetailView, DocumentDownloadView, DocumentLibraryView, FolderCreateView, FolderDetailView, ResourceLinkCreateView, ResourceLinkDetailView
 
 urlpatterns = [
     path("", DocumentLibraryView.as_view(), name="document-library"),
