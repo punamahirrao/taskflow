@@ -1,70 +1,36 @@
-import {useState} from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useRegister } from "../features/auth/hooks/useRegister";
+import { AuthPromoSection } from "../sections/auth/AuthPromoSection";
 
-function Register() {
-    const navigate = useNavigate();
-    const[email, setEmail]=useState("");
-    const[password, setPassword]=useState("");
-    const[confirmPassword, setConfirmPassword]=useState("");
-    const { error, loading, submit } = useRegister();
+export default function RegisterPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const { error, loading, submit } = useRegister();
 
-    const handleSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (await submit(email, password, confirmPassword)) navigate("/login");
-        
-    };
-    return(
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="w-full max-w-md bg-white shadow-md rounded-lg p-8">
-                <form className="space-y-4" onSubmit={handleSubmit} >
-                    <div className="flex flex-col">
-                    <label className="mb-2 font-semibold">Email</label>
-                    <input className="border border-gray-300 p-2 rounded" 
-                           type="email" 
-                           placeholder="Enter your email"
-                           value={email}
-                           onChange={(event) => setEmail(event.target.value)} />
-                    </div>
-                    <div className="flex flex-col">
-                    <label className="mb-2 font-semibold">Password</label>
-                    <input className="border border-gray-300 p-2 rounded" 
-                           type="password" 
-                           placeholder="Enter your password"
-                           value={password}
-                           onChange={(event) => setPassword(event.target.value)} />
-                    </div> 
-                    <div className="flex flex-col">
-                    <label className="mb-2 font-semibold">Confirm Password</label>
-                    <input className="border border-gray-300 p-2 rounded" 
-                           type="password" 
-                           placeholder="Confirm your password"
-                           value={confirmPassword}
-                           onChange={(event) => setConfirmPassword(event.target.value)} />
-                    </div>
-                    {error && <p className="text-red-500">{error}</p>}
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (await submit(email, password, confirmPassword)) navigate("/login");
+  }
 
-                    <div className="flex flex-col mt-8 ">
-                    <button className="bg-cyan-500 text-white py-2 px-4 rounded hover:bg-cyan-600" 
-                                      type="submit"
-                                      disabled={loading}>
-                                {loading ? "Creating account..." : "Sign Up"}</button>
-                    </div>
-                    
-                    <div className="text-center flex flex-col mt-10  ">
-                        Already have an account? 
-                        <button className="bg-cyan-500 text-white mt-2 py-2 px-4 rounded hover:bg-cyan-600" 
-                            type="button"
-                            onClick={() => navigate("/login")}>
-                            Log In
-                        </button>
-                    </div>
-                </form>
-            </div>
-            
-        </div>
-        
-    )
+  return <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+    <AuthPromoSection />
+    <section className="flex flex-col items-center justify-center overflow-hidden bg-gray-50 px-6 py-4">
+      <div className="mb-3 flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-900 text-xl text-white">✈</span><span className="text-3xl font-bold text-indigo-900">TaskFlow</span></div>
+      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
+        <h1 className="text-center text-xl font-bold text-gray-900">Create your TaskFlow account</h1>
+        <p className="mb-4 mt-1 text-center text-sm text-gray-600">Sign up to start planning and collaborating with your team.</p>
+        <form className="space-y-3" onSubmit={handleSubmit}>
+          <label className="flex flex-col text-sm font-bold text-gray-900">Email Address<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
+          <label className="flex flex-col text-sm font-bold text-gray-900">Password<input type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
+          <label className="flex flex-col text-sm font-bold text-gray-900">Confirm Password<input type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+          <button type="submit" disabled={loading} className="w-full rounded-lg bg-indigo-900 py-2.5 font-medium text-white hover:bg-indigo-800 disabled:opacity-70">{loading ? "Creating account..." : "Create Account"}</button>
+        </form>
+        <p className="mt-4 text-center text-xs text-gray-500">Already have an account? <Link to="/login" className="font-bold text-indigo-900 hover:underline">Log in</Link></p>
+      </div>
+    </section>
+  </main>;
 }
-
-export default Register;

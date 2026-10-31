@@ -1,9 +1,14 @@
 import type { FormEvent } from "react";
+import { GoogleLogin,  type CredentialResponse} from '@react-oauth/google';
+import { Link } from "react-router-dom";
 
-export function LoginForm({ email, setEmail, password, setPassword, error, loading, onSubmit }: {
+
+export function LoginForm({ email, setEmail, password, setPassword, error, loading, onSubmit, onGoogle, onGoogleError }: {
   email: string; setEmail: (value: string) => void; password: string; setPassword: (value: string) => void;
   error: string; loading: boolean; onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-}) {
+  onGoogle: (response: CredentialResponse) => void; onGoogleError: () => void;
+}) 
+{
   return <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
     <h1 className="text-center text-xl font-bold text-gray-900">Welcome Back to TaskFlow</h1>
     <p className="mb-4 mt-1 text-center text-sm text-gray-600">Access your collaborative planning workspace for all your projects.</p>
@@ -15,7 +20,11 @@ export function LoginForm({ email, setEmail, password, setPassword, error, loadi
       <button type="submit" disabled={loading} className="w-full rounded-lg bg-indigo-900 py-2.5 font-medium text-white hover:bg-indigo-800 disabled:opacity-70">{loading ? "Signing in..." : "Sign In"}</button>
     </form>
     <div className="my-4 flex items-center gap-3 text-xs text-gray-500"><span className="flex-1 border-t border-gray-300" />OR CONTINUE WITH<span className="flex-1 border-t border-gray-300" /></div>
-    <div className="space-y-2"><button type="button" disabled title="Coming soon" className="w-full cursor-not-allowed rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-800"><span className="font-bold text-blue-600">G</span> Continue with Google</button><button type="button" disabled title="Coming soon" className="w-full cursor-not-allowed rounded-lg bg-sky-600 py-2 text-sm font-medium text-white">⊞ Continue with Microsoft</button><button type="button" disabled title="Coming soon" className="w-full cursor-not-allowed rounded-lg bg-blue-800 py-2 text-sm font-medium text-white">🔑 Corporate SSO Login</button></div>
-    <p className="mt-4 text-center text-xs text-gray-500">Terms of Service · Privacy Policy · Need an account? <span className="font-bold text-gray-800">Contact your administrator</span></p>
+    <div className="space-y-2">
+      <GoogleLogin onSuccess={onGoogle} onError={onGoogleError} />
+      <button type="button" disabled title="Coming soon" className="w-full cursor-not-allowed rounded-lg bg-sky-600 py-2 text-sm font-medium text-white">⊞ Continue with Microsoft</button>
+      <button type="button" disabled title="Coming soon" className="w-full cursor-not-allowed rounded-lg bg-blue-800 py-2 text-sm font-medium text-white">🔑 Corporate SSO Login</button>
+    </div>
+    <p className="mt-4 text-center text-xs text-gray-500">Terms of Service · Privacy Policy · Need an account? <Link to="/register" className="font-bold text-indigo-900 hover:underline">Register</Link></p>
   </div>;
 }

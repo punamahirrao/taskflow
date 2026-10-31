@@ -1,0 +1,4 @@
+# Local environment files (contain per-machine settings)
+.env
+.env.*
+!.env.example

@@ -11,6 +11,7 @@ from accounts.views import (
     DashboardView,
     LoginView,
     RegisterView,
+    GoogleLoginView,
     UserListView,
     UserUpdateView,
 )
@@ -21,6 +22,7 @@ urlpatterns = [
     path("me/password/", ChangePasswordView.as_view(), name="change_password"),
     path("profile-photos/<str:filename>", ProfilePhotoFileView.as_view(), name="profile_photo"),
     path("login/", LoginView.as_view(), name="login"),
+    path("google/", GoogleLoginView.as_view(), name="google_login"),
     path("register/", RegisterView.as_view(), name="register"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),

@@ -19,3 +19,13 @@ export async function register(email: string, password: string, confirmPassword:
     body: JSON.stringify({ email, password, confirm_password: confirmPassword }),
   });
 }
+
+export async function googleLogin(credential: string): Promise<void> {
+  const data = await apiFetch<AuthResponse>("/accounts/google/", {
+    method: "POST",
+    body: JSON.stringify({ credential }),
+  });
+  sessionStorage.setItem("access_token", data.tokens.access);
+  sessionStorage.setItem("refresh_token", data.tokens.refresh);
+  sessionStorage.setItem("user", JSON.stringify(data.user));
+}
