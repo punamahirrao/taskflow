@@ -12,7 +12,8 @@ type CreateProjectProps = {
 function CreateProject({ onClose, onCreated }: CreateProjectProps) {
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [expectedStartDate, setExpectedStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -35,7 +36,16 @@ function CreateProject({ onClose, onCreated }: CreateProjectProps) {
     setError("");
 
     try {
-      const newProject = await createProject({ name: projectName, description: projectDescription, due_date: dueDate || null });
+      if (expectedStartDate && endDate && endDate < expectedStartDate) {
+        setError("End date must be on or after the expected start date.");
+        return;
+      }
+      const newProject = await createProject({
+        name: projectName.trim(),
+        description: projectDescription.trim(),
+        expected_start_date: expectedStartDate || null,
+        end_date: endDate || null,
+      });
       setProjectName("");
       setProjectDescription("");
       await onCreated(newProject);
@@ -121,14 +131,28 @@ function CreateProject({ onClose, onCreated }: CreateProjectProps) {
                 htmlFor="project-due-date"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Due date (optional)
+                Expected start date (optional)
               </label>
               <input
-                id="project-due-date"
+                id="project-start-date"
                 type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
+                value={expectedStartDate}
+                onChange={(e) => setExpectedStartDate(e.target.value)}
                 className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="project-end-date" className="mb-1 block text-sm font-medium text-gray-700">
+                End date (optional)
+              </label>
+              <input
+                id="project-end-date"
+                type="date"
+                min={expectedStartDate || undefined}
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 p-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
             </div>
           </div>

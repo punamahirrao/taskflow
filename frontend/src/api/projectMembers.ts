@@ -7,3 +7,8 @@ export const updateProjectMember = (projectId: number | string, userId: number, 
   apiFetch<ProjectMember>(`/projects/${projectId}/members/${userId}/`, { method: "PATCH", body: JSON.stringify({ role }) });
 export const removeProjectMember = (projectId: number | string, userId: number) =>
   apiFetch<void>(`/projects/${projectId}/members/${userId}/`, { method: "DELETE" });
+export const scheduleProjectMemberRemoval = (projectId: number | string, userId: number, removalDate: string) =>
+  apiFetch<ProjectMember>(`/projects/${projectId}/members/${userId}/`, {
+    method: "DELETE",
+    body: JSON.stringify({ removal_date: removalDate }),
+  });

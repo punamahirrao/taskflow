@@ -2,6 +2,10 @@ from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from django.utils import timezone
 
 from accounts.models import User
 from accounts.serializers import (
@@ -9,6 +13,8 @@ from accounts.serializers import (
     UserListSerializer,
     UserUpdateSerializer,
 )
+from accounts.serializers.profile import ProfileSerializer
+from projects.models import ProjectMembership
 
 
 class UserListView(ListCreateAPIView):
@@ -77,3 +83,28 @@ class UserUpdateView(RetrieveUpdateDestroyAPIView):
 
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserTeamProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        user = get_object_or_404(User, pk=pk, is_active=True)
+        active_membership = Q(removal_date__isnull=True) | Q(
+            removal_date__gt=timezone.localdate()
+        )
+        can_view = request.user.is_site_admin or ProjectMembership.objects.filter(
+            active_membership,
+            user=request.user,
+            role__role_name__in=("owner", "admin"),
+            project__memberships__user=user,
+        ).filter(
+            Q(project__memberships__removal_date__isnull=True)
+            | Q(project__memberships__removal_date__gt=timezone.localdate())
+        ).exists()
+        if not can_view:
+            return Response(
+                {"detail": "Only project owners and admins can view this profile."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return Response(ProfileSerializer(user, context={"request": request}).data)

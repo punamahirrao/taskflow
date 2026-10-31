@@ -12,6 +12,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             "email",
+            "job_title",
             "password",
             "confirm_password",
         )
@@ -29,6 +30,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         user = User.objects.create_user(
             email=validated_data["email"],
+            job_title=validated_data["job_title"],
             password=validated_data["password"],
         )
 

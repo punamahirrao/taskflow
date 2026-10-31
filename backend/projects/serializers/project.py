@@ -1,4 +1,6 @@
 from django.db import transaction
+from django.db.models import Q
+from django.utils import timezone
 from rest_framework import serializers
 
 from projects.models import Project, ProjectMembership, ProjectRole
@@ -18,7 +20,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
-            "due_date",
+            "expected_start_date",
+            "end_date",
             "progress",
             "owner",
             "my_role",
@@ -33,7 +36,9 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         if project.pk not in cache:
             cache[project.pk] = list(
-                project.memberships.select_related("user", "role").order_by("id")
+                project.memberships.select_related("user", "role")
+                .filter(Q(removal_date__isnull=True) | Q(removal_date__gt=timezone.localdate()))
+                .order_by("id")
             )
 
         return cache[project.pk]
@@ -69,6 +74,13 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_is_default(self, project):
         request = self.context.get("request")
         return request is not None and request.user.default_project_id == project.pk
+
+    def validate(self, attrs):
+        start = attrs.get("expected_start_date", getattr(self.instance, "expected_start_date", None))
+        end = attrs.get("end_date", getattr(self.instance, "end_date", None))
+        if start and end and end < start:
+            raise serializers.ValidationError({"end_date": "End date must be on or after the expected start date."})
+        return attrs
 
     def get_members(self, project):
         return ProjectMemberSerializer(

@@ -6,13 +6,14 @@ import { AuthPromoSection } from "../sections/auth/AuthPromoSection";
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const { error, loading, submit } = useRegister();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (await submit(email, password, confirmPassword)) navigate("/login");
+    if (await submit(email, jobTitle, password, confirmPassword)) navigate("/login");
   }
 
   return <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
@@ -24,6 +25,7 @@ export default function RegisterPage() {
         <p className="mb-4 mt-1 text-center text-sm text-gray-600">Sign up to start planning and collaborating with your team.</p>
         <form className="space-y-3" onSubmit={handleSubmit}>
           <label className="flex flex-col text-sm font-bold text-gray-900">Email Address<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
+          <label className="flex flex-col text-sm font-bold text-gray-900">Job Title<input type="text" required maxLength={100} autoComplete="organization-title" value={jobTitle} onChange={(event) => setJobTitle(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
           <label className="flex flex-col text-sm font-bold text-gray-900">Password<input type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
           <label className="flex flex-col text-sm font-bold text-gray-900">Confirm Password<input type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
           {error && <p role="alert" className="text-sm text-red-600">{error}</p>}

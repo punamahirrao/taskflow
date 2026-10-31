@@ -1,7 +1,7 @@
 import { apiFetch } from "./client";
 import type { SiteUser, User } from "../entities/user";
 
-type CreateUserInput = Pick<User, "first_name" | "last_name" | "email"> & { password: string };
+type CreateUserInput = Pick<User, "first_name" | "last_name" | "email" | "job_title"> & { password: string };
 
 export const getUsers = () => apiFetch<SiteUser[]>("/accounts/users/");
 export const createUser = (input: CreateUserInput) => apiFetch<User>("/accounts/users/", {

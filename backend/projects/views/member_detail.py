@@ -8,6 +8,7 @@ from projects.access import can_change_member, get_role, visible_projects
 from projects.models import ProjectMembership, ProjectRole
 from projects.serializers.membership import (
     MemberInputSerializer,
+    MemberRemovalSerializer,
     ProjectMemberSerializer,
 )
 
@@ -51,6 +52,16 @@ class ProjectMemberDetailView(APIView):
             return Response(
                 {"detail": "You cannot remove this member."},
                 status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if "removal_date" in request.data:
+            serializer = MemberRemovalSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            membership.removal_date = serializer.validated_data["removal_date"]
+            membership.save(update_fields=["removal_date"])
+            return Response(
+                ProjectMemberSerializer(membership, context={"request": request}).data,
+                status=status.HTTP_200_OK,
             )
 
         membership.delete()

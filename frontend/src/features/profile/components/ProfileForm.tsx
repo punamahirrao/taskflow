@@ -12,6 +12,7 @@ export default function ProfileForm({ profile, onSaved }: Props) {
   const [lastName, setLastName] = useState(profile.last_name);
   const [jobTitle, setJobTitle] = useState(profile.job_title);
   const [department, setDepartment] = useState(profile.department);
+  const [aboutMe, setAboutMe] = useState(profile.about_me);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -35,7 +36,7 @@ export default function ProfileForm({ profile, onSaved }: Props) {
     try {
       const saved = await updateProfile({
         first_name: firstName.trim(), last_name: lastName.trim(),
-        job_title: jobTitle.trim(), department: department.trim(),
+        job_title: jobTitle.trim(), department: department.trim(), about_me: aboutMe.trim(),
       });
       onSaved(saved);
       if (changingPassword) {
@@ -57,9 +58,11 @@ export default function ProfileForm({ profile, onSaved }: Props) {
       <div><label htmlFor="last-name" className={label}>Last Name</label><input id="last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} maxLength={150} className={input} /></div>
     </div>
     <label htmlFor="job-title" className={label}>Job Title</label>
-    <input id="job-title" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} maxLength={100} className={input} />
+    <input id="job-title" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} maxLength={100} required className={input} />
     <label htmlFor="department" className={label}>Department</label>
     <input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} maxLength={100} className={input} />
+    <label htmlFor="about-me" className={label}>About Me</label>
+    <textarea id="about-me" value={aboutMe} onChange={(e) => setAboutMe(e.target.value)} maxLength={5000} rows={5} placeholder="Share your experience, tech stack, interests, and other professional details." className={`${input} resize-y`} />
     <label htmlFor="email" className={label}>Email Address</label>
     <input id="email" value={profile.email} readOnly aria-readonly="true" className={input} />
 

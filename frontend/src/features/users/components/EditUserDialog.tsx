@@ -15,6 +15,7 @@ function EditUser({ user, onUpdated, onClose }: EditUserProps) {
   const [firstName, setFirstName] = useState(user.first_name);
   const [lastName, setLastName] = useState(user.last_name);
   const [email, setEmail] = useState(user.email);
+  const [jobTitle, setJobTitle] = useState(user.job_title);
   const [isActive, setIsActive] = useState(user.is_active);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -40,6 +41,7 @@ function EditUser({ user, onUpdated, onClose }: EditUserProps) {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           email: email.trim(),
+          job_title: jobTitle.trim(),
           is_active: isActive,
       });
 
@@ -128,6 +130,11 @@ function EditUser({ user, onUpdated, onClose }: EditUserProps) {
               onChange={(event) => setEmail(event.target.value)}
               className={inputClass}
             />
+          </label>
+
+          <label className="block text-sm font-medium text-gray-700">
+            Job title
+            <input type="text" required maxLength={100} autoComplete="organization-title" value={jobTitle} onChange={(event) => setJobTitle(event.target.value)} className={inputClass} />
           </label>
 
           <label className="flex items-center gap-2 text-sm text-gray-700">

@@ -7,13 +7,17 @@ import { ProjectHeader } from "../sections/project-detail/ProjectHeader";
 import { ProjectOverview } from "../sections/project-detail/ProjectOverview";
 import { ProjectTabs, type ProjectTab } from "../sections/project-detail/ProjectTabs";
 import { TaskBoard } from "../sections/project-detail/TaskBoard";
+import { useProjectContext } from "../features/projects/context/useProjectContext";
+import { EditProjectDialog } from "../features/projects/components/EditProjectDialog";
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { project, loading, error: projectError } = useProject(id);
+  const { project, setProject, loading, error: projectError } = useProject(id);
+  const { reload } = useProjectContext();
   const { tasks, setTasks, loading: tasksLoading, error, moveTask } = useProjectTasks(id);
   const [tab, setTab] = useState<ProjectTab>("overview");
+  const [editingProject, setEditingProject] = useState(false);
 
   if (loading || tasksLoading) return <div role="status" className="flex min-h-screen items-center justify-center bg-gray-100">Loading project...</div>;
   if (!project) return <main className="min-h-screen bg-gray-100 p-6"><p role="alert" className="text-red-600">{projectError || "Project not found."}</p><button type="button" onClick={() => navigate("/dashboard")} className="mt-4 text-cyan-700 hover:underline">Back to Dashboard</button></main>;
@@ -22,7 +26,8 @@ export default function ProjectDetailPage() {
   const addTask = (task: Task) => setTasks((current) => [...current, task]);
 
   return <main className="min-w-0"><div className="min-h-screen bg-gray-100 p-2"><div className="mx-auto max-w-8xl">
-    <ProjectHeader project={project} completed={completed} total={tasks.length} />
+    <ProjectHeader project={project} completed={completed} total={tasks.length} onEdit={() => setEditingProject(true)} />
+    {editingProject && <EditProjectDialog project={project} onClose={() => setEditingProject(false)} onUpdated={(updated) => { setProject(updated); setEditingProject(false); void reload(); }} />}
     <ProjectTabs active={tab} onChange={setTab} />
     {tab === "overview" && <ProjectOverview project={project} tasks={tasks} />}
     {(tab === "timeline" || tab === "files") && <div className="mt-2 rounded-xl border border-gray-200 bg-white p-10 text-center text-gray-500 shadow-sm">Coming soon.</div>}

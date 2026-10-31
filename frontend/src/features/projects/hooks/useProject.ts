@@ -20,5 +20,5 @@ export function useProject(id: string | undefined) {
     return () => { active = false; };
   }, [id]);
 
-  return { project, loading, error };
+  return { project, setProject, loading, error };
 }

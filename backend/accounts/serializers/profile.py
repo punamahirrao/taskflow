@@ -6,6 +6,8 @@ from rest_framework import serializers
 
 from accounts.models import User
 
+ABOUT_ME_MAX_LENGTH = 5000
+
 IMAGE_SIGNATURES = {
     "jpg": (b"\xff\xd8\xff",),
     "jpeg": (b"\xff\xd8\xff",),
@@ -17,6 +19,8 @@ IMAGE_SIGNATURES = {
 
 class ProfileSerializer(serializers.ModelSerializer):
     photo_url = serializers.SerializerMethodField()
+    job_title = serializers.CharField(max_length=100, allow_blank=False, required=True)
+    about_me = serializers.CharField(max_length=ABOUT_ME_MAX_LENGTH, allow_blank=True, required=False)
 
     class Meta:
         model = User
@@ -27,9 +31,18 @@ class ProfileSerializer(serializers.ModelSerializer):
             "email",
             "job_title",
             "department",
+            "about_me",
             "photo_url",
         )
         read_only_fields = ("id", "email", "photo_url")
+
+    def validate(self, attrs):
+        job_title = attrs.get("job_title", getattr(self.instance, "job_title", ""))
+        if not job_title.strip():
+            raise serializers.ValidationError({"job_title": "Job title is required."})
+        if "job_title" in attrs:
+            attrs["job_title"] = job_title.strip()
+        return attrs
 
     def get_photo_url(self, user):
         if not user.profile_photo:

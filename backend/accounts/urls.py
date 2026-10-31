@@ -15,6 +15,7 @@ from accounts.views import (
     MicrosoftLoginView,
     UserListView,
     UserUpdateView,
+    UserTeamProfileView,
 )
 
 urlpatterns = [
@@ -29,5 +30,6 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("users/", UserListView.as_view(), name="user_list"),
+    path("users/<int:pk>/team-profile/", UserTeamProfileView.as_view(), name="team_member_profile"),
     path("users/<int:pk>/", UserUpdateView.as_view(), name="user_update"),
 ]

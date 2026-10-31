@@ -26,6 +26,7 @@ class RegisterView(APIView):
                     "user": {
                         "id": user.id,
                         "email": user.email,
+                        "job_title": user.job_title,
                     },
                 },
                 status=status.HTTP_201_CREATED,
@@ -50,6 +51,7 @@ class LoginView(APIView):
                     "user": {
                         "id": user.id,
                         "email": user.email,
+                        "job_title": user.job_title,
                     },
                     "tokens": {
                         "refresh": str(refresh),
@@ -102,7 +104,7 @@ class GoogleLoginView(APIView):
         return Response(
             {
                 "message": "User logged in successfully.",
-                "user": {"id": user.id, "email": user.email},
+                "user": {"id": user.id, "email": user.email, "job_title": user.job_title},
                 "tokens": {"refresh": str(refresh), "access": str(refresh.access_token)},
             },
             status=status.HTTP_200_OK,
@@ -159,7 +161,7 @@ class MicrosoftLoginView(APIView):
         return Response(
             {
                 "message": "User logged in successfully.",
-                "user": {"id": user.id, "email": user.email},
+                "user": {"id": user.id, "email": user.email, "job_title": user.job_title},
                 "tokens": {"refresh": str(refresh), "access": str(refresh.access_token)},
             },
             status=status.HTTP_200_OK,

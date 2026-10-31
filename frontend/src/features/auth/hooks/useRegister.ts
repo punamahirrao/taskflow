@@ -5,9 +5,9 @@ export function useRegister() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function submit(email: string, password: string, confirmPassword: string) {
+  async function submit(email: string, jobTitle: string, password: string, confirmPassword: string) {
     setError("");
-    if (!email || !password || !confirmPassword) {
+    if (!email || !jobTitle.trim() || !password || !confirmPassword) {
       setError("All fields are required.");
       return false;
     }
@@ -17,7 +17,7 @@ export function useRegister() {
     }
     setLoading(true);
     try {
-      await register(email, password, confirmPassword);
+      await register(email, jobTitle.trim(), password, confirmPassword);
       return true;
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Registration failed.");

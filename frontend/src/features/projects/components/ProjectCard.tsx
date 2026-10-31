@@ -10,14 +10,14 @@ type ProjectCardProps = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function timeLeft(dueDate: string | null | undefined) {
-  if (!dueDate) return { label: "No due date", urgent: false };
-  const [year, month, day] = dueDate.split("-").map(Number);
+function timeLeft(endDate: string | null | undefined) {
+  if (!endDate) return { label: "No end date", urgent: false };
+  const [year, month, day] = endDate.split("-").map(Number);
   const today = new Date();
   const days = Math.round((new Date(year, month - 1, day).getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) / DAY_MS);
-  if (days < 0) return { label: `${-days} ${-days === 1 ? "day" : "days"} overdue`, urgent: true };
-  if (days === 0) return { label: "Due today", urgent: true };
-  if (days < 7) return { label: `${days} ${days === 1 ? "day" : "days"} left`, urgent: true };
+  if (days < 0) return { label: `${-days} ${-days === 1 ? "day" : "days"} past end`, urgent: true };
+  if (days === 0) return { label: "Ends today", urgent: true };
+  if (days < 7) return { label: `${days} ${days === 1 ? "day" : "days"} until end`, urgent: true };
   const weeks = Math.round(days / 7);
   return { label: `${weeks} ${weeks === 1 ? "week" : "weeks"} left`, urgent: false };
 }
@@ -25,7 +25,7 @@ function timeLeft(dueDate: string | null | undefined) {
 function ProjectCard({ project, onOpen, onToggleDefault }: ProjectCardProps) {
   const isDefault = Boolean(project.is_default);
   const progress = project.progress ?? 0;
-  const due = timeLeft(project.due_date);
+  const due = timeLeft(project.end_date);
   const initial = project.name.trim().charAt(0).toUpperCase() || "P";
 
   return (

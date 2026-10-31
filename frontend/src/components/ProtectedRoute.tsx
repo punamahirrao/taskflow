@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { refreshAccessToken } from "../api/client";
+import { getStoredUser } from "../store/auth";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
 }
 
 function ProtectedRoute({ children }: ProtectedRouteProps) {
+    const { pathname } = useLocation();
     const [isChecking, setIsChecking] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -43,6 +45,11 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
+    }
+
+    const user = getStoredUser<{ job_title?: string }>();
+    if (!user?.job_title?.trim() && pathname !== "/profile") {
+        return <Navigate to="/profile" replace />;
     }
 
     return children;

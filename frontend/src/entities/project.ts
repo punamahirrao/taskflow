@@ -2,7 +2,8 @@ export type Project = {
   id: number;
   name: string;
   description: string;
-  due_date?: string | null;
+  expected_start_date?: string | null;
+  end_date?: string | null;
   progress?: number;
   owner: number;
   my_role?: string | null;
@@ -15,8 +16,13 @@ export type ProjectMember = {
   first_name: string;
   last_name: string;
   email: string;
+  job_title: string;
   role: string;
   photo_url?: string | null;
+  removal_date?: string | null;
 };
 
-export type ProjectCreateInput = Pick<Project, "name" | "description"> & { due_date?: string | null };
+export type ProjectCreateInput = Pick<Project, "name" | "description"> & {
+  expected_start_date?: string | null;
+  end_date?: string | null;
+};

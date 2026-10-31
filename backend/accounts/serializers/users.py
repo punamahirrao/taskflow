@@ -16,6 +16,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "job_title",
             "is_staff",
             "role",
             "is_active",
@@ -36,6 +37,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "job_title",
             "password",
         )
 
@@ -44,6 +46,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             email=data["email"],
             first_name=data.get("first_name", ""),
             last_name=data.get("last_name", ""),
+            job_title=data.get("job_title", ""),
         )
 
         try:
@@ -70,5 +73,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "job_title",
             "is_active",
         )

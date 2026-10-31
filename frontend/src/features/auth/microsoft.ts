@@ -5,7 +5,7 @@ const clientId = import.meta.env.VITE_MICROSOFT_CLIENT_ID;
 
 export const isMicrosoftConfigured = Boolean(clientId);
 
-export async function signInWithMicrosoft(): Promise<void> {
+export async function signInWithMicrosoft(): Promise<boolean> {
   if (!clientId) throw new Error("Microsoft sign-in is not configured.");
 
   const application = new PublicClientApplication({
@@ -19,5 +19,5 @@ export async function signInWithMicrosoft(): Promise<void> {
 
   const result = await application.loginPopup({ scopes: ["openid", "profile", "email"] });
   if (!result.idToken) throw new Error("Microsoft did not return an ID token.");
-  await microsoftLogin(result.idToken);
+  return microsoftLogin(result.idToken);
 }

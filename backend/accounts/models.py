@@ -9,8 +9,9 @@ class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
 
-    job_title = models.CharField(max_length=100, blank=True)
+    job_title = models.CharField(max_length=100)
     department = models.CharField(max_length=100, blank=True)
+    about_me = models.TextField(blank=True)
     profile_photo = models.FileField(
         storage=profile_pics_storage, blank=True, null=True
     )

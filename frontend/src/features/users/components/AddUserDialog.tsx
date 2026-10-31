@@ -14,6 +14,7 @@ function AddUser({ onClose, onCreated }: AddUserProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -39,6 +40,7 @@ function AddUser({ onClose, onCreated }: AddUserProps) {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           email: email.trim(),
+          job_title: jobTitle.trim(),
           password,
       });
 
@@ -127,6 +129,11 @@ function AddUser({ onClose, onCreated }: AddUserProps) {
               onChange={(event) => setEmail(event.target.value)}
               className={inputClass}
             />
+          </label>
+
+          <label className="block text-sm font-medium text-gray-700">
+            Job title
+            <input type="text" required maxLength={100} autoComplete="organization-title" value={jobTitle} onChange={(event) => setJobTitle(event.target.value)} className={inputClass} />
           </label>
 
           <label className="block text-sm font-medium text-gray-700">

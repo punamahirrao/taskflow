@@ -13,8 +13,8 @@ export function useLogin() {
     }
     setLoading(true);
     try {
-      await login(email, password);
-      return true;
+      const needsProfileCompletion = await login(email, password);
+      return needsProfileCompletion ? "/profile" : "/dashboard";
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Login failed.");
       return false;

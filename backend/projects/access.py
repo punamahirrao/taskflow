@@ -1,3 +1,6 @@
+from django.db.models import Q
+from django.utils import timezone
+
 from .models import Project, ProjectMembership, ProjectRole
 
 OWNER = ProjectRole.OWNER
@@ -19,15 +22,21 @@ ASSIGNABLE_ROLES = {
 def visible_projects(user):
     if user.is_site_admin:
         return Project.objects.all()
-    return Project.objects.filter(memberships__user=user).distinct()
+    active_membership = Q(memberships__removal_date__isnull=True) | Q(
+        memberships__removal_date__gt=timezone.localdate()
+    )
+    return Project.objects.filter(active_membership, memberships__user=user).distinct()
 
 
 def get_role(user, project):
     # Site admins act as owner on every project.
     if user.is_site_admin:
         return OWNER
+    active_membership = Q(removal_date__isnull=True) | Q(
+        removal_date__gt=timezone.localdate()
+    )
     return (
-        ProjectMembership.objects.filter(project=project, user=user)
+        ProjectMembership.objects.filter(active_membership, project=project, user=user)
         .values_list("role__role_name", flat=True)
         .first()
     )

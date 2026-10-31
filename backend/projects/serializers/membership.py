@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.urls import reverse
 from rest_framework import serializers
 
@@ -5,6 +6,7 @@ from projects.models import ProjectMembership, ProjectRole
 
 
 class ProjectMemberSerializer(serializers.ModelSerializer):
+    job_title = serializers.CharField(source="user.job_title", read_only=True)
     id = serializers.IntegerField(source="user.id", read_only=True)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
@@ -14,7 +16,7 @@ class ProjectMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectMembership
-        fields = ("id", "first_name", "last_name", "email", "role", "photo_url")
+        fields = ("id", "first_name", "last_name", "email", "job_title", "role", "photo_url", "removal_date")
 
     def get_photo_url(self, membership):
         photo = membership.user.profile_photo
@@ -34,3 +36,12 @@ class MemberInputSerializer(serializers.Serializer):
             ProjectRole.VIEWER,
         ]
     )
+
+
+class MemberRemovalSerializer(serializers.Serializer):
+    removal_date = serializers.DateField()
+
+    def validate_removal_date(self, value):
+        if value <= timezone.localdate():
+            raise serializers.ValidationError("Choose a future date or remove the member now.")
+        return value

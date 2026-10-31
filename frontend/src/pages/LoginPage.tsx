@@ -17,14 +17,15 @@ export default function LoginPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (await submit(email, password)) navigate("/dashboard");
+    const destination = await submit(email, password);
+    if (destination) navigate(destination);
   }
   
   async function handleGoogle(response: CredentialResponse) {
     try {
       if (!response.credential) throw new Error("Google did not return a sign-in credential.");
-      await googleLogin(response.credential);
-      navigate("/dashboard");
+      const needsProfileCompletion = await googleLogin(response.credential);
+      navigate(needsProfileCompletion ? "/profile" : "/dashboard");
     } catch (cause) {
       setSocialError(cause instanceof Error ? cause.message : "Google sign-in failed. Please try again.");
     }
@@ -33,8 +34,8 @@ export default function LoginPage() {
   async function handleMicrosoft() {
     setSocialError("");
     try {
-      await signInWithMicrosoft();
-      navigate("/dashboard");
+      const needsProfileCompletion = await signInWithMicrosoft();
+      navigate(needsProfileCompletion ? "/profile" : "/dashboard");
     } catch (cause) {
       setSocialError(cause instanceof Error ? cause.message : "Microsoft sign-in failed. Please try again.");
     }

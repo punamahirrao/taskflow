@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
 
 from projects.access import (
     EDIT_PROJECT_ROLES,
@@ -25,7 +27,9 @@ class ProjectMemberListView(APIView):
 
     def get(self, request, pk):
         project = get_object_or_404(visible_projects(request.user), pk=pk)
-        memberships = project.memberships.select_related("user", "role").order_by("id")
+        memberships = project.memberships.select_related("user", "role").filter(
+            Q(removal_date__isnull=True) | Q(removal_date__gt=timezone.localdate())
+        ).order_by("id")
 
         return Response(ProjectMemberSerializer(memberships, many=True, context={"request": request}).data)
 
@@ -64,11 +68,15 @@ class ProjectMemberListView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if ProjectMembership.objects.filter(project=project, user=user).exists():
-            return Response(
-                {"detail": "This user is already on the project."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        existing = ProjectMembership.objects.filter(project=project, user=user).first()
+        if existing:
+            if existing.removal_date and existing.removal_date <= timezone.localdate():
+                existing.delete()
+            else:
+                return Response(
+                    {"detail": "This user is already on the project."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         membership = ProjectMembership.objects.create(
             project=project,
