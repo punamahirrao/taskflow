@@ -118,15 +118,10 @@ function ProjectSidebar() {
               className="flex w-full cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-400"
             >
             </button>
-            <button
-              type="button"
-              disabled
-              title="Administration settings are not available yet"
-              className="flex w-full cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-400"
-            >
+            <NavLink to="/settings" className={({ isActive }) => menuClass(isActive)}>
               <Settings size={16} aria-hidden="true" />
               Settings
-            </button>
+            </NavLink>
           </div>
         </div>
       </nav>

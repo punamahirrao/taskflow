@@ -11,6 +11,7 @@ const TITLES: [string, string][] = [
   ["/boards", "Boards"],
   ["/portfolio", "Portfolio"],
   ["/documents", "Documents"],
+  ["/settings", "Settings"],
   ["/project/", "Project"],
   ["/profile", "My Profile"],
   ["/team", "Team"],

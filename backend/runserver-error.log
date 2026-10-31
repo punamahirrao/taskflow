@@ -71,3 +71,220 @@ Unauthorized: /documents/
 [31/Oct/2026 22:08:36] "GET /accounts/profile-photos/6-a70e04ccf96a42d78bd108b4364c961b.png HTTP/1.1" 200 1759060
 [31/Oct/2026 22:08:38] "GET /documents/ HTTP/1.1" 200 244
 [31/Oct/2026 22:08:38] "GET /documents/ HTTP/1.1" 200 244
+Unauthorized: /accounts/me/
+Unauthorized: /projects/
+[31/Oct/2026 22:16:36] "GET /accounts/me/ HTTP/1.1" 401 172
+Unauthorized: /documents/
+[31/Oct/2026 22:16:36] "GET /projects/ HTTP/1.1" 401 172
+Unauthorized: /accounts/me/
+[31/Oct/2026 22:16:36] "GET /documents/ HTTP/1.1" 401 172
+Unauthorized: /projects/
+Unauthorized: /documents/
+[31/Oct/2026 22:16:36] "GET /accounts/me/ HTTP/1.1" 401 172
+[31/Oct/2026 22:16:36] "GET /projects/ HTTP/1.1" 401 172
+[31/Oct/2026 22:16:36] "GET /documents/ HTTP/1.1" 401 172
+[31/Oct/2026 22:16:36] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:16:36] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:16:36] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:16:36] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:16:36] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:16:36] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:16:36] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:16:36] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:16:36] "GET /documents/ HTTP/1.1" 200 244
+[31/Oct/2026 22:16:36] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:16:36] "GET /documents/ HTTP/1.1" 200 244
+[31/Oct/2026 22:16:36] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:17:22] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:17:22] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:17:22] "GET /documents/ HTTP/1.1" 200 244
+[31/Oct/2026 22:17:22] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:17:22] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:17:22] "GET /documents/ HTTP/1.1" 200 244
+[31/Oct/2026 22:21:02] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:21:02] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:21:02] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:21:02] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:21:02] "GET /accounts/profile-photos/11-94aedc6b333748a3a91d6146a28ef790.png HTTP/1.1" 200 1678208
+Unauthorized: /tasks/
+[31/Oct/2026 22:22:47] "GET /tasks/?project_id=12 HTTP/1.1" 401 172
+Unauthorized: /tasks/
+[31/Oct/2026 22:22:47] "GET /tasks/?project_id=12 HTTP/1.1" 401 172
+[31/Oct/2026 22:22:47] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:22:47] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:22:47] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:22:47] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:22:51] "GET /accounts/profile-photos/6-a70e04ccf96a42d78bd108b4364c961b.png HTTP/1.1" 200 1759060
+[31/Oct/2026 22:22:52] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:22:52] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:22:52] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:22:52] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:28:57] "OPTIONS /tasks/?project_id=12 HTTP/1.1" 200 0
+Unauthorized: /accounts/me/
+Unauthorized: /projects/
+[31/Oct/2026 22:28:57] "GET /accounts/me/ HTTP/1.1" 401 172
+Unauthorized: /tasks/
+[31/Oct/2026 22:28:57] "GET /projects/ HTTP/1.1" 401 172
+Unauthorized: /accounts/me/
+[31/Oct/2026 22:28:57] "GET /tasks/?project_id=12 HTTP/1.1" 401 172
+Unauthorized: /projects/
+[31/Oct/2026 22:28:57] "GET /accounts/me/ HTTP/1.1" 401 172
+Unauthorized: /tasks/
+[31/Oct/2026 22:28:57] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:28:57] "GET /projects/ HTTP/1.1" 401 172
+Unauthorized: /projects/
+[31/Oct/2026 22:28:57] "GET /tasks/?project_id=12 HTTP/1.1" 401 172
+[31/Oct/2026 22:28:57] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:28:57] "GET /projects/ HTTP/1.1" 401 172
+[31/Oct/2026 22:28:57] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+Unauthorized: /projects/
+[31/Oct/2026 22:28:57] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:28:57] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:28:57] "GET /projects/ HTTP/1.1" 401 172
+[31/Oct/2026 22:28:57] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:28:57] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:28:57] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:28:57] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:28:57] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:28:57] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:28:57] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:28:57] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:28:57] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:28:57] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:28:57] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:28:57] "GET /accounts/profile-photos/11-94aedc6b333748a3a91d6146a28ef790.png HTTP/1.1" 200 1678208
+[31/Oct/2026 22:31:32] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:31:32] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:31:32] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:31:32] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:31:32] "GET /accounts/profile-photos/11-94aedc6b333748a3a91d6146a28ef790.png HTTP/1.1" 200 1678208
+[31/Oct/2026 22:31:34] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:31:34] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:31:34] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:31:34] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:31:34] "GET /accounts/profile-photos/11-94aedc6b333748a3a91d6146a28ef790.png HTTP/1.1" 200 1678208
+[31/Oct/2026 22:31:37] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:31:38] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:31:39] "GET /accounts/profile-photos/6-a70e04ccf96a42d78bd108b4364c961b.png HTTP/1.1" 200 1759060
+[31/Oct/2026 22:31:41] "GET /tasks/sprints/?project_id=12 HTTP/1.1" 200 244
+[31/Oct/2026 22:31:41] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:31:41] "GET /tasks/sprints/?project_id=12 HTTP/1.1" 200 244
+[31/Oct/2026 22:31:43] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:31:43] "GET /tasks/projects/12/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:31:43] "GET /tasks/projects/11/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:31:43] "GET /tasks/ HTTP/1.1" 200 1682
+[31/Oct/2026 22:31:43] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:31:43] "GET /tasks/projects/11/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:31:43] "GET /tasks/projects/12/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:31:45] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:31:45] "GET /tasks/ HTTP/1.1" 200 1682
+[31/Oct/2026 22:31:45] "GET /tasks/sprints/ HTTP/1.1" 200 244
+Unauthorized: /accounts/me/
+Unauthorized: /tasks/sprints/
+[31/Oct/2026 22:37:21] "GET /accounts/me/ HTTP/1.1" 401 172
+Unauthorized: /projects/
+[31/Oct/2026 22:37:21] "GET /tasks/sprints/ HTTP/1.1" 401 172
+Unauthorized: /tasks/
+[31/Oct/2026 22:37:21] "GET /projects/ HTTP/1.1" 401 172
+Unauthorized: /accounts/me/
+[31/Oct/2026 22:37:21] "GET /tasks/ HTTP/1.1" 401 172
+Unauthorized: /tasks/sprints/
+[31/Oct/2026 22:37:21] "GET /accounts/me/ HTTP/1.1" 401 172
+Unauthorized: /projects/
+[31/Oct/2026 22:37:21] "GET /tasks/sprints/ HTTP/1.1" 401 172
+[31/Oct/2026 22:37:21] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:37:21] "GET /projects/ HTTP/1.1" 401 172
+[31/Oct/2026 22:37:21] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:37:21] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:37:21] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:37:21] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:37:21] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:37:21] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:37:21] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:37:21] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:37:21] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:37:21] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:37:21] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:37:21] "GET /tasks/ HTTP/1.1" 200 1682
+[31/Oct/2026 22:37:21] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:37:21] "GET /accounts/profile-photos/11-94aedc6b333748a3a91d6146a28ef790.png HTTP/1.1" 200 1678208
+[31/Oct/2026 22:40:57] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:40:57] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:40:57] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:40:57] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:40:57] "GET /accounts/profile-photos/11-94aedc6b333748a3a91d6146a28ef790.png HTTP/1.1" 200 1678208
+[31/Oct/2026 22:41:00] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:41:00] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:41:02] "GET /accounts/profile-photos/6-a70e04ccf96a42d78bd108b4364c961b.png HTTP/1.1" 200 1759060
+[31/Oct/2026 22:41:05] "GET /tasks/sprints/?project_id=12 HTTP/1.1" 200 244
+[31/Oct/2026 22:41:05] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:41:05] "GET /tasks/sprints/?project_id=12 HTTP/1.1" 200 244
+[31/Oct/2026 22:41:07] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:41:07] "GET /tasks/projects/12/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:41:07] "GET /tasks/projects/11/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:41:07] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:41:07] "GET /tasks/ HTTP/1.1" 200 1682
+[31/Oct/2026 22:41:07] "GET /tasks/projects/11/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:41:07] "GET /tasks/projects/12/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:41:09] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:41:09] "GET /tasks/ HTTP/1.1" 200 1682
+[31/Oct/2026 22:41:09] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:41:10] "GET /documents/ HTTP/1.1" 200 244
+[31/Oct/2026 22:41:10] "GET /documents/ HTTP/1.1" 200 244
+[31/Oct/2026 22:41:12] "GET /accounts/users/ HTTP/1.1" 200 1814
+[31/Oct/2026 22:41:12] "GET /accounts/users/ HTTP/1.1" 200 1814
+[31/Oct/2026 22:41:13] "GET /accounts/profile-photos/6-a70e04ccf96a42d78bd108b4364c961b.png HTTP/1.1" 200 1759060
+[31/Oct/2026 22:41:22] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:41:22] "GET /accounts/me/ HTTP/1.1" 200 246
+Unauthorized: /accounts/me/
+Unauthorized: /projects/
+[31/Oct/2026 22:43:23] "GET /accounts/me/ HTTP/1.1" 401 172
+[31/Oct/2026 22:43:23] "GET /projects/ HTTP/1.1" 401 172
+Unauthorized: /accounts/me/
+Unauthorized: /projects/
+[31/Oct/2026 22:43:23] "GET /accounts/me/ HTTP/1.1" 401 172
+[31/Oct/2026 22:43:23] "GET /projects/ HTTP/1.1" 401 172
+Unauthorized: /accounts/me/
+[31/Oct/2026 22:43:23] "GET /accounts/me/ HTTP/1.1" 401 172
+Unauthorized: /accounts/me/
+[31/Oct/2026 22:43:23] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:43:23] "GET /accounts/me/ HTTP/1.1" 401 172
+[31/Oct/2026 22:43:23] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:43:23] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:43:23] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:43:23] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:43:23] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:43:23] "POST /accounts/token/refresh/ HTTP/1.1" 200 245
+[31/Oct/2026 22:43:23] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:43:23] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:43:23] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:43:23] "GET /accounts/me/ HTTP/1.1" 200 246
+[31/Oct/2026 22:43:23] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:43:23] "GET /accounts/profile-photos/11-94aedc6b333748a3a91d6146a28ef790.png HTTP/1.1" 200 1678208
+[31/Oct/2026 22:43:31] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:43:31] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:43:36] "GET /accounts/profile-photos/6-a70e04ccf96a42d78bd108b4364c961b.png HTTP/1.1" 200 1759060
+[31/Oct/2026 22:43:38] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:43:38] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:43:38] "GET /projects/ HTTP/1.1" 200 1276
+[31/Oct/2026 22:43:38] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:43:41] "GET /tasks/sprints/?project_id=12 HTTP/1.1" 200 244
+[31/Oct/2026 22:43:41] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:43:41] "GET /tasks/sprints/?project_id=12 HTTP/1.1" 200 244
+[31/Oct/2026 22:43:52] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:43:52] "GET /tasks/projects/12/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:43:52] "GET /tasks/projects/11/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:43:52] "GET /tasks/ HTTP/1.1" 200 1682
+[31/Oct/2026 22:43:52] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:43:52] "GET /tasks/projects/11/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:43:52] "GET /tasks/projects/12/columns/ HTTP/1.1" 200 361
+[31/Oct/2026 22:43:54] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:43:54] "GET /tasks/ HTTP/1.1" 200 1682
+[31/Oct/2026 22:43:54] "GET /tasks/sprints/ HTTP/1.1" 200 244
+[31/Oct/2026 22:43:56] "GET /documents/ HTTP/1.1" 200 244
+[31/Oct/2026 22:43:56] "GET /documents/ HTTP/1.1" 200 244
+[31/Oct/2026 22:43:58] "GET /accounts/users/ HTTP/1.1" 200 1814
+[31/Oct/2026 22:43:58] "GET /accounts/users/ HTTP/1.1" 200 1814
+[31/Oct/2026 22:43:58] "GET /accounts/profile-photos/6-a70e04ccf96a42d78bd108b4364c961b.png HTTP/1.1" 200 1759060
+[31/Oct/2026 22:44:13] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682
+[31/Oct/2026 22:44:13] "GET /tasks/?project_id=12 HTTP/1.1" 200 1682

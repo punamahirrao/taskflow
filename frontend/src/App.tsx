@@ -16,9 +16,11 @@ import BacklogPage from "./pages/BacklogPage";
 import BoardsPage from "./pages/BoardsPage";
 import PortfolioPage from "./pages/PortfolioPage";
 import DocumentsPage from "./pages/DocumentsPage";
+import SettingsPage from "./pages/SettingsPage";
+import { ThemeProvider } from "./features/settings/context/ThemeProvider";
 
 function App() {
-  return <BrowserRouter>
+  return <BrowserRouter><ThemeProvider>
     <Routes>
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
@@ -29,6 +31,7 @@ function App() {
         <Route path="/boards" element={<BoardsPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/team" element={<TeamPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
@@ -39,7 +42,7 @@ function App() {
       </Route>
       <Route path="*" element={<Navigate to="/register" replace />} />
     </Routes>
-  </BrowserRouter>;
+  </ThemeProvider></BrowserRouter>;
 }
 
 export default App;
