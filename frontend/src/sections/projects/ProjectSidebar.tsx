@@ -1,10 +1,13 @@
 import {
   BarChart3,
+  BriefcaseBusiness,
   CalendarDays,
+  Columns3,
   Users,
   ChevronDown,
   FolderKanban,
   LayoutDashboard,
+  ListTodo,
   Settings,
   ShieldCheck,
   UserRound,
@@ -47,6 +50,18 @@ function ProjectSidebar() {
         >
           <FolderKanban size={18} aria-hidden="true" />
           Projects
+        </NavLink>
+        <NavLink to="/backlog" className={({ isActive }) => menuClass(isActive)}>
+          <ListTodo size={18} aria-hidden="true" />
+          Backlog
+        </NavLink>
+        <NavLink to="/boards" className={({ isActive }) => menuClass(isActive)}>
+          <Columns3 size={18} aria-hidden="true" />
+          Boards
+        </NavLink>
+        <NavLink to="/portfolio" className={({ isActive }) => menuClass(isActive)}>
+          <BriefcaseBusiness size={18} aria-hidden="true" />
+          Portfolio
         </NavLink>
         <NavLink to="/team" className={({ isActive }) => menuClass(isActive)}>
           <Users size={18} aria-hidden="true" />

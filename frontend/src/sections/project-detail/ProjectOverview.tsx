@@ -9,7 +9,7 @@ const milestones: { status: TaskStatus; title: string; iconClass: string; barCla
   { status: "in_progress", title: "In progress", iconClass: "border-blue-600 border-r-transparent", barClass: "bg-blue-600" },
   { status: "done", title: "Done", iconClass: "border-green-500 bg-green-500 text-white", barClass: "bg-green-500" },
 ];
-const statusText: Record<TaskStatus, string> = { todo: "in Todo", in_progress: "in progress", done: "done" };
+const statusText: Partial<Record<TaskStatus, string>> = { backlog: "in backlog", todo: "in Todo", in_progress: "in progress", review: "in review", done: "done" };
 
 export function ProjectOverview({ project, tasks }: { project: Project; tasks: Task[] }) {
   const count = (status: TaskStatus) => tasks.filter((task) => task.status === status).length;
@@ -35,7 +35,7 @@ export function ProjectOverview({ project, tasks }: { project: Project; tasks: T
       <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"><h2 className="text-base font-bold text-slate-900">Recent updates</h2>
         {recentTasks.length === 0 ? <p className="mt-3 text-sm text-gray-500">No activity yet.</p> : <ul className="mt-4 space-y-4">{recentTasks.map((task) => {
           const author = project.members?.find((member) => member.id === task.created_by);
-          return <li key={task.id} className="flex gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700">{author ? memberInitials(author) : "?"}</span><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><p className="truncate text-sm font-semibold text-slate-900">{author ? memberName(author) : "Someone"}</p>{task.updated_at && <time className="shrink-0 text-xs text-gray-500">{timeAgo(task.updated_at)}</time>}</div><p className="text-sm text-gray-600">{task.title} is {statusText[task.status]}.</p></div></li>;
+          return <li key={task.id} className="flex gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700">{author ? memberInitials(author) : "?"}</span><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><p className="truncate text-sm font-semibold text-slate-900">{author ? memberName(author) : "Someone"}</p>{task.updated_at && <time className="shrink-0 text-xs text-gray-500">{timeAgo(task.updated_at)}</time>}</div><p className="text-sm text-gray-600">{task.title} is {statusText[task.status] ?? task.status.replaceAll("_", " ")}.</p></div></li>;
         })}</ul>}
       </section>
     </div>

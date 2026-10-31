@@ -1,4 +1,7 @@
-export type TaskStatus = "todo" | "in_progress" | "done";
+export type TaskStatus = "backlog" | "todo" | "in_progress" | "review" | "done" | (string & {});
+export type WorkType = "task" | "idea" | "enhancement" | "bug" | "spike" | "research" | "epic" | "initiative";
+export type TaskPriority = "urgent" | "high" | "medium" | "low";
+export type DoneCheck = { key: string; label: string; done: boolean };
 
 export type Task = {
   id: number;
@@ -6,6 +9,33 @@ export type Task = {
   description: string;
   status: TaskStatus;
   project: number;
+  project_name?: string;
   created_by?: number;
+  created_at?: string;
   updated_at?: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  work_type: WorkType;
+  priority: TaskPriority;
+  estimate: string;
+  tags: string[];
+  rank: number;
+  due_date?: string | null;
+  blocked: boolean;
+  blocked_since: string | null;
+  escalated: boolean;
+  blocked_by: number[];
+  definition_done: DoneCheck[];
+  parent: number | null;
+  parent_title: string | null;
+  ready_for_sprint: boolean;
+  assignee: number | null;
+  assignee_name: string;
+  assignee_photo_url: string | null;
+  sprint: number | null;
+  sprint_name: string | null;
+  sprint_goal: string | null;
 };
+
+export type BoardColumn = { id: number; name: string; key: string; position: number; wip_limit: number | null };
+export type Sprint = { id: number; project: number; name: string; start_date: string | null; end_date: string | null; is_active: boolean; is_closed: boolean; goal: string; capacity_points: number | null; velocity_points: number | null; outcome_summary: string; retrospective: string; created_at: string };

@@ -12,6 +12,9 @@ import TeamPage from "./pages/TeamPage";
 import RegisterPage from "./pages/RegisterPage";
 import ShareProjectPage from "./pages/ShareProjectPage";
 import UsersPage from "./pages/UsersPage";
+import BacklogPage from "./pages/BacklogPage";
+import BoardsPage from "./pages/BoardsPage";
+import PortfolioPage from "./pages/PortfolioPage";
 
 function App() {
   return <BrowserRouter>
@@ -21,6 +24,9 @@ function App() {
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/backlog" element={<BacklogPage />} />
+        <Route path="/boards" element={<BoardsPage />} />
+        <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/team" element={<TeamPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
