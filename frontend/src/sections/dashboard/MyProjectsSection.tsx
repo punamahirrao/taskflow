@@ -1,13 +1,15 @@
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { sampleProjects } from "../../features/dashboard/data/sampleDashboard";
+import { useTranslation } from "../../shared/i18n/hooks/useTranslation";
 
 export function MyProjectsSection() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   return <section aria-labelledby="my-projects-title" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
     <div className="mb-4 flex items-center justify-between gap-3">
-      <h2 id="my-projects-title" className="text-lg font-semibold tracking-tight text-slate-900">My projects</h2>
-      <button type="button" onClick={() => navigate("/projects")} className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-800"><span>View all projects</span><ArrowRight size={16} aria-hidden="true" /></button>
+      <h2 id="my-projects-title" className="text-lg font-semibold tracking-tight text-slate-900">{t("app.projects")}</h2>
+      <button type="button" onClick={() => navigate("/projects")} className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-800"><span>{t("dashboard.viewAllProjects")}</span><ArrowRight size={16} aria-hidden="true" /></button>
     </div>
     <div className="space-y-3">{sampleProjects.map((project) => {
       const Icon = project.icon;

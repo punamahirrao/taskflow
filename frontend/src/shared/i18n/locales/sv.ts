@@ -1,0 +1,25 @@
+import type { TranslationKey } from "../../../entities/language";
+
+export const sv: Record<TranslationKey, string> = {
+  "app.dashboard": "Översikt", "app.projects": "Projekt", "app.backlog": "Produktbacklogg", "app.boards": "Tavlor",
+  "app.portfolio": "Portfölj", "app.documents": "Dokument", "app.team": "Team", "app.calendar": "Kalender",
+  "app.reports": "Rapporter", "app.profile": "Min profil", "app.settings": "Inställningar", "app.users": "Användare",
+  "app.project": "Projekt", "app.taskflow": "TaskFlow", "nav.main": "Huvudnavigering", "nav.administration": "Administration",
+  "nav.searchProjects": "Sök projekt", "nav.myProfile": "Min profil", "settings.title": "Inställningar",
+  "settings.subtitle": "Anpassa TaskFlows utseende och funktioner på den här enheten.", "settings.appearance": "Utseende",
+  "settings.currentTheme": "Aktuellt tema", "settings.chooseTheme": "Välj ett tema",
+  "settings.themeDescription": "Ditt val sparas på den här enheten och används i hela TaskFlow.",
+  "settings.language": "Språk", "settings.languageDescription": "Välj språk för navigering och gränssnittstexter som stöds.",
+  "language.english": "Engelska", "language.swedish": "Svenska",
+  "theme.original": "Ursprungligt", "theme.professional": "Professionellt", "theme.night": "Natt",
+  "theme.originalDescription": "TaskFlows nuvarande färger och kontrast.",
+  "theme.professionalDescription": "En ljus och stilren arbetsyta med diskreta skiffergrå ytor och tydliga blå accenter.",
+  "theme.nightDescription": "Svart bakgrund, vita kort och gula accenter för en tydlig vy med hög kontrast.",
+  "dashboard.welcome": "Välkommen tillbaka! Här är vad som händer i dina projekt idag.",
+  "dashboard.viewAllProjects": "Visa alla projekt", "dashboard.recentActivity": "Senaste aktivitet", "dashboard.viewAllActivity": "Visa all aktivitet",
+  "common.tryAgain": "Försök igen", "stats.totalProjects": "Totalt antal projekt", "stats.totalProjectsDetail": "Projekt i din arbetsyta",
+  "stats.tasksCompleted": "Slutförda uppgifter", "stats.tasksCompletedDetail": "Uppgifter markerade som klara",
+  "stats.pendingTasks": "Pågående uppgifter", "stats.pendingTasksDetail": "Att göra och pågående",
+  "stats.completionRate": "Slutförandegrad", "stats.completionRateDetail": "Slutförda / totalt antal uppgifter",
+  "common.save": "Spara", "settings.languageSaved": "Språkinställningen har sparats.",
+};

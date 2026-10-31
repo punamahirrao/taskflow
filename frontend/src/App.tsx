@@ -18,9 +18,11 @@ import PortfolioPage from "./pages/PortfolioPage";
 import DocumentsPage from "./pages/DocumentsPage";
 import SettingsPage from "./pages/SettingsPage";
 import { ThemeProvider } from "./features/settings/context/ThemeProvider";
+import { LanguageProvider } from "./shared/i18n/context/LanguageProvider";
+import { AutomaticTestIds } from "./shared/components/AutomaticTestIds";
 
 function App() {
-  return <BrowserRouter><ThemeProvider>
+  return <BrowserRouter><AutomaticTestIds><LanguageProvider><ThemeProvider>
     <Routes>
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
@@ -42,7 +44,7 @@ function App() {
       </Route>
       <Route path="*" element={<Navigate to="/register" replace />} />
     </Routes>
-  </ThemeProvider></BrowserRouter>;
+  </ThemeProvider></LanguageProvider></AutomaticTestIds></BrowserRouter>;
 }
 
 export default App;

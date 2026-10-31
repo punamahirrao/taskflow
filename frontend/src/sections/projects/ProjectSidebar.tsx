@@ -17,10 +17,25 @@ import {
 import { useState } from "react";
 import ProjectSwitcher from "../../features/projects/components/ProjectSwitcher";
 import { NavLink, useLocation } from "react-router-dom";
+import type { TranslationKey } from "../../entities/language";
+import { useTranslation } from "../../shared/i18n/hooks/useTranslation";
+
+const NAV_ITEMS: { path: string; icon: typeof LayoutDashboard; label: TranslationKey }[] = [
+  { path: "/dashboard", icon: LayoutDashboard, label: "app.dashboard" },
+  { path: "/projects", icon: FolderKanban, label: "app.projects" },
+  { path: "/backlog", icon: ListTodo, label: "app.backlog" },
+  { path: "/boards", icon: Columns3, label: "app.boards" },
+  { path: "/portfolio", icon: BriefcaseBusiness, label: "app.portfolio" },
+  { path: "/documents", icon: Files, label: "app.documents" },
+  { path: "/team", icon: Users, label: "app.team" },
+  { path: "/calendar", icon: CalendarDays, label: "app.calendar" },
+  { path: "/reports", icon: BarChart3, label: "app.reports" },
+];
 
 function ProjectSidebar() {
   const [isAdministrationOpen, setIsAdministrationOpen] = useState(false);
   const { pathname } = useLocation();
+  const { t } = useTranslation();
   const isProjectPage = pathname.startsWith("/project/");
   const menuClass = (isActive: boolean) =>
     `flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
@@ -37,55 +52,17 @@ function ProjectSidebar() {
 
       <ProjectSwitcher />
 
-      <nav aria-label="Main navigation" className="space-y-1">
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) => menuClass(isActive)}
-        >
-          <LayoutDashboard size={18} aria-hidden="true" />
-          Dashboard
-        </NavLink>
-        <NavLink
-          to="/projects"
-          className={({ isActive }) => menuClass(isActive || isProjectPage)}
-        >
-          <FolderKanban size={18} aria-hidden="true" />
-          Projects
-        </NavLink>
-        <NavLink to="/backlog" className={({ isActive }) => menuClass(isActive)}>
-          <ListTodo size={18} aria-hidden="true" />
-          Backlog
-        </NavLink>
-        <NavLink to="/boards" className={({ isActive }) => menuClass(isActive)}>
-          <Columns3 size={18} aria-hidden="true" />
-          Boards
-        </NavLink>
-        <NavLink to="/portfolio" className={({ isActive }) => menuClass(isActive)}>
-          <BriefcaseBusiness size={18} aria-hidden="true" />
-          Portfolio
-        </NavLink>
-        <NavLink to="/documents" className={({ isActive }) => menuClass(isActive)}>
-          <Files size={18} aria-hidden="true" />
-          Documents
-        </NavLink>
-        <NavLink to="/team" className={({ isActive }) => menuClass(isActive)}>
-          <Users size={18} aria-hidden="true" />
-          Team
-        </NavLink>
-        <NavLink to="/calendar" className={({ isActive }) => menuClass(isActive)}>
-          <CalendarDays size={18} aria-hidden="true" />
-          Calendar
-        </NavLink>
-        <NavLink to="/reports" className={({ isActive }) => menuClass(isActive)}>
-          <BarChart3 size={18} aria-hidden="true" />
-          Reports
-        </NavLink>
+      <nav aria-label={t("nav.main")} className="space-y-1">
+        {NAV_ITEMS.map(({ path, icon: Icon, label }) => <NavLink key={path} to={path} data-testid={`nav-${path.slice(1)}`} className={({ isActive }) => menuClass(isActive || (path === "/projects" && isProjectPage))}>
+          <Icon size={18} aria-hidden="true" />{t(label)}
+        </NavLink>)}
         <NavLink
           to="/profile"
+          data-testid="nav-profile"
           className={({ isActive }) => menuClass(isActive)}
         >
           <UserRound size={18} aria-hidden="true" />
-          My Profile
+          {t("nav.myProfile")}
         </NavLink>
         <div>
           <button
@@ -93,10 +70,11 @@ function ProjectSidebar() {
             onClick={() => setIsAdministrationOpen((isOpen) => !isOpen)}
             aria-expanded={isAdministrationOpen}
             aria-controls="administration-menu"
+            data-testid="nav-administration-toggle"
             className={menuClass(false)}
           >
             <ShieldCheck size={18} aria-hidden="true" />
-            Administration
+            {t("nav.administration")}
             <ChevronDown
               size={16}
               aria-hidden="true"
@@ -109,7 +87,7 @@ function ProjectSidebar() {
               className={({ isActive }) => menuClass(isActive)}
             >
               <UsersRound size={16} aria-hidden="true" />
-              Users
+              {t("app.users")}
             </NavLink>
             <button
               type="button"
@@ -120,7 +98,7 @@ function ProjectSidebar() {
             </button>
             <NavLink to="/settings" className={({ isActive }) => menuClass(isActive)}>
               <Settings size={16} aria-hidden="true" />
-              Settings
+              {t("app.settings")}
             </NavLink>
           </div>
         </div>
