@@ -1,6 +1,7 @@
 import {
   BarChart3,
   BriefcaseBusiness,
+  Files,
   CalendarDays,
   Columns3,
   Users,
@@ -62,6 +63,10 @@ function ProjectSidebar() {
         <NavLink to="/portfolio" className={({ isActive }) => menuClass(isActive)}>
           <BriefcaseBusiness size={18} aria-hidden="true" />
           Portfolio
+        </NavLink>
+        <NavLink to="/documents" className={({ isActive }) => menuClass(isActive)}>
+          <Files size={18} aria-hidden="true" />
+          Documents
         </NavLink>
         <NavLink to="/team" className={({ isActive }) => menuClass(isActive)}>
           <Users size={18} aria-hidden="true" />

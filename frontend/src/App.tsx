@@ -15,6 +15,7 @@ import UsersPage from "./pages/UsersPage";
 import BacklogPage from "./pages/BacklogPage";
 import BoardsPage from "./pages/BoardsPage";
 import PortfolioPage from "./pages/PortfolioPage";
+import DocumentsPage from "./pages/DocumentsPage";
 
 function App() {
   return <BrowserRouter>
@@ -27,6 +28,7 @@ function App() {
         <Route path="/backlog" element={<BacklogPage />} />
         <Route path="/boards" element={<BoardsPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
+        <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/team" element={<TeamPage />} />
         <Route path="/calendar" element={<CalendarPage />} />

@@ -10,6 +10,7 @@ const TITLES: [string, string][] = [
   ["/backlog", "Backlog"],
   ["/boards", "Boards"],
   ["/portfolio", "Portfolio"],
+  ["/documents", "Documents"],
   ["/project/", "Project"],
   ["/profile", "My Profile"],
   ["/team", "Team"],

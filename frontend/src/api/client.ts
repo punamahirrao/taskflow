@@ -82,3 +82,24 @@ export async function apiFetch<T = unknown>(path: string, options: RequestInit =
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
+
+export async function apiFetchBlob(path: string): Promise<Blob> {
+  const headers = new Headers();
+  const token = sessionStorage.getItem("access_token");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const url = `${API_BASE_URL}${path}`;
+  let response = await send(url, { headers });
+  if (response.status === 401 && !path.includes("/accounts/")) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      headers.set("Authorization", `Bearer ${refreshed}`);
+      response = await send(url, { headers });
+    } else {
+      clearSession();
+      window.location.href = "/login";
+      throw new Error("Session expired. Please log in again.");
+    }
+  }
+  if (!response.ok) throw await errorFrom(response);
+  return response.blob();
+}

@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'accounts',
     'projects',
     'tasks',
+    'documents',
 ]
 
 REST_FRAMEWORK = {
@@ -151,6 +152,8 @@ STATIC_URL = 'static/'
 # Uploaded profile photos are stored outside the repo.
 PROFILE_PICS_ROOT = Path(r"C:\MyProject\bucket\profilepics")
 PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024
+DOCUMENTS_ROOT = Path(os.environ.get("DOCUMENTS_ROOT", r"C:\MyProject\bucket\documents"))
+DOCUMENTS_MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 
 
 AUTH_USER_MODEL = 'accounts.User'
