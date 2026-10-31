@@ -1,11 +1,19 @@
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+
+async function send(url: string, options: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, options);
+  } catch {
+    throw new Error(`Cannot reach the TaskFlow API at ${url}. Start the backend and try again.`);
+  }
+}
 
 export async function refreshAccessToken(): Promise<string | null> {
   const refresh = sessionStorage.getItem("refresh_token");
   if (!refresh) return null;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/accounts/token/refresh/`, {
+    const response = await send(`${API_BASE_URL}/accounts/token/refresh/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh }),
@@ -54,7 +62,7 @@ export async function apiFetch<T = unknown>(path: string, options: RequestInit =
   if (options.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
 
   const url = `${API_BASE_URL}${path}`;
-  let response = await fetch(url, { ...options, headers });
+  let response = await send(url, { ...options, headers });
 
   const canRefresh = !path.includes("/accounts/login/") &&
     !path.includes("/accounts/register/") && !path.includes("/accounts/token/refresh/");
@@ -62,7 +70,7 @@ export async function apiFetch<T = unknown>(path: string, options: RequestInit =
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       headers.set("Authorization", `Bearer ${refreshed}`);
-      response = await fetch(url, { ...options, headers });
+      response = await send(url, { ...options, headers });
     } else {
       clearSession();
       window.location.href = "/login";

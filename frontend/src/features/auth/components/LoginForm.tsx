@@ -3,10 +3,10 @@ import { GoogleLogin,  type CredentialResponse} from '@react-oauth/google';
 import { Link } from "react-router-dom";
 
 
-export function LoginForm({ email, setEmail, password, setPassword, error, loading, onSubmit, onGoogle, onGoogleError }: {
+export function LoginForm({ email, setEmail, password, setPassword, error, loading, microsoftConfigured, onSubmit, onGoogle, onGoogleError, onMicrosoft }: {
   email: string; setEmail: (value: string) => void; password: string; setPassword: (value: string) => void;
-  error: string; loading: boolean; onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onGoogle: (response: CredentialResponse) => void; onGoogleError: () => void;
+  error: string; loading: boolean; microsoftConfigured: boolean; onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onGoogle: (response: CredentialResponse) => void; onGoogleError: () => void; onMicrosoft: () => void;
 }) 
 {
   return <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
@@ -21,8 +21,19 @@ export function LoginForm({ email, setEmail, password, setPassword, error, loadi
     </form>
     <div className="my-4 flex items-center gap-3 text-xs text-gray-500"><span className="flex-1 border-t border-gray-300" />OR CONTINUE WITH<span className="flex-1 border-t border-gray-300" /></div>
     <div className="space-y-2">
-      <GoogleLogin onSuccess={onGoogle} onError={onGoogleError} />
-      <button type="button" disabled title="Coming soon" className="w-full cursor-not-allowed rounded-lg bg-sky-600 py-2 text-sm font-medium text-white">⊞ Continue with Microsoft</button>
+      <GoogleLogin logo_alignment="center" onSuccess={onGoogle} onError={onGoogleError} />
+      <button type="button" disabled={!microsoftConfigured || loading} onClick={onMicrosoft} title={microsoftConfigured ? "" : "Set VITE_MICROSOFT_CLIENT_ID to enable Microsoft sign-in"} className="w-full rounded-lg bg-sky-600 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+        <span className="inline-flex items-center justify-center gap-2">
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
+            <path fill="#f25022" d="M1 1h10v10H1z" />
+            <path fill="#7fba00" d="M13 1h10v10H13z" />
+            <path fill="#00a4ef" d="M1 13h10v10H1z" />
+            <path fill="#ffb900" d="M13 13h10v10H13z" />
+          </svg>
+          Continue with Microsoft
+        </span>
+      </button>
+      {!microsoftConfigured && <p className="text-xs text-gray-500">Microsoft sign-in needs an app client ID.</p>}
       <button type="button" disabled title="Coming soon" className="w-full cursor-not-allowed rounded-lg bg-blue-800 py-2 text-sm font-medium text-white">🔑 Corporate SSO Login</button>
     </div>
     <p className="mt-4 text-center text-xs text-gray-500">Terms of Service · Privacy Policy · Need an account? <Link to="/register" className="font-bold text-indigo-900 hover:underline">Register</Link></p>

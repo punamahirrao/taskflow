@@ -29,3 +29,13 @@ export async function googleLogin(credential: string): Promise<void> {
   sessionStorage.setItem("refresh_token", data.tokens.refresh);
   sessionStorage.setItem("user", JSON.stringify(data.user));
 }
+
+export async function microsoftLogin(credential: string): Promise<void> {
+  const data = await apiFetch<AuthResponse>("/accounts/microsoft/", {
+    method: "POST",
+    body: JSON.stringify({ credential }),
+  });
+  sessionStorage.setItem("access_token", data.tokens.access);
+  sessionStorage.setItem("refresh_token", data.tokens.refresh);
+  sessionStorage.setItem("user", JSON.stringify(data.user));
+}

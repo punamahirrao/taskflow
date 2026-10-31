@@ -23,6 +23,7 @@ load_dotenv(BASE_DIR / '.env')
 
 # Google OAuth Client ID used to verify Google sign-in tokens.
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+MICROSOFT_CLIENT_ID = os.environ.get('MICROSOFT_CLIENT_ID', '')
 
 
 # Quick-start development settings - unsuitable for production
