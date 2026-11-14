@@ -1,0 +1,60 @@
+/* Sprint Train page styles: sprint backlog drawer. */
+html:not([data-theme="night"]) .sprint-backlog-drawer {
+  border-color: #e2e8f0;
+  background-color: #ffffff !important;
+  color: #0f172a;
+}
+html:not([data-theme="night"]) .sprint-backlog-header { border-color: #e2e8f0; }
+html:not([data-theme="night"]) .sprint-backlog-metric,
+html:not([data-theme="night"]) .sprint-backlog-search,
+html:not([data-theme="night"]) .sprint-backlog-filter {
+  border-color: #e2e8f0;
+  background-color: #f8fafc;
+}
+html:not([data-theme="night"]) .sprint-backlog-banner {
+  border-color: #c7d2fe;
+  background-color: #eef2ff;
+  color: #3730a3;
+}
+html:not([data-theme="night"]) .sprint-backlog-card {
+  border-color: #e2e8f0;
+  background-color: #ffffff;
+}
+html:not([data-theme="night"]) .sprint-backlog-card:hover { border-color: #818cf8; }
+html:not([data-theme="night"]) .sprint-backlog-category {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+html:not([data-theme="night"]) .sprint-backlog-title { color: #1e293b; }
+html:not([data-theme="night"]) .sprint-backlog-assignee { color: #64748b; }
+
+html[data-theme="night"] .sprint-backlog-drawer {
+  border-color: var(--theme-border);
+  background-color: var(--theme-canvas) !important;
+  color: var(--theme-text);
+}
+html[data-theme="night"] .sprint-backlog-header { border-color: var(--theme-border); }
+html[data-theme="night"] .sprint-backlog-metric,
+html[data-theme="night"] .sprint-backlog-search,
+html[data-theme="night"] .sprint-backlog-filter {
+  border-color: var(--theme-border);
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+}
+html[data-theme="night"] .sprint-backlog-search::placeholder { color: #94a3b8; }
+html[data-theme="night"] .sprint-backlog-banner {
+  border-color: rgb(56 189 248 / 0.3);
+  background-color: rgb(49 46 129 / 0.5);
+  color: var(--theme-selection);
+}
+html[data-theme="night"] .sprint-backlog-card {
+  border-color: var(--theme-border);
+  background-color: var(--theme-surface);
+}
+html[data-theme="night"] .sprint-backlog-card:hover { border-color: var(--theme-selection); }
+html[data-theme="night"] .sprint-backlog-category {
+  background-color: var(--theme-secondary);
+  color: #c7d2fe;
+}
+html[data-theme="night"] .sprint-backlog-title { color: var(--theme-text); }
+html[data-theme="night"] .sprint-backlog-assignee { color: var(--theme-muted); }

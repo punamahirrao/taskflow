@@ -1,0 +1,22 @@
+import { defineLabels } from "./defineLabels";
+
+export const usersLabels = defineLabels({
+  "users.subtitle": "View user accounts, roles, and account status.", "users.addUser": "Add User",
+  "users.loading": "Loading users...", "users.confirmDelete": "Are you sure you want to delete {name}?",
+  "users.loadFailed": "Unable to load users.", "users.deleteFailed": "Unable to delete user.",
+  "users.searchLabel": "Search users", "users.searchPlaceholder": "Search users...",
+  "users.role": "Role", "users.allRoles": "All Roles", "users.roleAdministrator": "Administrator", "users.roleUser": "User",
+  "users.status": "Status", "users.allStatus": "All Status", "users.statusActive": "Active", "users.statusInactive": "Inactive",
+  "users.tableCaption": "Workspace user accounts", "users.columnUser": "User", "users.accountType": "Account type", "users.columnJoined": "Joined", "users.columnActions": "Actions",
+  "users.accountOrganization": "Organization", "users.accountPrivate": "Private",
+  "users.editUser": "Edit User", "users.deleteUser": "Delete User", "users.editAria": "Edit {name}", "users.deleteAria": "Delete {name}",
+  "users.noUsers": "No users found.",
+  "users.closeDialog": "Close dialog", "users.newAccountDetails": "New account details", "users.editAccountDetails": "Edit account details",
+  "users.firstName": "First name", "users.lastName": "Last name", "users.email": "Email", "users.jobTitle": "Job title", "users.password": "Password",
+  "users.privateUser": "Private user", "users.organizationUser": "Organization user",
+  "users.createdAsActiveOrganization": "This account will be created as an active organization user.",
+  "users.createdAsActivePrivate": "This account will be created as an active private user.",
+  "users.updatedAsActive": "This account will be updated as an active regular user.",
+  "users.cancel": "Cancel", "users.creating": "Creating...", "users.createUser": "Create User", "users.createFailed": "Unable to create user.",
+  "users.updating": "Updating...", "users.updateUser": "Update User", "users.updateFailed": "Unable to update user.",
+});

@@ -1,0 +1,108 @@
+import type { TokenRefreshResponse } from "../entities/auth";
+import { translate } from "../shared/i18n/translate";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+
+async function send(url: string, options: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, options);
+  } catch {
+    throw new Error(translate("common.apiUnreachable", { url }));
+  }
+}
+
+export async function refreshAccessToken(): Promise<string | null> {
+  const refresh = sessionStorage.getItem("refresh_token");
+  if (!refresh) return null;
+
+  try {
+    const response = await send(`${API_BASE_URL}/accounts/token/refresh/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh }),
+    });
+    if (!response.ok) return null;
+    const data = await response.json() as TokenRefreshResponse;
+    if (!data.access) return null;
+    sessionStorage.setItem("access_token", data.access);
+    return data.access;
+  } catch {
+    return null;
+  }
+}
+
+function clearSession() {
+  sessionStorage.removeItem("access_token");
+  sessionStorage.removeItem("refresh_token");
+  sessionStorage.removeItem("user");
+}
+
+async function errorFrom(response: Response): Promise<Error> {
+  try {
+    const data: unknown = await response.json();
+    if (typeof data === "object" && data !== null) {
+      const record = data as Record<string, unknown>;
+      for (const key of ["detail", "message", "error"]) {
+        if (typeof record[key] === "string") return new Error(record[key]);
+      }
+      const messages = Object.entries(record).flatMap(([field, value]) =>
+        (Array.isArray(value) ? value : [value])
+          .filter((message): message is string => typeof message === "string")
+          .map((message) => `${field}: ${message}`),
+      );
+      if (messages.length) return new Error(messages.join(" "));
+    }
+  } catch {
+    return new Error(response.statusText || translate("common.requestFailed"));
+  }
+  return new Error(response.statusText || translate("common.requestFailed"));
+}
+
+export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
+  const headers = new Headers(options.headers);
+  const token = sessionStorage.getItem("access_token");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  if (options.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+
+  const url = `${API_BASE_URL}${path}`;
+  let response = await send(url, { ...options, headers });
+
+  const canRefresh = !path.includes("/accounts/login/") &&
+    !path.includes("/accounts/register/") && !path.includes("/accounts/token/refresh/");
+  if (response.status === 401 && canRefresh) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      headers.set("Authorization", `Bearer ${refreshed}`);
+      response = await send(url, { ...options, headers });
+    } else {
+      clearSession();
+      window.location.href = "/login";
+      throw new Error(translate("common.sessionExpired"));
+    }
+  }
+
+  if (!response.ok) throw await errorFrom(response);
+  if (response.status === 204) return undefined as T;
+  return response.json() as Promise<T>;
+}
+
+export async function apiFetchBlob(path: string): Promise<Blob> {
+  const headers = new Headers();
+  const token = sessionStorage.getItem("access_token");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const url = `${API_BASE_URL}${path}`;
+  let response = await send(url, { headers });
+  if (response.status === 401 && !path.includes("/accounts/")) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      headers.set("Authorization", `Bearer ${refreshed}`);
+      response = await send(url, { headers });
+    } else {
+      clearSession();
+      window.location.href = "/login";
+      throw new Error(translate("common.sessionExpired"));
+    }
+  }
+  if (!response.ok) throw await errorFrom(response);
+  return response.blob();
+}

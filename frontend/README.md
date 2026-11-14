@@ -1,5 +1,44 @@
 # React + TypeScript + Vite
 
+## Source layout
+
+`src/` is organised per page. Each page has its own folder (`ai-estimator`, `backlog`, `boards`, `calendar`,
+`dashboard`, `documents`, `login`, `portfolio`, `profile`, `project-detail`, `projects`, `register`, `reports`,
+`settings`, `share-project`, `sprint-train`, `team`, `users`) and a `common` folder holds everything shared by
+more than one page or by the app shell (`App.tsx`, `main.tsx`).
+
+```text
+src/
+  App.tsx, main.tsx
+  <page>/
+    <Name>Page.tsx        page component
+    <page>.css            the page's one style sheet
+    api/ assets/ components/ entities/ features/ icons/ sections/ shared/ store/
+  common/
+    common.css            the shared style sheet (Tailwind import + theme styles)
+    api/ assets/ components/ entities/ features/ icons/ sections/ shared/ store/
+```
+
+- A file lives in a page folder only if that page is its sole consumer; anything used by two or more pages
+  (or by `App.tsx`) lives in `common/`.
+- Object types are declared as `interface`s. Domain/data shapes live in `entities/`; component props interfaces
+  sit next to their component.
+
+## Labels
+
+All UI text is kept in one place: `src/common/shared/i18n/labels/`, one file per page (`dashboard.ts`,
+`sprint-train.ts`, ...) plus `common.ts` for shared text. Each file declares flat `"<prefix>.<name>"` keys with
+`defineLabels({ ...english }, { ...optional swedish })`; Swedish falls back to English when a key is missing.
+Use a label in code instead of a literal string:
+
+```tsx
+const { t } = useTranslation();           // src/common/shared/i18n/hooks/useTranslation
+<h2>{t("settings.title")}</h2>
+t("projects.taskCount", { count: 3 });    // "{count}" placeholders are filled from the params
+```
+
+Outside React (api, hooks, utils) use `translate(key, params)` from `src/common/shared/i18n/translate`.
+
 ## Workspace navigation
 
 Authenticated pages share a sidebar with Dashboard (`/dashboard`), Projects
