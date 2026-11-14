@@ -83,11 +83,55 @@ class Task(models.Model):
         return self.title
 
 
+class TaskComment(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="task_comments")
+    content = models.TextField(max_length=10000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("created_at", "id")
+
+    def __str__(self):
+        return f"Comment on {self.task_id} by {self.author_id or 'deleted user'}"
+
+
+class TaskHistory(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="history")
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="task_history")
+    action = models.CharField(max_length=40, default="updated")
+    changes = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at", "-id")
+
+    def __str__(self):
+        return f"{self.action} on task {self.task_id}"
+
+
+class WorkflowStatus(models.Model):
+    """Canonical ordered status definitions shared by project boards."""
+
+    key = models.SlugField(max_length=40, unique=True)
+    name = models.CharField(max_length=80)
+    position = models.PositiveSmallIntegerField(default=0)
+    is_system = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ("position", "id")
+
+    def __str__(self):
+        return self.name
+
+
 class BoardColumn(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="board_columns")
     name = models.CharField(max_length=80)
     key = models.SlugField(max_length=40)
     position = models.PositiveSmallIntegerField(default=0)
+    group_name = models.CharField(max_length=80, blank=True)
     wip_limit = models.PositiveSmallIntegerField(null=True, blank=True)
 
     class Meta:

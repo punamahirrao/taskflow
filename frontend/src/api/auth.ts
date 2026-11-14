@@ -1,12 +1,12 @@
 import { apiFetch } from "./client";
 import type { User } from "../entities/user";
 
-type AuthResponse = { tokens: { access: string; refresh: string }; user: Pick<User, "id" | "email" | "job_title"> };
+type AuthResponse = { tokens: { access: string; refresh: string }; user: Pick<User, "id" | "email" | "job_title" | "account_type"> };
 
-export async function login(email: string, password: string): Promise<boolean> {
+export async function login(email: string, password: string, accountType: User["account_type"] = "private"): Promise<boolean> {
   const data = await apiFetch<AuthResponse>("/accounts/login/", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, account_type: accountType }),
   });
   sessionStorage.setItem("access_token", data.tokens.access);
   sessionStorage.setItem("refresh_token", data.tokens.refresh);

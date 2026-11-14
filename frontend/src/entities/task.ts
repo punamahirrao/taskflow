@@ -1,4 +1,4 @@
-export type TaskStatus = "backlog" | "todo" | "in_progress" | "review" | "done" | (string & {});
+export type TaskStatus = "backlog" | "todo" | "in_progress" | "review" | "waiting" | "done" | (string & {});
 export type WorkType = "task" | "idea" | "enhancement" | "bug" | "spike" | "research" | "epic" | "initiative";
 export type TaskPriority = "urgent" | "high" | "medium" | "low";
 export type DoneCheck = { key: string; label: string; done: boolean };
@@ -37,5 +37,5 @@ export type Task = {
   sprint_goal: string | null;
 };
 
-export type BoardColumn = { id: number; name: string; key: string; position: number; wip_limit: number | null };
+export type BoardColumn = { id: number; name: string; key: string; position: number; status_order: number; group_name: string; wip_limit: number | null };
 export type Sprint = { id: number; project: number; name: string; start_date: string | null; end_date: string | null; is_active: boolean; is_closed: boolean; goal: string; capacity_points: number | null; velocity_points: number | null; outcome_summary: string; retrospective: string; created_at: string };

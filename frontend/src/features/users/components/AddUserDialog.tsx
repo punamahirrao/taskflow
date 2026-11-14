@@ -15,6 +15,7 @@ function AddUser({ onClose, onCreated }: AddUserProps) {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [jobTitle, setJobTitle] = useState("");
+  const [accountType, setAccountType] = useState<User["account_type"]>("private");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -41,6 +42,7 @@ function AddUser({ onClose, onCreated }: AddUserProps) {
           last_name: lastName.trim(),
           email: email.trim(),
           job_title: jobTitle.trim(),
+          account_type: accountType,
           password,
       });
 
@@ -137,6 +139,14 @@ function AddUser({ onClose, onCreated }: AddUserProps) {
           </label>
 
           <label className="block text-sm font-medium text-gray-700">
+            Account type
+            <select value={accountType} onChange={(event) => setAccountType(event.target.value as User["account_type"])} className={inputClass}>
+              <option value="private">Private user</option>
+              <option value="organization">Organization user</option>
+            </select>
+          </label>
+
+          <label className="block text-sm font-medium text-gray-700">
             Password
             <input
               type="password"
@@ -149,7 +159,7 @@ function AddUser({ onClose, onCreated }: AddUserProps) {
           </label>
 
           <p className="text-sm text-gray-500">
-            This account will be created as an active regular user.
+            This account will be created as an active {accountType === "organization" ? "organization" : "private"} user.
           </p>
 
           {error && (

@@ -6,8 +6,10 @@ from .storage import profile_pics_storage
 
 
 class User(AbstractUser):
+    ACCOUNT_TYPES = (("private", "Private"), ("organization", "Organization"))
     username = None
     email = models.EmailField(unique=True)
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES, default="private")
 
     job_title = models.CharField(max_length=100)
     department = models.CharField(max_length=100, blank=True)

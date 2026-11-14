@@ -6,14 +6,15 @@ import type { Task, TaskStatus } from "../../entities/task";
 import AddTaskDialog from "../../features/tasks/components/AddTaskDialog";
 import TaskCard from "../../features/tasks/components/TaskCard";
 
-const DEFAULT_COLUMNS: { key: TaskStatus; name: string; position: number; id: number; wip_limit: number | null }[] = [
-  { id: 0, key: "backlog", name: "Backlog", position: 0, wip_limit: null },
-  { id: 1, key: "todo", name: "Todo", position: 1, wip_limit: null },
-  { id: 2, key: "in_progress", name: "In Progress", position: 2, wip_limit: null },
-  { id: 3, key: "review", name: "Review", position: 3, wip_limit: null },
-  { id: 4, key: "done", name: "Done", position: 4, wip_limit: null },
+const DEFAULT_COLUMNS: BoardColumn[] = [
+  { id: 0, key: "backlog", name: "Backlog", position: 0, status_order: 0, group_name: "Planning", wip_limit: null },
+  { id: 1, key: "todo", name: "Todo", position: 1, status_order: 1, group_name: "Active work", wip_limit: null },
+  { id: 2, key: "in_progress", name: "In Progress", position: 2, status_order: 2, group_name: "Active work", wip_limit: null },
+  { id: 3, key: "review", name: "Review", position: 3, status_order: 3, group_name: "Quality", wip_limit: null },
+  { id: 4, key: "waiting", name: "Waiting", position: 4, status_order: 4, group_name: "Waiting", wip_limit: null },
+  { id: 5, key: "done", name: "Done", position: 5, status_order: 5, group_name: "Complete", wip_limit: null },
 ];
-const COLUMN_STYLE: Record<string, string> = { backlog: "bg-slate-100", todo: "bg-purple-100", in_progress: "bg-sky-100", review: "bg-amber-100", done: "bg-emerald-100" };
+const COLUMN_STYLE: Record<string, string> = { backlog: "bg-slate-100", todo: "bg-purple-100", in_progress: "bg-sky-100", review: "bg-amber-100", waiting: "bg-orange-100", done: "bg-emerald-100" };
 
 export function TaskBoard({ project, tasks, error, onAdd, onMove }: {
   project: Project; tasks: Task[]; error: string;

@@ -16,6 +16,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "account_type",
             "job_title",
             "is_staff",
             "role",
@@ -37,6 +38,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "account_type",
             "job_title",
             "password",
         )

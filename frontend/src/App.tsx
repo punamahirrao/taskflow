@@ -17,6 +17,8 @@ import BoardsPage from "./pages/BoardsPage";
 import PortfolioPage from "./pages/PortfolioPage";
 import DocumentsPage from "./pages/DocumentsPage";
 import SettingsPage from "./pages/SettingsPage";
+import SprintTrainPage from "./pages/SprintTrainPage";
+import AiEstimatorPage from "./pages/AiEstimatorPage";
 import { ThemeProvider } from "./features/settings/context/ThemeProvider";
 import { LanguageProvider } from "./shared/i18n/context/LanguageProvider";
 import { AutomaticTestIds } from "./shared/components/AutomaticTestIds";
@@ -30,9 +32,11 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/backlog" element={<BacklogPage />} />
+        <Route path="/sprint-train" element={<SprintTrainPage />} />
         <Route path="/boards" element={<BoardsPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/ai-estimator" element={<AiEstimatorPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/team" element={<TeamPage />} />

@@ -3,6 +3,7 @@ export type User = {
   first_name: string;
   last_name: string;
   email: string;
+  account_type: "private" | "organization";
   job_title: string;
   is_staff: boolean;
   is_active: boolean;

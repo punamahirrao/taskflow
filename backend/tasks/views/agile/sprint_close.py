@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from projects.access import EDIT_PROJECT_ROLES, get_role, visible_projects
-from tasks.models import Sprint, Task
+from tasks.models import Sprint, Task, TaskHistory
 from tasks.serializers import SprintSerializer
 
 
@@ -35,18 +35,29 @@ class SprintCloseView(APIView):
             next_sprint.is_active = True
             next_sprint.save(update_fields=["is_active"])
             for task in unfinished:
+                previous_sprint, previous_status = task.sprint_id, task.status
                 task.sprint = next_sprint
                 if task.status == "backlog":
                     task.status = "todo"
                 task.save(update_fields=["sprint", "status", "updated_at"])
+                TaskHistory.objects.create(task=task, actor=request.user, action="sprint_rollover", changes={
+                    "sprint": {"old": previous_sprint, "new": next_sprint.id},
+                    "status": {"old": previous_status, "new": task.status},
+                })
             destination = next_sprint.name
         else:
             unfinished_ids = [task.id for task in unfinished]
             Task.objects.filter(project=sprint.project, status="backlog", sprint__isnull=True).exclude(id__in=unfinished_ids).update(rank=F("rank") + len(unfinished))
             for rank, task in enumerate(unfinished):
+                previous_sprint, previous_status = task.sprint_id, task.status
                 task.sprint, task.status, task.rank = None, "backlog", rank
                 task.started_at = task.completed_at = None
                 task.save(update_fields=["sprint", "status", "rank", "started_at", "completed_at", "updated_at"])
+                TaskHistory.objects.create(task=task, actor=request.user, action="sprint_returned_to_backlog", changes={
+                    "sprint": {"old": previous_sprint, "new": None},
+                    "status": {"old": previous_status, "new": "backlog"},
+                    "rank": {"new": rank},
+                })
             destination = "the top of the backlog"
 
         if not sprint.outcome_summary:

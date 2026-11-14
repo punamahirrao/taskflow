@@ -9,7 +9,7 @@ const milestones: { status: TaskStatus; title: string; iconClass: string; barCla
   { status: "in_progress", title: "In progress", iconClass: "border-blue-600 border-r-transparent", barClass: "bg-blue-600" },
   { status: "done", title: "Done", iconClass: "border-green-500 bg-green-500 text-white", barClass: "bg-green-500" },
 ];
-const statusText: Partial<Record<TaskStatus, string>> = { backlog: "in backlog", todo: "in Todo", in_progress: "in progress", review: "in review", done: "done" };
+const statusText: Partial<Record<TaskStatus, string>> = { backlog: "in backlog", todo: "in Todo", in_progress: "in progress", review: "in review", waiting: "waiting", done: "done" };
 
 export function ProjectOverview({ project, tasks }: { project: Project; tasks: Task[] }) {
   const count = (status: TaskStatus) => tasks.filter((task) => task.status === status).length;

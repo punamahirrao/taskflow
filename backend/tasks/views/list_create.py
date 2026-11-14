@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.utils import timezone
 from projects.access import EDIT_PROJECT_ROLES, WRITE_TASK_ROLES, get_role, visible_projects
 from projects.models import ProjectMembership
-from tasks.models import BoardColumn, Sprint, Task
+from tasks.models import BoardColumn, Sprint, Task, TaskHistory, WorkflowStatus
 from tasks.permissions import NO_WRITE_PERMISSION
 from tasks.serializers import TaskSerializer
 
@@ -71,19 +71,29 @@ class TaskListCreateView(APIView):
             return Response({"parent": "Choose an epic or initiative from this project."}, status=status.HTTP_400_BAD_REQUEST)
 
         task = serializer.save(project=project, created_by=request.user, blocked_since=timezone.now() if serializer.validated_data.get("blocked") else None)
+        TaskHistory.objects.create(task=task, actor=request.user, action="created", changes={"title": {"new": task.title}, "status": {"new": task.status}})
 
         return Response(TaskSerializer(task, context={"request": request}).data, status=status.HTTP_201_CREATED)
 
 
-DEFAULT_COLUMNS = (("backlog", "Backlog"), ("todo", "To Do"), ("in_progress", "In Progress"), ("review", "Review"), ("done", "Done"))
+DEFAULT_COLUMNS = (
+    ("backlog", "Backlog", "Planning"),
+    ("todo", "To Do", "Active work"),
+    ("in_progress", "In Progress", "Active work"),
+    ("review", "Review", "Quality"),
+    ("waiting", "Waiting", "Waiting"),
+    ("done", "Done", "Complete"),
+)
 
 
 def ensure_default_columns(project):
-    if project.board_columns.exists():
-        return
-    for position, (key, name) in enumerate(DEFAULT_COLUMNS):
+    for position, (key, name, group_name) in enumerate(DEFAULT_COLUMNS):
+        WorkflowStatus.objects.get_or_create(
+            key=key,
+            defaults={"name": name, "position": position, "is_system": True},
+        )
         BoardColumn.objects.get_or_create(
             project=project,
             key=key,
-            defaults={"name": name, "position": position},
+            defaults={"name": name, "position": position, "group_name": group_name},
         )

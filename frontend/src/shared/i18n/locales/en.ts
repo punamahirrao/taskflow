@@ -1,9 +1,9 @@
 import type { TranslationKey } from "../../../entities/language";
 
 export const en: Record<TranslationKey, string> = {
-  "app.dashboard": "Dashboard", "app.projects": "Projects", "app.backlog": "Backlog", "app.boards": "Boards",
+  "app.dashboard": "Dashboard", "app.projects": "Projects", "app.backlog": "Backlog", "app.sprintTrain": "Sprint Train", "app.boards": "Boards",
   "app.portfolio": "Portfolio", "app.documents": "Documents", "app.team": "Team", "app.calendar": "Calendar",
-  "app.reports": "Reports", "app.profile": "My Profile", "app.settings": "Settings", "app.users": "Users",
+  "app.reports": "Reports", "app.aiEstimator": "AI Estimator", "app.profile": "My Profile", "app.settings": "Settings", "app.users": "Users",
   "app.project": "Project", "app.taskflow": "TaskFlow", "nav.main": "Main navigation", "nav.administration": "Administration",
   "nav.searchProjects": "Search projects", "nav.myProfile": "My Profile", "settings.title": "Settings",
   "settings.subtitle": "Personalize how TaskFlow looks and works on this device.", "settings.appearance": "Appearance",
@@ -14,7 +14,7 @@ export const en: Record<TranslationKey, string> = {
   "theme.original": "Original", "theme.professional": "Professional", "theme.night": "Night",
   "theme.originalDescription": "The current TaskFlow colors and contrast.",
   "theme.professionalDescription": "A polished light workspace with quiet slate surfaces and focused business blue accents.",
-  "theme.nightDescription": "A black canvas, crisp white cards, and yellow accents for a bold, high-contrast workspace.",
+  "theme.nightDescription": "Deep navy canvas, cream navigation, indigo actions, and clear status colors.",
   "dashboard.welcome": "Welcome back! Here's what's happening with your projects today.",
   "dashboard.viewAllProjects": "View all projects", "dashboard.recentActivity": "Recent activity", "dashboard.viewAllActivity": "View all activity",
   "common.tryAgain": "Try again", "stats.totalProjects": "Total Projects", "stats.totalProjectsDetail": "Projects in your workspace",
@@ -22,4 +22,6 @@ export const en: Record<TranslationKey, string> = {
   "stats.pendingTasks": "Pending Tasks", "stats.pendingTasksDetail": "To do and in progress",
   "stats.completionRate": "Task Completion Rate", "stats.completionRateDetail": "Completed / total tasks",
   "common.save": "Save", "settings.languageSaved": "Language preference saved.",
+  "settings.sprintDisplay": "Sprint Train display", "settings.sprintDisplayDescription": "Choose how many sprints to show in the Sprint Train pipeline.",
+  "settings.sprintsVisible": "Sprints shown", "settings.sprintDisplaySaved": "Sprint display preference saved.",
 };

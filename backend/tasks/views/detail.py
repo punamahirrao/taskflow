@@ -14,7 +14,7 @@ from projects.access import (
     visible_projects,
 )
 from projects.models import ProjectMembership
-from tasks.models import Task
+from tasks.models import Task, TaskHistory
 from tasks.permissions import NO_WRITE_PERMISSION
 from tasks.serializers import TaskSerializer
 from tasks.models import Sprint
@@ -51,6 +51,8 @@ class TaskDetailView(APIView):
         )
 
         serializer.is_valid(raise_exception=True)
+        tracked_fields = tuple(serializer.validated_data.keys())
+        before = {field: history_value(task, field) for field in tracked_fields}
         if "status" in serializer.validated_data:
             valid_statuses = task.project.board_columns.values_list("key", flat=True)
             if not valid_statuses.exists():
@@ -83,6 +85,9 @@ class TaskDetailView(APIView):
         ):
             return Response({"parent": "Choose another epic or initiative from this project."}, status=status.HTTP_400_BAD_REQUEST)
         next_status = serializer.validated_data.get("status", task.status)
+        if next_status == "backlog" and "sprint" not in tracked_fields:
+            tracked_fields = (*tracked_fields, "sprint")
+            before["sprint"] = history_value(task, "sprint")
         timestamp = timezone.now()
         if "blocked" in serializer.validated_data and serializer.validated_data["blocked"] != task.blocked:
             serializer.validated_data["blocked_since"] = timestamp if serializer.validated_data["blocked"] else None
@@ -99,7 +104,14 @@ class TaskDetailView(APIView):
             if task.status in ("backlog", "todo") and next_status in ("in_progress", "review") and task.started_at is None:
                 task.started_at = timestamp
             task.save(update_fields=["started_at", "completed_at"])
-        serializer.save()
+        saved_task = serializer.save()
+        changes = {}
+        for field in tracked_fields:
+            after = history_value(saved_task, field)
+            if before[field] != after:
+                changes[field] = {"old": before[field], "new": after}
+        if changes:
+            TaskHistory.objects.create(task=saved_task, actor=request.user, action="updated", changes=changes)
         return Response(serializer.data)
 
     def delete(self, request, task_id):
@@ -117,3 +129,13 @@ class TaskDetailView(APIView):
 
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def history_value(task, field):
+    if field == "blocked_by":
+        return list(task.blocked_by.order_by("id").values_list("id", flat=True))
+    foreign_key_id = f"{field}_id"
+    value = getattr(task, foreign_key_id) if hasattr(task, foreign_key_id) else getattr(task, field)
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    return value

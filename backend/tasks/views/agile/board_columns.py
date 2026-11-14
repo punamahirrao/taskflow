@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from projects.access import EDIT_PROJECT_ROLES, get_role, visible_projects
-from tasks.models import BoardColumn
+from tasks.models import BoardColumn, WorkflowStatus
 from tasks.serializers import BoardColumnSerializer
 from tasks.views.list_create import ensure_default_columns
 
@@ -29,7 +29,9 @@ class ProjectBoardColumnsView(APIView):
         key = slugify(name).replace("-", "_")[:40]
         if not key or project.board_columns.filter(key=key).exists():
             return Response({"name": "That column already exists."}, status=status.HTTP_400_BAD_REQUEST)
-        column = BoardColumn.objects.create(project=project, name=name[:80], key=key, position=project.board_columns.count(), wip_limit=request.data.get("wip_limit") or None)
+        position = WorkflowStatus.objects.count()
+        WorkflowStatus.objects.get_or_create(key=key, defaults={"name": name[:80], "position": position})
+        column = BoardColumn.objects.create(project=project, name=name[:80], key=key, position=project.board_columns.count(), group_name=str(request.data.get("group_name", "")).strip()[:80], wip_limit=request.data.get("wip_limit") or None)
         return Response(BoardColumnSerializer(column).data, status=status.HTTP_201_CREATED)
 
 

@@ -1,41 +1,49 @@
 import type { FormEvent } from "react";
-import { GoogleLogin,  type CredentialResponse} from '@react-oauth/google';
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { Link } from "react-router-dom";
 
+type AccountType = "private" | "organization";
 
-export function LoginForm({ email, setEmail, password, setPassword, error, loading, microsoftConfigured, onSubmit, onGoogle, onGoogleError, onMicrosoft }: {
-  email: string; setEmail: (value: string) => void; password: string; setPassword: (value: string) => void;
-  error: string; loading: boolean; microsoftConfigured: boolean; onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onGoogle: (response: CredentialResponse) => void; onGoogleError: () => void; onMicrosoft: () => void;
-}) 
-{
-  return <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
-    <h1 className="text-center text-xl font-bold text-gray-900">Welcome Back to TaskFlow</h1>
-    <p className="mb-4 mt-1 text-center text-sm text-gray-600">Access your collaborative planning workspace for all your projects.</p>
-    <form className="space-y-3" onSubmit={onSubmit}>
-      <label className="flex flex-col text-sm font-bold text-gray-900">Email Address<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
-      <label className="flex flex-col text-sm font-bold text-gray-900">Password<input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
+export function LoginForm({ accountType, email, setEmail, password, setPassword, error, loading, microsoftConfigured, onSubmit, onGoogle, onGoogleError, onMicrosoft, onOrganizationSSO }: {
+  accountType: AccountType;
+  email: string;
+  setEmail: (value: string) => void;
+  password: string;
+  setPassword: (value: string) => void;
+  error: string;
+  loading: boolean;
+  microsoftConfigured: boolean;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onGoogle: (response: CredentialResponse) => void;
+  onGoogleError: () => void;
+  onMicrosoft: () => void;
+  onOrganizationSSO: () => void;
+}) {
+  const isOrganization = accountType === "organization";
+
+  return <div data-testid="login-panel" className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
+    <h1 className="text-center text-xl font-bold text-gray-900">{isOrganization ? "Organization sign in" : "Welcome Back to TaskFlow"}</h1>
+    <p className="mb-4 mt-1 text-center text-sm text-gray-600">{isOrganization ? "Sign in with your organization account or use your organization's single sign-on." : "Access your collaborative planning workspace for all your projects."}</p>
+    <form data-testid="login-form" className="space-y-3" onSubmit={onSubmit}>
+      <label className="flex flex-col text-sm font-bold text-gray-900">Email Address<input data-testid="login-email" type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
+      <label className="flex flex-col text-sm font-bold text-gray-900">Password<input data-testid="login-password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 font-normal focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400" /></label>
       <button type="button" disabled title="Coming soon" className="text-sm text-gray-500">Forgot Password?</button>
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-      <button type="submit" disabled={loading} className="w-full rounded-lg bg-indigo-900 py-2.5 font-medium text-white hover:bg-indigo-800 disabled:opacity-70">{loading ? "Signing in..." : "Sign In"}</button>
+      <button data-testid="login-submit" type="submit" disabled={loading} className="w-full rounded-lg bg-indigo-900 py-2.5 font-medium text-white hover:bg-indigo-800 disabled:opacity-70">{loading ? "Signing in..." : "Sign In"}</button>
     </form>
-    <div className="my-4 flex items-center gap-3 text-xs text-gray-500"><span className="flex-1 border-t border-gray-300" />OR CONTINUE WITH<span className="flex-1 border-t border-gray-300" /></div>
-    <div className="space-y-2">
-      <GoogleLogin logo_alignment="center" onSuccess={onGoogle} onError={onGoogleError} />
-      <button type="button" disabled={!microsoftConfigured || loading} onClick={onMicrosoft} title={microsoftConfigured ? "" : "Set VITE_MICROSOFT_CLIENT_ID to enable Microsoft sign-in"} className="w-full rounded-lg bg-sky-600 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-        <span className="inline-flex items-center justify-center gap-2">
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
-            <path fill="#f25022" d="M1 1h10v10H1z" />
-            <path fill="#7fba00" d="M13 1h10v10H13z" />
-            <path fill="#00a4ef" d="M1 13h10v10H1z" />
-            <path fill="#ffb900" d="M13 13h10v10H13z" />
-          </svg>
-          Continue with Microsoft
-        </span>
-      </button>
-      {!microsoftConfigured && <p className="text-xs text-gray-500">Microsoft sign-in needs an app client ID.</p>}
-      <button type="button" disabled title="Coming soon" className="w-full cursor-not-allowed rounded-lg bg-blue-800 py-2 text-sm font-medium text-white">🔑 Corporate SSO Login</button>
-    </div>
-    <p className="mt-4 text-center text-xs text-gray-500">Terms of Service · Privacy Policy · Need an account? <Link to="/register" className="font-bold text-indigo-900 hover:underline">Register</Link></p>
+
+    {isOrganization ? <div className="mt-5 border-t border-gray-200 pt-5">
+      <button data-testid="organization-sso" type="button" disabled={loading} onClick={onOrganizationSSO} className="w-full rounded-lg border border-indigo-200 bg-white py-2.5 font-medium text-indigo-900 hover:bg-indigo-50 disabled:opacity-60">Continue with organization SSO</button>
+    </div> : <>
+      <div className="my-4 flex items-center gap-3 text-xs text-gray-500"><span className="flex-1 border-t border-gray-300" />OR CONTINUE WITH<span className="flex-1 border-t border-gray-300" /></div>
+      <div className="space-y-2">
+        <GoogleLogin logo_alignment="center" onSuccess={onGoogle} onError={onGoogleError} />
+        <button data-testid="microsoft-signin" type="button" disabled={!microsoftConfigured || loading} onClick={onMicrosoft} title={microsoftConfigured ? "" : "Set VITE_MICROSOFT_CLIENT_ID to enable Microsoft sign-in"} className="w-full rounded-lg bg-sky-600 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+          <span className="inline-flex items-center justify-center gap-2"><svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4"><path fill="#f25022" d="M1 1h10v10H1z" /><path fill="#7fba00" d="M13 1h10v10H13z" /><path fill="#00a4ef" d="M1 13h10v10H1z" /><path fill="#ffb900" d="M13 13h10v10H13z" /></svg>Continue with Microsoft</span>
+        </button>
+        {!microsoftConfigured && <p className="text-xs text-gray-500">Microsoft sign-in needs an app client ID.</p>}
+      </div>
+    </>}
+    {!isOrganization && <p className="mt-4 text-center text-xs text-gray-500">Terms of Service · Privacy Policy · Need an account? <Link data-testid="register-link" to="/register" className="font-bold text-indigo-900 hover:underline">Register</Link></p>}
   </div>;
 }

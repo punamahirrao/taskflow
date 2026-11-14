@@ -78,6 +78,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -154,6 +155,8 @@ PROFILE_PICS_ROOT = Path(r"C:\MyProject\bucket\profilepics")
 PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024
 DOCUMENTS_ROOT = Path(os.environ.get("DOCUMENTS_ROOT", r"C:\MyProject\bucket\documents"))
 DOCUMENTS_MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+AI_ESTIMATOR_SERVICE_URL = os.environ.get("AI_ESTIMATOR_SERVICE_URL", "http://127.0.0.1:8100")
+AI_ESTIMATOR_SERVICE_TOKEN = os.environ.get("AI_ESTIMATOR_SERVICE_TOKEN", "")
 
 
 AUTH_USER_MODEL = 'accounts.User'

@@ -6,7 +6,8 @@ import type { Task, TaskPriority, TaskStatus, WorkType } from "../../../entities
 const TYPES: WorkType[] = ["initiative", "epic", "task", "idea", "enhancement", "bug", "spike", "research"];
 const STATUSES: { key: TaskStatus; name: string }[] = [
   { key: "backlog", name: "Backlog" }, { key: "todo", name: "To Do" },
-  { key: "in_progress", name: "In Progress" }, { key: "review", name: "Review" }, { key: "done", name: "Done" },
+  { key: "in_progress", name: "In Progress" }, { key: "review", name: "Review" },
+  { key: "waiting", name: "Waiting" }, { key: "done", name: "Done" },
 ];
 
 export function EditWorkItemDialog({ task, project, candidates, onClose, onSave }: {
@@ -54,8 +55,8 @@ export function EditWorkItemDialog({ task, project, candidates, onClose, onSave 
     finally { setSaving(false); }
   }
 
-  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4" onClick={(event) => { if (event.target === event.currentTarget && !saving) onClose(); }}>
-    <section role="dialog" aria-modal="true" aria-labelledby="edit-work-title" className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+  return <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/40" onClick={(event) => { if (event.target === event.currentTarget && !saving) onClose(); }}>
+    <section role="dialog" aria-modal="true" aria-labelledby="edit-work-title" className="h-full w-full max-w-xl overflow-y-auto rounded-l-2xl bg-white p-6 shadow-2xl sm:p-8">
       <header className="mb-5 flex items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-violet-600">{project.name}</p><h2 id="edit-work-title" className="mt-1 text-xl font-semibold text-slate-900">Edit work item</h2></div><button type="button" onClick={onClose} aria-label="Close editor" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100"><X size={18} /></button></header>
       <form onSubmit={(event) => void submit(event)} className="space-y-4">
         <label className="block text-sm font-medium text-slate-700">Title<input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 outline-none focus:ring-2 focus:ring-violet-200" /></label>

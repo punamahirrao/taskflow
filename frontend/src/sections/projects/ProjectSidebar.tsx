@@ -8,9 +8,11 @@ import {
   ChevronDown,
   FolderKanban,
   LayoutDashboard,
+  BrainCircuit,
   ListTodo,
   Settings,
   ShieldCheck,
+  TrainFront,
   UserRound,
   UsersRound,
 } from "lucide-react";
@@ -24,9 +26,11 @@ const NAV_ITEMS: { path: string; icon: typeof LayoutDashboard; label: Translatio
   { path: "/dashboard", icon: LayoutDashboard, label: "app.dashboard" },
   { path: "/projects", icon: FolderKanban, label: "app.projects" },
   { path: "/backlog", icon: ListTodo, label: "app.backlog" },
+  { path: "/sprint-train", icon: TrainFront, label: "app.sprintTrain" },
   { path: "/boards", icon: Columns3, label: "app.boards" },
   { path: "/portfolio", icon: BriefcaseBusiness, label: "app.portfolio" },
   { path: "/documents", icon: Files, label: "app.documents" },
+  { path: "/ai-estimator", icon: BrainCircuit, label: "app.aiEstimator" },
   { path: "/team", icon: Users, label: "app.team" },
   { path: "/calendar", icon: CalendarDays, label: "app.calendar" },
   { path: "/reports", icon: BarChart3, label: "app.reports" },
@@ -45,7 +49,7 @@ function ProjectSidebar() {
     }`;
 
   return (
-    <aside className="border-b border-gray-200 bg-gray-50 p-5 md:sticky md:top-0 md:h-screen md:overflow-y-auto md:border-r md:border-b-0">
+    <aside className="platform-sidebar border-b border-gray-200 bg-gray-50 p-5 md:sticky md:top-0 md:h-screen md:overflow-y-auto md:border-r md:border-b-0">
       <div className="mb-5 px-3">
         <h2 className="text-2xl font-bold text-purple-700">TaskFlow</h2>
       </div>

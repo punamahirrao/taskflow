@@ -18,6 +18,6 @@ function ThemeCard({ option, selected, onSelect }: { option: ThemeOption; select
   return <button type="button" aria-pressed={selected} onClick={onSelect} className={`rounded-2xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${selected ? "border-indigo-400 bg-indigo-50/60 shadow-sm" : "border-slate-200 bg-white hover:border-indigo-200 hover:bg-slate-50"}`}>
     <div className="flex items-start justify-between"><span className="flex items-center gap-2 text-sm font-semibold text-slate-800"><Icon size={16} className="text-indigo-600" />{t(themeKey)}</span>{selected && <Check size={17} className="text-indigo-600" />}</div>
     <p className="mt-2 min-h-9 text-xs leading-5 text-slate-500">{t(descriptionKey)}</p>
-    <div className="mt-4 flex overflow-hidden rounded-lg border border-black/5"><div className="h-12 flex-1" style={{ background: option.palette[0] }} /><div className="h-12 flex-1" style={{ background: option.palette[1] }} /><div className="h-12 flex-1" style={{ background: option.palette[2] }} /><div className="h-12 flex-1" style={{ background: option.palette[3] }} /></div>
+    <div className="mt-4 flex overflow-hidden rounded-lg border border-black/5">{option.palette.map((color, index) => <div key={`${color}-${index}`} className="h-12 flex-1" style={{ background: color }} />)}</div>
   </button>;
 }

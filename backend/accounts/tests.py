@@ -3,13 +3,25 @@ import tempfile
 from pathlib import Path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
+from django.test import SimpleTestCase, override_settings
 from rest_framework.test import APITestCase
 
 from accounts.models import User
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"0" * 32
 TMP = Path(tempfile.mkdtemp())
+
+
+class CorsTests(SimpleTestCase):
+    def test_google_login_preflight_allows_frontend_origin(self):
+        response = self.client.options(
+            "/accounts/google/",
+            HTTP_ORIGIN="http://localhost:5174",
+            HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
+            HTTP_ACCESS_CONTROL_REQUEST_HEADERS="content-type",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["access-control-allow-origin"], "http://localhost:5174")
 
 
 @override_settings(PROFILE_PICS_ROOT=TMP)

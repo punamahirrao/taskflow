@@ -26,6 +26,7 @@ class RegisterView(APIView):
                     "user": {
                         "id": user.id,
                         "email": user.email,
+                        "account_type": user.account_type,
                         "job_title": user.job_title,
                     },
                 },
@@ -51,6 +52,7 @@ class LoginView(APIView):
                     "user": {
                         "id": user.id,
                         "email": user.email,
+                        "account_type": user.account_type,
                         "job_title": user.job_title,
                     },
                     "tokens": {
@@ -97,6 +99,9 @@ class GoogleLoginView(APIView):
             user.set_unusable_password()
             user.save()
 
+        if user.account_type != "private":
+            return Response({"detail": "Organization accounts must use Organization login."}, status=status.HTTP_403_FORBIDDEN)
+
         if not user.is_active:
             return Response({"detail": "This account is disabled."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -104,7 +109,7 @@ class GoogleLoginView(APIView):
         return Response(
             {
                 "message": "User logged in successfully.",
-                "user": {"id": user.id, "email": user.email, "job_title": user.job_title},
+                "user": {"id": user.id, "email": user.email, "account_type": user.account_type, "job_title": user.job_title},
                 "tokens": {"refresh": str(refresh), "access": str(refresh.access_token)},
             },
             status=status.HTTP_200_OK,
@@ -154,6 +159,9 @@ class MicrosoftLoginView(APIView):
             user.set_unusable_password()
             user.save()
 
+        if user.account_type != "private":
+            return Response({"detail": "Organization accounts must use Organization login."}, status=status.HTTP_403_FORBIDDEN)
+
         if not user.is_active:
             return Response({"detail": "This account is disabled."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -161,7 +169,7 @@ class MicrosoftLoginView(APIView):
         return Response(
             {
                 "message": "User logged in successfully.",
-                "user": {"id": user.id, "email": user.email, "job_title": user.job_title},
+                "user": {"id": user.id, "email": user.email, "account_type": user.account_type, "job_title": user.job_title},
                 "tokens": {"refresh": str(refresh), "access": str(refresh.access_token)},
             },
             status=status.HTTP_200_OK,

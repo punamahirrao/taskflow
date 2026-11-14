@@ -1,7 +1,7 @@
 import type { Task } from "../../../entities/task";
 
-export const STAGE_ORDER = ["backlog", "todo", "in_progress", "review", "done"];
-export const STAGE_COLORS: Record<string, string> = { backlog: "bg-slate-400", todo: "bg-violet-500", in_progress: "bg-sky-500", review: "bg-amber-500", done: "bg-emerald-500" };
+export const STAGE_ORDER = ["backlog", "todo", "in_progress", "review", "waiting", "done"];
+export const STAGE_COLORS: Record<string, string> = { backlog: "bg-slate-400", todo: "bg-violet-500", in_progress: "bg-sky-500", review: "bg-amber-500", waiting: "bg-orange-500", done: "bg-emerald-500" };
 export type Swimlane = "project" | "priority" | "assignee" | "epic" | "sprint_goal";
 
 export function averageDays(durations: number[]) {

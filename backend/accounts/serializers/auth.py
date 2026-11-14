@@ -40,6 +40,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+    account_type = serializers.ChoiceField(choices=User.ACCOUNT_TYPES, default="private")
 
     def validate(self, data):
         email = data.get("email")
@@ -52,6 +53,9 @@ class LoginSerializer(serializers.Serializer):
 
         if user is None:
             raise serializers.ValidationError("Invalid email or password.")
+
+        if user.account_type != data.get("account_type", "private"):
+            raise serializers.ValidationError("This account does not belong to the selected login type.")
 
         data["user"] = user
 

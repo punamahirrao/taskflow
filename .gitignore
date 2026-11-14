@@ -1,4 +1,32 @@
-# Local environment files (contain per-machine settings)
-.env
-.env.*
-!.env.example
+# Environment files (including templates and per-machine secrets)
+.env*
+**/.env*
+
+# Python bytecode and tool caches
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# JavaScript dependencies and build output
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Local Python environments
+.venv/
+**/.venv/
+venv/
+**/venv/
+
+# Runtime logs, uploaded estimator files, and local editor metadata
+*.log
+ai-estimator-backend/uploads/
