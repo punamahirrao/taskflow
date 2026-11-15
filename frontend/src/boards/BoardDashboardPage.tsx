@@ -1,0 +1,76 @@
+import "./boards.css";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { createAgileBoard, updateAgileBoard } from "../project-detail/api/tasks";
+import type { AgileBoard } from "../common/entities/task";
+import { useTranslation } from "../common/shared/i18n/hooks/useTranslation";
+import { useProjectContext } from "../common/features/projects/context/useProjectContext";
+import { BoardCard } from "./components/BoardCard";
+import { BoardFilters } from "./components/BoardFilters";
+import { BoardForm, type BoardFormValues } from "./components/BoardForm";
+import { BoardPageHeader, BoardPageTitle, BoardsPageShell } from "./BoardDashboardPage.styles";
+import { filterAndSortBoards, type BoardSortKey, type BoardTab } from "./utils/boardDashboard";
+import { firstValidationError, boardSchema } from "../common/validation/schemas";
+import { useToast } from "../common/features/notifications/useToast";
+import { useAppDispatch, useAppSelector } from "../common/store";
+import { loadAccessibleBoards } from "../common/store/boardsSlice";
+
+export default function BoardDashboardPage() {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.session.user);
+  const navigate = useNavigate();
+  const { projects, selectedId, loading: projectsLoading } = useProjectContext();
+  const { active: boards, archived: archivedBoards, loading, error: boardLoadError } = useAppSelector((state) => state.boards);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [sort, setSort] = useState<BoardSortKey>("updated");
+  const [tab, setTab] = useState<BoardTab>("all");
+  const [showForm, setShowForm] = useState(false);
+  const [editBoard, setEditBoard] = useState<AgileBoard | null>(null);
+  const [form, setForm] = useState<BoardFormValues>({ name: "", description: "", project: "", type: "scrum", members: [] });
+  const [busy, setBusy] = useState(false);
+  const [menu, setMenu] = useState<number | null>(null);
+  const canCreate = projects.some((project) => project.id === selectedId && project.can_create_board);
+  const boardRedirectDone = useRef(false);
+
+  const reload = useCallback(async () => { setError(""); await dispatch(loadAccessibleBoards()); }, [dispatch]);
+  const projectIds = projects.map((project) => project.id).join(",");
+  useEffect(() => { if (!projectsLoading) void Promise.resolve().then(reload); }, [projectsLoading, projectIds, reload]);
+  useEffect(() => {
+    if (!projectsLoading && !loading && boards.length === 1 && !boardRedirectDone.current) { boardRedirectDone.current = true; navigate(`/boards/${boards[0].id}?project=${boards[0].project}`, { replace: true }); }
+  }, [projectsLoading, loading, boards, navigate]);
+
+  const visible = useMemo(() => filterAndSortBoards({ boards, archivedBoards, projects, userId: user?.id, tab, selectedId, typeFilter, search, sort }), [boards, archivedBoards, projects, user?.id, tab, selectedId, typeFilter, search, sort]);
+  function openCreate() { setEditBoard(null); setForm({ name: "", description: "", project: String(selectedId ?? ""), type: "scrum", members: [] }); setShowForm(true); }
+  function openEdit(board: AgileBoard) { setEditBoard(board); setForm({ name: board.name, description: board.description, project: String(board.project), type: board.board_type, members: board.members.map((member) => member.id).filter((id) => id !== board.owner) }); setShowForm(true); setMenu(null); }
+  async function submitBoard(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const validationError = firstValidationError(boardSchema, form);
+    if (validationError) { setError(validationError); toast("error", validationError); return; }
+    setBusy(true); setError("");
+    try {
+      if (editBoard) await updateAgileBoard(Number(form.project), editBoard.id, { name: form.name.trim(), description: form.description, board_type: form.type, member_ids: form.members });
+      else await createAgileBoard(Number(form.project), { name: form.name.trim(), description: form.description, board_type: form.type, member_ids: form.members });
+      toast("success", editBoard ? t("boards.boardSaved") : t("boards.boardCreated", { name: form.name.trim() }));
+      setShowForm(false); await reload();
+    } catch (cause) { const message = cause instanceof Error ? cause.message : t("boards.errCreateBoard"); setError(message); toast("error", message); }
+    finally { setBusy(false); }
+  }
+  async function archive(board: AgileBoard) { setMenu(null); try { await updateAgileBoard(board.project, board.id, { is_archived: true }); toast("success", t("boards.boardArchived", { name: board.name })); await reload(); } catch (cause) { const message = cause instanceof Error ? cause.message : t("boards.dashboardLoadFailed"); setError(message); toast("error", message); } }
+
+  return <BoardsPageShell><div className="mx-auto max-w-[1500px]">
+    <BoardPageHeader><div><p className="text-xs font-bold uppercase tracking-[.2em] text-accent">TaskFlow</p><BoardPageTitle>{t("boards.title")}</BoardPageTitle><p className="mt-2 text-sm text-muted">{t("boards.dashboardSubtitle")}</p></div>{canCreate && <button type="button" onClick={openCreate} className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent-hover"><Plus size={17}/>{t("boards.createBoard")}</button>}</BoardPageHeader>
+    {(error || boardLoadError) && <p role="alert" className="mb-4 rounded-lg bg-danger-soft px-4 py-3 text-sm text-danger">{error || boardLoadError}</p>}
+    <BoardFilters search={search} type={typeFilter} sort={sort} tab={tab} onSearch={setSearch} onType={setTypeFilter} onSort={setSort} onTab={setTab}/>
+    {loading ? <p role="status" className="rounded-xl border border-line bg-surface p-12 text-center text-sm text-muted">{t("common.loading")}</p> : visible.length ? <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{visible.map((board) => {
+      const project = projects.find((item) => item.id === board.project);
+      const canManage = board.owner === user?.id || project?.my_role === "owner" || project?.my_role === "admin" || project?.can_create_board;
+      return <BoardCard key={board.id} board={board} project={project} canManage={Boolean(canManage)} menuOpen={menu === board.id} onOpen={() => navigate(`/boards/${board.id}?project=${board.project}`)} onMenu={() => setMenu(menu === board.id ? null : board.id)} onEdit={() => openEdit(board)} onArchive={() => void archive(board)} onProjectSettings={() => { navigate(`/project/${board.project}/settings`); setMenu(null); }} />;
+    })}{canCreate && tab !== "archived" && <button type="button" onClick={openCreate} className="grid min-h-64 place-items-center rounded-2xl border border-dashed border-accent/40 bg-surface p-8 text-center hover:bg-accent/5"><span><span className="mx-auto mb-3 grid size-12 place-items-center rounded-full bg-accent/10 text-accent"><Plus/></span><b className="block text-content">{t("boards.createNewBoard")}</b><small className="mt-2 block text-muted">{t("boards.createBoardHint")}</small></span></button>}</div> : <p className="rounded-xl border border-line bg-surface p-12 text-center text-sm text-muted">{t(tab === "archived" ? "boards.noArchivedBoards" : "boards.noBoards")}</p>}
+    {showForm && <BoardForm projects={projects} values={form} editing={editBoard} busy={busy} error={error} onChange={(values) => setForm((current) => ({ ...current, ...values }))} onSubmit={(event) => void submitBoard(event)} onCancel={() => setShowForm(false)} />}
+  </div></BoardsPageShell>;
+}

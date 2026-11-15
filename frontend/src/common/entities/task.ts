@@ -50,11 +50,46 @@ export interface BoardColumn {
   status_order: number;
   group_name: string;
   wip_limit: number | null;
+  statuses: WorkflowStatus[];
+}
+
+export interface WorkflowStatus {
+  id: number;
+  key: string;
+  name: string;
+  position: number;
+  is_system: boolean;
+}
+
+export interface ProjectWorkflow {
+  statuses: WorkflowStatus[];
+  columns: BoardColumn[];
+  can_manage: boolean;
+}
+
+export type AgileBoardType = "scrum" | "kanban";
+export interface AgileBoard {
+  id: number;
+  project: number;
+  name: string;
+  description: string;
+  board_type: AgileBoardType;
+  owner: number;
+  owner_name: string;
+  members: { id: number; name: string; photo_url: string | null }[];
+  member_count: number;
+  task_count: number;
+  sprint_count: number;
+  is_archived: boolean;
+  can_manage: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Sprint {
   id: number;
   project: number;
+  board: number | null;
   name: string;
   start_date: string | null;
   end_date: string | null;

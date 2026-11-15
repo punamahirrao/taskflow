@@ -1,10 +1,7 @@
 import {
   BarChart3,
-  BriefcaseBusiness,
-  Files,
   CalendarDays,
   Columns3,
-  Users,
   ChevronDown,
   FolderKanban,
   LayoutDashboard,
@@ -13,7 +10,6 @@ import {
   Settings,
   ShieldCheck,
   TrainFront,
-  UserRound,
   UsersRound,
 } from "lucide-react";
 import { useState } from "react";
@@ -21,6 +17,8 @@ import ProjectSwitcher from "../../features/projects/components/ProjectSwitcher"
 import { NavLink, useLocation } from "react-router-dom";
 import type { TranslationKey } from "../../entities/language";
 import { useTranslation } from "../../shared/i18n/hooks/useTranslation";
+import { useProjectContext } from "../../features/projects/context/useProjectContext";
+import UserMenu from "../../features/profile/components/UserMenu";
 
 interface NavItem {
   path: string;
@@ -34,10 +32,7 @@ const NAV_ITEMS: NavItem[] = [
   { path: "/backlog", icon: ListTodo, label: "app.backlog" },
   { path: "/sprint-train", icon: TrainFront, label: "app.sprintTrain" },
   { path: "/boards", icon: Columns3, label: "app.boards" },
-  { path: "/portfolio", icon: BriefcaseBusiness, label: "app.portfolio" },
-  { path: "/documents", icon: Files, label: "app.documents" },
   { path: "/ai-estimator", icon: BrainCircuit, label: "app.aiEstimator" },
-  { path: "/team", icon: Users, label: "app.team" },
   { path: "/calendar", icon: CalendarDays, label: "app.calendar" },
   { path: "/reports", icon: BarChart3, label: "app.reports" },
 ];
@@ -46,7 +41,9 @@ function ProjectSidebar() {
   const [isAdministrationOpen, setIsAdministrationOpen] = useState(false);
   const { pathname } = useLocation();
   const { t } = useTranslation();
-  const isProjectPage = pathname.startsWith("/project/");
+  const { selectedId } = useProjectContext();
+  const projectSettingsPath = selectedId ? `/project/${selectedId}/settings` : "/projects";
+  const isProjectPage = pathname.startsWith("/project/") && !pathname.endsWith("/settings");
   const menuClass = (isActive: boolean) =>
     `flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
       isActive
@@ -55,24 +52,19 @@ function ProjectSidebar() {
     }`;
 
   return (
-    <aside className="platform-sidebar border-b border-gray-200 bg-gray-50 p-5 md:sticky md:top-0 md:h-screen md:overflow-y-auto md:border-r md:border-b-0">
+    <aside className="platform-sidebar border-b border-gray-200 bg-gray-50 p-5 md:sticky md:top-0 md:flex md:h-screen md:flex-col md:overflow-y-auto md:border-r md:border-b-0">
       <div className="mb-5 px-3">
         <h2 className="text-2xl font-bold text-purple-700">{t("app.taskflow")}</h2>
       </div>
 
       <ProjectSwitcher />
 
-      <nav aria-label={t("nav.main")} className="space-y-1">
-        {NAV_ITEMS.map(({ path, icon: Icon, label }) => <NavLink key={path} to={path} data-testid={`nav-${path.slice(1)}`} className={({ isActive }) => menuClass(isActive || (path === "/projects" && isProjectPage))}>
+      <nav aria-label={t("nav.main")} className="space-y-1 md:flex-1">
+        {NAV_ITEMS.map(({ path, icon: Icon, label }) => <NavLink key={path} to={path} data-testid={`nav-${path.slice(1)}`} className={({ isActive }) => menuClass(isActive || (path === "/projects" && isProjectPage) || (path === "/boards" && pathname.startsWith("/boards/")))}>
           <Icon size={18} aria-hidden="true" />{t(label)}
         </NavLink>)}
-        <NavLink
-          to="/profile"
-          data-testid="nav-profile"
-          className={({ isActive }) => menuClass(isActive)}
-        >
-          <UserRound size={18} aria-hidden="true" />
-          {t("nav.myProfile")}
+        <NavLink to={projectSettingsPath} className={({ isActive }) => menuClass(isActive || pathname.endsWith("/settings"))}>
+          <Settings size={18} aria-hidden="true" />{t("app.projectSettings")}
         </NavLink>
         <div>
           <button
@@ -99,13 +91,7 @@ function ProjectSidebar() {
               <UsersRound size={16} aria-hidden="true" />
               {t("app.users")}
             </NavLink>
-            <button
-              type="button"
-              disabled
-              title={t("projectSidebar.userAdminUnavailable")}
-              className="flex w-full cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-400"
-            >
-            </button>
+            <NavLink to="/portfolio" className={({ isActive }) => menuClass(isActive)}><FolderKanban size={16} aria-hidden="true" />{t("app.portfolio")}</NavLink>
             <NavLink to="/settings" className={({ isActive }) => menuClass(isActive)}>
               <Settings size={16} aria-hidden="true" />
               {t("app.settings")}
@@ -113,6 +99,9 @@ function ProjectSidebar() {
           </div>
         </div>
       </nav>
+      <div className="mt-6 border-t border-gray-200 pt-4 md:mt-auto">
+        <UserMenu />
+      </div>
     </aside>
   );
 }

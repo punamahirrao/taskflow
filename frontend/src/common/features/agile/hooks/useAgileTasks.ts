@@ -1,32 +1,34 @@
 import { useCallback, useEffect, useState } from "react";
-import { getTasks, updateTask } from "../../../api/tasks";
+import { getTasks, updateTask } from "../../../../project-detail/api/tasks";
 import type { Task, TaskStatus } from "../../../entities/task";
 import { translate } from "../../../shared/i18n/translate";
 
-export function useAgileTasks(projectId: number | null, activeSprintOnly = false) {
+export function useAgileTasks(projectId: number | null, activeSprintOnly = false, boardId: number | null = null) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const reload = useCallback(async () => {
     setLoading(true);
+    setTasks([]);
     try {
-      setTasks(await getTasks(projectId, activeSprintOnly ? "active" : null));
+      setTasks(await getTasks(projectId, activeSprintOnly ? "active" : null, boardId));
       setError("");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : translate("agile.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [projectId, activeSprintOnly]);
+  }, [projectId, activeSprintOnly, boardId]);
 
   useEffect(() => {
     let active = true;
     void Promise.resolve().then(async () => {
       if (!active) return;
       setLoading(true);
+      setTasks([]);
       try {
-        const result = await getTasks(projectId, activeSprintOnly ? "active" : null);
+        const result = await getTasks(projectId, activeSprintOnly ? "active" : null, boardId);
         if (active) { setTasks(result); setError(""); }
       } catch (cause) {
         if (active) setError(cause instanceof Error ? cause.message : translate("agile.loadFailed"));
@@ -35,7 +37,7 @@ export function useAgileTasks(projectId: number | null, activeSprintOnly = false
       }
     });
     return () => { active = false; };
-  }, [projectId, activeSprintOnly]);
+  }, [projectId, activeSprintOnly, boardId]);
 
   const update = useCallback(async (taskId: number, changes: Partial<Task>) => {
     const previous = tasks.find((task) => task.id === taskId);
@@ -53,9 +55,13 @@ export function useAgileTasks(projectId: number | null, activeSprintOnly = false
   }, [tasks]);
 
   const sync = useCallback(async () => {
-    try { setTasks(await getTasks(projectId, activeSprintOnly ? "active" : null)); }
+    try {
+      const result = await getTasks(projectId, activeSprintOnly ? "active" : null, boardId);
+      setTasks(result);
+      setError("");
+    }
     catch { /* Keep the last useful board state during a temporary connection drop. */ }
-  }, [projectId, activeSprintOnly]);
+  }, [projectId, activeSprintOnly, boardId]);
 
   const move = useCallback((taskId: number, status: TaskStatus) => update(taskId, { status }), [update]);
   return { tasks, setTasks, loading, error, setError, reload, sync, update, move };

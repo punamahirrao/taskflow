@@ -1,12 +1,11 @@
 import "./reports.css";
 import { useEffect, useMemo, useState } from "react";
 import { Activity, AlertTriangle, CheckCheck, Clock3, Gauge } from "lucide-react";
-import { getSprints } from "../common/api/tasks";
+import { getSprints } from "../project-detail/api/tasks";
 import type { Sprint } from "../common/entities/task";
-import { AgileProjectFilter } from "../common/features/agile/components/AgileProjectFilter";
-import { BoardMetric } from "./features/agile/components/BoardMetric";
-import { SprintInsightsPanel } from "./features/agile/components/SprintInsightsPanel";
-import { SprintProgressCharts } from "./features/agile/components/SprintProgressCharts";
+import { BoardMetric } from "./components/BoardMetric";
+import { SprintInsightsPanel } from "./components/SprintInsightsPanel";
+import { SprintProgressCharts } from "./components/SprintProgressCharts";
 import { useAgileProjectScope } from "../common/features/agile/hooks/useAgileProjectScope";
 import { useAgileTasks } from "../common/features/agile/hooks/useAgileTasks";
 import { averageDays } from "../common/features/agile/utils/boardView";
@@ -45,7 +44,7 @@ export default function ReportsPage() {
   const totalTasks = agile.tasks.length;
 
   return <main data-testid="page-reports" className="min-h-screen min-w-0 bg-slate-50 p-6 md:p-8"><div className="mx-auto max-w-[1440px]">
-    <header className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-indigo-600">{t("reports.eyebrow")}</p><h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">{t("reports.title")}</h2><p className="mt-2 text-sm text-slate-500">{t("reports.subtitle")}</p></div><AgileProjectFilter projects={scope.projects} value={scope.projectId} onChange={scope.selectProject} /></header>
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-indigo-600">{t("reports.eyebrow")}</p><h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">{t("reports.title")}</h2><p className="mt-2 text-sm text-slate-500">{t("reports.subtitle")}</p></div></header>
     {agile.error && <p role="alert" className="mb-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{agile.error}</p>}
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5" aria-label={t("reports.metricsAria")}>
       <BoardMetric label={t("reports.completedLabel")} value={completedRecently} note={t("reports.completedNote")} icon={<CheckCheck size={16} />} tint="green" />

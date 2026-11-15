@@ -1,18 +1,19 @@
-import "./login.css";
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import type { CredentialResponse } from "@react-oauth/google";
-import { LoginForm } from "./features/auth/components/LoginForm";
+import { LoginForm } from "./components/LoginForm";
 import { useLogin } from "./features/auth/hooks/useLogin";
 import { isMicrosoftConfigured, signInWithMicrosoft } from "./features/auth/microsoft";
-import { googleLogin } from "../common/api/auth";
+import { googleLogin } from "./api/auth";
 import { AuthPromoSection } from "../common/sections/auth/AuthPromoSection";
 import { useTranslation } from "../common/shared/i18n/hooks/useTranslation";
 import type { AccountType } from "./entities/login";
+import { useToast } from "../common/features/notifications/useToast";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const toast = useToast();
   const [accountType, setAccountType] = useState<AccountType>("private");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,7 +38,8 @@ export default function LoginPage() {
       const needsProfileCompletion = await googleLogin(response.credential);
       navigate(needsProfileCompletion ? "/profile" : "/dashboard");
     } catch (cause) {
-      setSocialError(cause instanceof Error ? cause.message : t("login.googleFailed"));
+      const message = cause instanceof Error ? cause.message : t("login.googleFailed");
+      setSocialError(message); toast("error", message);
     }
   }
 
@@ -47,12 +49,14 @@ export default function LoginPage() {
       const needsProfileCompletion = await signInWithMicrosoft();
       navigate(needsProfileCompletion ? "/profile" : "/dashboard");
     } catch (cause) {
-      setSocialError(cause instanceof Error ? cause.message : t("login.microsoftFailed"));
+      const message = cause instanceof Error ? cause.message : t("login.microsoftFailed");
+      setSocialError(message); toast("error", message);
     }
   }
 
   function handleOrganizationSSO() {
     setSocialError(t("login.orgSsoNotConfigured"));
+    toast("info", t("login.orgSsoNotConfigured"));
   }
 
   return <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">

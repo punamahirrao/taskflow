@@ -35,6 +35,7 @@ function clearSession() {
   sessionStorage.removeItem("access_token");
   sessionStorage.removeItem("refresh_token");
   sessionStorage.removeItem("user");
+  window.dispatchEvent(new Event("taskflow:session-cleared"));
 }
 
 async function errorFrom(response: Response): Promise<Error> {

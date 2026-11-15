@@ -17,6 +17,6 @@ export const usersLabels = defineLabels({
   "users.createdAsActiveOrganization": "This account will be created as an active organization user.",
   "users.createdAsActivePrivate": "This account will be created as an active private user.",
   "users.updatedAsActive": "This account will be updated as an active regular user.",
-  "users.cancel": "Cancel", "users.creating": "Creating...", "users.createUser": "Create User", "users.createFailed": "Unable to create user.",
-  "users.updating": "Updating...", "users.updateUser": "Update User", "users.updateFailed": "Unable to update user.",
+  "users.cancel": "Cancel", "users.creating": "Creating...", "users.createUser": "Create User", "users.createFailed": "Unable to create user.", "users.createdToast": "{name} created.",
+  "users.updating": "Updating...", "users.updateUser": "Update User", "users.updateFailed": "Unable to update user.", "users.updatedToast": "{name} updated.",
 });

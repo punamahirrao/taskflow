@@ -1,6 +1,6 @@
 import "./settings.css";
 import { Palette } from "lucide-react";
-import { ThemePicker } from "./features/components/ThemePicker";
+import { ThemePicker } from "./components/ThemePicker";
 import { useTheme } from "../common/features/settings/hooks/useTheme";
 import { useTranslation } from "../common/shared/i18n/hooks/useTranslation";
 import { useState } from "react";

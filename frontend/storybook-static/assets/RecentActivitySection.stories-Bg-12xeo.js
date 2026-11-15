@@ -1,0 +1,5 @@
+import{n as e}from"./rolldown-runtime-DkW27tQK.js";import{n as t,t as n}from"./RecentActivitySection-D4zX6SyY.js";var r,i,a,o;function s(){return(s=e((()=>{t(),r={title:`Dashboard/Sections/RecentActivitySection`,component:n,tags:[`autodocs`],parameters:{docs:{description:{component:`A semantic activity feed with actor, project, timestamp, and optional comment context.`}}}},i={},a={globals:{theme:`night`}},o=[`RecentActivity`,`DarkMode`],i.parameters={...i.parameters,docs:{...i.parameters?.docs,source:{originalSource:`{}`,...i.parameters?.docs?.source}}},a.parameters={...a.parameters,docs:{...a.parameters?.docs,source:{originalSource:`{
+  globals: {
+    theme: "night"
+  }
+}`,...a.parameters?.docs?.source}}}})))()}s();export{a as DarkMode,i as RecentActivity,o as __namedExportsOrder,r as default};

@@ -1,10 +1,12 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { X } from "lucide-react";
+import { getProjectWorkflow } from "../../../../project-detail/api/tasks";
 import type { TranslationKey } from "../../../entities/language";
 import type { Project } from "../../../entities/project";
-import type { StatusOption, Task, TaskPriority, TaskStatus, WorkType } from "../../../entities/task";
+import type { Task, TaskPriority, TaskStatus, WorkType } from "../../../entities/task";
 import { useTranslation } from "../../../shared/i18n/hooks/useTranslation";
-import type { LanguageContextValue } from "../../../shared/i18n/context/LanguageContext";
+import { firstValidationError, taskSchema } from "../../../validation/schemas";
+import { useToast } from "../../notifications/useToast";
 import { PRIORITY_LABELS } from "../utils/boardView";
 
 const TYPES: WorkType[] = ["initiative", "epic", "task", "idea", "enhancement", "bug", "spike", "research"];
@@ -13,17 +15,6 @@ const TYPE_LABELS: Record<WorkType, TranslationKey> = {
   enhancement: "agile.typeEnhancement", bug: "agile.typeBug", spike: "agile.typeSpike", research: "agile.typeResearch",
 };
 const PRIORITIES: TaskPriority[] = ["urgent", "high", "medium", "low"];
-interface StatusLabel {
-  key: TaskStatus;
-  label: TranslationKey;
-}
-
-const STATUSES: StatusLabel[] = [
-  { key: "backlog", label: "agile.statusBacklog" }, { key: "todo", label: "agile.statusTodo" },
-  { key: "in_progress", label: "agile.statusInProgress" }, { key: "review", label: "agile.statusReview" },
-  { key: "waiting", label: "agile.statusWaiting" }, { key: "done", label: "agile.statusDone" },
-];
-
 interface EditWorkItemDialogProps {
   task: Task;
   project: Project;
@@ -34,11 +25,13 @@ interface EditWorkItemDialogProps {
 
 export function EditWorkItemDialog({ task, project, candidates, onClose, onSave }: EditWorkItemDialogProps) {
   const { t } = useTranslation();
+  const toast = useToast();
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
   const [workType, setWorkType] = useState(task.work_type);
   const [priority, setPriority] = useState(task.priority);
   const [status, setStatus] = useState(task.status);
+  const [statusOptions, setStatusOptions] = useState<{ key: TaskStatus; name: string }[]>([]);
   const [estimate, setEstimate] = useState(task.estimate ?? "");
   const [dueDate, setDueDate] = useState(task.due_date ?? "");
   const [tags, setTags] = useState(task.tags.join(", "));
@@ -55,11 +48,21 @@ export function EditWorkItemDialog({ task, project, candidates, onClose, onSave 
   const dependencies = candidates.filter((item) => item.id !== task.id);
   const childWork = candidates.filter((item) => item.parent === task.id);
   const completedChildWork = childWork.filter((item) => item.status === "done").length;
-  const statusOptions = statusOptionsFor(status, t);
+  useEffect(() => {
+    let active = true;
+    void getProjectWorkflow(project.id).then((workflow) => {
+      if (!active) return;
+      const options = workflow.statuses.map(({ key, name }) => ({ key, name }));
+      if (!options.some((item) => item.key === task.status)) options.push({ key: task.status, name: task.status.replaceAll("_", " ") });
+      setStatusOptions(options);
+    }).catch(() => setStatusOptions([{ key: task.status, name: task.status.replaceAll("_", " ") }]));
+    return () => { active = false; };
+  }, [project.id, task.status]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!title.trim()) { setError(t("agile.titleRequired")); return; }
+    const validationError = firstValidationError(taskSchema, { title, description, dueDate });
+    if (validationError) { setError(validationError); toast("error", validationError); return; }
     setSaving(true); setError("");
     try {
       const saved = await onSave({
@@ -69,9 +72,10 @@ export function EditWorkItemDialog({ task, project, candidates, onClose, onSave 
         assignee: assignee ? Number(assignee) : null, parent: parent ? Number(parent) : null,
         blocked_by: blockedBy, blocked, escalated, definition_done: doneChecks, ready_for_sprint: ready,
       });
-      if (!saved) { setError(t("agile.saveFailedAccess")); return; }
+      if (!saved) { const message = t("agile.saveFailedAccess"); setError(message); toast("error", message); return; }
+      toast("success", t("agile.itemSaved"));
       onClose();
-    } catch (cause) { setError(cause instanceof Error ? cause.message : t("agile.saveFailed")); }
+    } catch (cause) { const message = cause instanceof Error ? cause.message : t("agile.saveFailed"); setError(message); toast("error", message); }
     finally { setSaving(false); }
   }
 
@@ -111,9 +115,4 @@ interface FieldProps {
 
 function Field({ label, children }: FieldProps) {
   return <label className="block text-sm font-medium text-slate-700">{label}{children}</label>;
-}
-
-function statusOptionsFor(status: TaskStatus, t: LanguageContextValue["t"]): StatusOption[] {
-  const known = STATUSES.map((item) => ({ key: item.key, name: t(item.label) }));
-  return STATUSES.some((item) => item.key === status) ? known : [...known, { key: status, name: status.replaceAll("_", " ") }];
 }

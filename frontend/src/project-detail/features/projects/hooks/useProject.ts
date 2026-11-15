@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProjects } from "../../../../common/api/projects";
+import { getProjects } from "../../../../projects/api/projects";
 import type { Project } from "../../../../common/entities/project";
 import { translate } from "../../../../common/shared/i18n/translate";
 

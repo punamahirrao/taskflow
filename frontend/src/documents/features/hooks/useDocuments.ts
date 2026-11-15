@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { createDocumentFolder, createResourceLink, deleteDocument, deleteDocumentFolder, deleteResourceLink, getDocumentLibrary, renameDocumentFolder, uploadDocument } from "../../../common/api/documents";
+import { createDocumentFolder, createResourceLink, deleteDocument, deleteDocumentFolder, deleteResourceLink, getDocumentLibrary, renameDocumentFolder, uploadDocument } from "../../api/documents";
 import type { DocumentFolder, DocumentLocation, ResourceLink, WorkspaceDocument } from "../../../common/entities/document";
 import type { DocumentLibraryState } from "../../entities/documentLibrary";
 import { translate } from "../../../common/shared/i18n/translate";

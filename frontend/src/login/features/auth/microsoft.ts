@@ -1,5 +1,5 @@
 import { PublicClientApplication } from "@azure/msal-browser";
-import { microsoftLogin } from "../../../common/api/auth";
+import { microsoftLogin } from "../../api/auth";
 import { translate } from "../../../common/shared/i18n/translate";
 
 const clientId = import.meta.env.VITE_MICROSOFT_CLIENT_ID;

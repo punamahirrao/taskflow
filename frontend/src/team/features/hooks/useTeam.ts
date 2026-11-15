@@ -1,20 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { addProjectMember, removeProjectMember, scheduleProjectMemberRemoval } from "../../../common/api/projectMembers";
-import { getUsers } from "../../../common/api/users";
+import { addProjectMember, removeProjectMember, scheduleProjectMemberRemoval } from "../../api/projectMembers";
+import { getUsers } from "../../../users/api/users";
 import type { TeamRosterMember } from "../../entities/team";
 import type { SiteUser } from "../../../common/entities/user";
 import { useProjectContext } from "../../../common/features/projects/context/useProjectContext";
 import { buildTeamRoster, sortTeamRoster } from "../teamRoster";
-import { ASSIGNABLE_ROLES, NO_ROLES, TEAM_FILTER_KEY } from "../teamPolicy";
+import { ASSIGNABLE_ROLES, NO_ROLES } from "../teamPolicy";
 import { translate } from "../../../common/shared/i18n/translate";
 
-export function useTeam() {
+export function useTeam(forcedProjectId?: number) {
   const { projects, selectedId, loading: projectsLoading, error: projectsError, reload } = useProjectContext();
-  const [teamProjectOverride, setTeamProjectOverride] = useState<number | null | undefined>(() => {
-    const saved = sessionStorage.getItem(TEAM_FILTER_KEY);
-    if (saved === null) return undefined;
-    return saved === "all" ? null : Number(saved);
-  });
   const [users, setUsers] = useState<SiteUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState("");
@@ -34,7 +29,7 @@ export function useTeam() {
     return () => { active = false; };
   }, []);
 
-  const requestedProjectId = teamProjectOverride === undefined ? selectedId : teamProjectOverride;
+  const requestedProjectId = forcedProjectId ?? selectedId;
   const projectId = projects.some((item) => item.id === requestedProjectId) ? requestedProjectId : null;
   const scopedProjects = useMemo(
     () => projectId === null ? projects : projects.filter((project) => project.id === projectId),
@@ -60,11 +55,6 @@ export function useTeam() {
   const effectiveRole = roles.includes(newRole) ? newRole : roles[0] ?? "member";
   const loading = projectsLoading || usersLoading;
   const error = projectsError || usersError;
-
-  function selectProject(id: number | null) {
-    sessionStorage.setItem(TEAM_FILTER_KEY, id === null ? "all" : String(id));
-    setTeamProjectOverride(id);
-  }
 
   async function addMember() {
     if (!project || !selectedUser || !roles.includes(effectiveRole) || busy) return;
@@ -102,7 +92,6 @@ export function useTeam() {
     projects,
     project,
     projectId,
-    selectProject,
     allProjectsSelected: projectId === null,
     members,
     candidates,

@@ -14,7 +14,7 @@ from projects.access import (
     visible_projects,
 )
 from projects.models import ProjectMembership
-from tasks.models import Task, TaskHistory
+from tasks.models import Task, TaskHistory, WorkflowStatus
 from tasks.permissions import NO_WRITE_PERMISSION
 from tasks.serializers import TaskSerializer
 from tasks.models import Sprint
@@ -54,11 +54,11 @@ class TaskDetailView(APIView):
         tracked_fields = tuple(serializer.validated_data.keys())
         before = {field: history_value(task, field) for field in tracked_fields}
         if "status" in serializer.validated_data:
-            valid_statuses = task.project.board_columns.values_list("key", flat=True)
+            valid_statuses = WorkflowStatus.objects.filter(columns__project=task.project).values_list("key", flat=True)
             if not valid_statuses.exists():
                 from tasks.views.list_create import ensure_default_columns
                 ensure_default_columns(task.project)
-                valid_statuses = task.project.board_columns.values_list("key", flat=True)
+                valid_statuses = WorkflowStatus.objects.filter(columns__project=task.project).values_list("key", flat=True)
             if serializer.validated_data["status"] not in valid_statuses:
                 return Response({"status": "Choose a column configured for this project."}, status=status.HTTP_400_BAD_REQUEST)
         if "assignee" in serializer.validated_data and serializer.validated_data["assignee"] and serializer.validated_data["assignee"].id != task.assignee_id:

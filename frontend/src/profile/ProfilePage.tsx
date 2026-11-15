@@ -1,9 +1,8 @@
-import "./profile.css";
 import { useEffect, useState } from "react";
-import { getProfile } from "../common/api/profile";
+import { getProfile } from "./api/profile";
 import type { Profile } from "../common/entities/user";
-import ProfileForm from "./features/components/ProfileForm";
-import ProfilePhotoCard from "./features/components/ProfilePhotoCard";
+import ProfileForm from "./components/ProfileForm";
+import ProfilePhotoCard from "./components/ProfilePhotoCard";
 import { useTranslation } from "../common/shared/i18n/hooks/useTranslation";
 import { translate } from "../common/shared/i18n/translate";
 

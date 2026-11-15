@@ -1,5 +1,5 @@
 import type { Project } from "../../common/entities/project";
-import ProjectCard from "../features/components/ProjectCard";
+import ProjectCard from "../features/ProjectCard";
 
 interface ProjectListSectionProps {
   projects: Project[];

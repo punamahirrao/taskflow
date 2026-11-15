@@ -3,10 +3,9 @@ import { defineLabels } from "./defineLabels";
 export const teamLabels = defineLabels({
   "team.subtitle": "See your team across projects or focus on one project.",
   "team.memberCountOne": "{count} team member", "team.memberCountOther": "{count} team members",
-  "team.viewLabel": "Team view", "team.projectFilterAria": "Team project filter", "team.allProjects": "All Projects",
   "team.loading": "Loading team…",
   "team.noProjectsTitle": "No projects available", "team.noProjectsMessage": "Create or join a project to start building your team.",
-  "team.chooseProjectHint": "To add a member, choose a project so their project role can be assigned.",
+  "team.chooseProjectHint": "Choose a project from the left menu before managing project team members.",
   "team.onlyOwnersAdd": "Only project owners and managers can add team members.",
   "team.noMembersTitle": "No team members in this view", "team.noMembersMessage": "Add an active system user to the selected project to get started.",
   "team.membersAria": "Team members",

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { deleteUser, getUsers } from "../../../common/api/users";
+import { deleteUser, getUsers } from "../../api/users";
 import type { SiteUser } from "../../../common/entities/user";
 import { translate } from "../../../common/shared/i18n/translate";
 

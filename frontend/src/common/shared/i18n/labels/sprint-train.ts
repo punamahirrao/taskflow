@@ -2,13 +2,12 @@ import { defineLabels } from "./defineLabels";
 
 export const sprintTrainLabels = defineLabels({
   // Header and views
-  "sprintTrain.allProjects": "All Projects", "sprintTrain.piOverallProgress": "PI Overall Progress",
-  "sprintTrain.progressSummary": "{points} / {capacity} pts ({percent}%)",
+  "sprintTrain.allProjects": "All Projects",
   "sprintTrain.addStory": "Add Story", "sprintTrain.closeAddStory": "Close Add Story", "sprintTrain.newSprint": "New Sprint",
   "sprintTrain.switchToLightTheme": "Switch to light theme", "sprintTrain.switchToNightTheme": "Switch to night theme",
   "sprintTrain.viewsNav": "Sprint Train views", "sprintTrain.tabWorkflow": "Sprint Train Workflow", "sprintTrain.teamCapacity": "Team Capacity",
   "sprintTrain.tabDependenciesSingular": "Dependency Matrix ({count} Risk)", "sprintTrain.tabDependenciesPlural": "Dependency Matrix ({count} Risks)",
-  "sprintTrain.filterByProject": "Filter by project", "sprintTrain.searchStoriesAndSprints": "Search stories and sprints",
+"sprintTrain.searchStoriesAndSprints": "Search stories and sprints",
   "sprintTrain.searchStoriesPlaceholder": "Search stories...", "sprintTrain.filterByTeam": "Filter by team", "sprintTrain.allTeams": "All Teams",
   "sprintTrain.filterAll": "all", "sprintTrain.filterActive": "active", "sprintTrain.filterFuture": "future",
   "sprintTrain.dismiss": "Dismiss", "sprintTrain.datesNotSet": "Dates not set",
@@ -29,9 +28,7 @@ export const sprintTrainLabels = defineLabels({
   "sprintTrain.noStoriesInSprint": "No stories in this sprint yet. Drag a backlog story here to add one.",
   "sprintTrain.selectSprintToViewStories": "Select a sprint to view its stories.",
 
-  // Summary, capacity and dependencies
-  "sprintTrain.summaryTitle": "Sprint Train Summary", "sprintTrain.deliveryAtAGlance": "Delivery at a glance", "sprintTrain.plannedSprints": "Planned Sprints",
-  "sprintTrain.activeSprints": "Active Sprints", "sprintTrain.backlogStories": "Backlog Stories", "sprintTrain.openGlobalBacklog": "Open Global Backlog",
+  // Capacity and dependencies
   "sprintTrain.teamCapacityHint": "Estimated sprint points grouped by assigned team.", "sprintTrain.assignedStories": "{count} assigned stories",
   "sprintTrain.teamCapacityEmpty": "Team capacity will appear when stories are assigned.",
   "sprintTrain.dependencyMatrix": "Dependency Matrix", "sprintTrain.dependencyMatrixHint": "Sprint stories with unresolved dependencies.",
@@ -39,7 +36,7 @@ export const sprintTrainLabels = defineLabels({
 
   // Global backlog drawer
   "sprintTrain.globalBacklogDrawerAria": "Global backlog drawer", "sprintTrain.globalBacklogDrawer": "Global Backlog Drawer",
-  "sprintTrain.backlogItemsAndPool": "Backlog Items & Story Pool", "sprintTrain.closeBacklogDrawer": "Close backlog drawer",
+  "sprintTrain.closeBacklogDrawer": "Close backlog drawer",
   "sprintTrain.availableBacklogStories": "Available Backlog Stories", "sprintTrain.itemsCount": "{count} Items", "sprintTrain.totalPool": "Total Pool",
   "sprintTrain.backlogDragHint": "Drag stories onto any matching-project sprint card or the selected sprint list.",
   "sprintTrain.cancelNewStory": "Cancel New Story", "sprintTrain.createStoryIn": "Create Story in {name}", "sprintTrain.selectSprintToCreateStory": "Select a Sprint to Create a Story",
@@ -50,13 +47,7 @@ export const sprintTrainLabels = defineLabels({
   "sprintTrain.statusTodo": "To Do", "sprintTrain.loadingBacklog": "Loading backlog...", "sprintTrain.noBacklogMatches": "No backlog stories match these filters.",
   "sprintTrain.backlogFooter": "Stories and sprint assignments are saved to the project.",
 
-  // Add story drawer
-  "sprintTrain.addStoryDrawerAria": "Add story drawer", "sprintTrain.addAStory": "Add a story",
-  "sprintTrain.addStoryHint": "Create a story directly in the selected sprint.", "sprintTrain.closeAddStoryDrawer": "Close add story drawer",
-  "sprintTrain.selectedSprint": "Selected sprint", "sprintTrain.storyTitlePlaceholder": "Write a clear, actionable story",
-  "sprintTrain.storyDescriptionPlaceholder": "Add context, acceptance notes, or expected outcome", "sprintTrain.storyPointsPlaceholder": "e.g. 3",
-  "sprintTrain.addingStory": "Adding story...", "sprintTrain.addToSprint": "Add to Sprint", "sprintTrain.chooseFromBacklog": "Choose from backlog",
-  "sprintTrain.selectSprintBeforeAdding": "Select a sprint before adding a story.", "sprintTrain.openBacklog": "Open Backlog",
+  "sprintTrain.chooseFromBacklog": "Choose from backlog",
 
   // Create sprint dialog
   "sprintTrain.createSprint": "Create Sprint", "sprintTrain.createSprintDialogHint": "Save a planned or active sprint to the selected project.",
@@ -98,5 +89,5 @@ export const sprintTrainLabels = defineLabels({
   "sprintTrain.historyHint": "Read-only task activity trail.", "sprintTrain.loadingHistory": "Loading history…", "sprintTrain.noHistory": "No history recorded for this task yet.",
   "sprintTrain.historyBy": "by {name}", "sprintTrain.historyAdded": "Added", "sprintTrain.historyChangedFrom": "{value} → ", "sprintTrain.none": "None",
   "sprintTrain.confirmDeleteComment": "Delete this comment?", "sprintTrain.errorLoadActivity": "Unable to load task activity.",
-  "sprintTrain.errorAddComment": "Unable to add comment.", "sprintTrain.errorUpdateComment": "Unable to update comment.", "sprintTrain.errorDeleteComment": "Unable to delete comment.",
+  "sprintTrain.errorAddComment": "Unable to add comment.", "sprintTrain.errorUpdateComment": "Unable to update comment.", "sprintTrain.errorDeleteComment": "Unable to delete comment.", "sprintTrain.commentPostedToast": "Comment posted.", "sprintTrain.commentSavedToast": "Comment updated.",
 });

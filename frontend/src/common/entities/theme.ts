@@ -12,8 +12,15 @@ export interface ThemeContextValue {
   setTheme: (theme: ThemeName) => void;
 }
 
+/** Theme swatches mirror the semantic CSS variables in common/common.css. */
+export const THEME_PALETTES: Record<ThemeName, string[]> = {
+  original: ["#f7f7fb", "#ffffff", "#7c3aed", "#1e293b"],
+  professional: ["#f6f8fc", "#ffffff", "#2563eb", "#202939"],
+  night: ["#090d16", "#121829", "#4f46e5", "#efece6", "#10b981", "#f59e0b"],
+};
+
 export const THEME_OPTIONS: ThemeOption[] = [
-  { id: "original", name: "Original", description: "The current TaskFlow colors and contrast.", palette: ["#f7f7fb", "#ffffff", "#7c3aed", "#1e293b"] },
-  { id: "professional", name: "Professional", description: "A polished light workspace with quiet slate surfaces and focused business blue accents.", palette: ["#f6f8fc", "#ffffff", "#2563eb", "#202939"] },
-  { id: "night", name: "Night", description: "Deep navy canvas, cream navigation, indigo actions, and clear status colors.", palette: ["#090d16", "#121829", "#4f46e5", "#efece6", "#10b981", "#f59e0b"] },
+  { id: "original", name: "Original", description: "The current TaskFlow colors and contrast.", palette: THEME_PALETTES.original },
+  { id: "professional", name: "Professional", description: "A polished light workspace with quiet slate surfaces and focused business blue accents.", palette: THEME_PALETTES.professional },
+  { id: "night", name: "Night", description: "Deep navy canvas, cream navigation, indigo actions, and clear status colors.", palette: THEME_PALETTES.night },
 ];

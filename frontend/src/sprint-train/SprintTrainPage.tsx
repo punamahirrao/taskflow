@@ -1,45 +1,34 @@
 import "./sprint-train.css";
 import { useEffect, useMemo, useState, type DragEvent, type FormEvent } from "react";
 import {
-  AlertTriangle, ArrowDown, ArrowUp, CalendarDays, Check, Filter, Moon,
-  Plus, Search, Sun, TrainFront, Users, Workflow, X,
+  AlertTriangle, CalendarDays, Check, Filter, Moon,
+  Plus, Search, Sun, TrainFront, Users, X,
 } from "lucide-react";
-import { createSprint, createTask, getSprints } from "../common/api/tasks";
+import { createSprint, createTask, getSprints } from "../project-detail/api/tasks";
 import type { Sprint, Task } from "../common/entities/task";
-import UserMenu from "../common/features/profile/components/UserMenu";
 import { useTheme } from "../common/features/settings/hooks/useTheme";
 import { useAgileTasks } from "../common/features/agile/hooks/useAgileTasks";
 import { WorkItemCard } from "../common/features/agile/components/WorkItemCard";
 import { useProjectContext } from "../common/features/projects/context/useProjectContext";
-import { SprintStoryDetailsDrawer } from "./features/agile/components/SprintStoryDetailsDrawer";
+import { SprintStoryDetailsDrawer } from "./components/SprintStoryDetailsDrawer";
 import { getSprintDisplayCount } from "../common/features/settings/sprintDisplayPreference";
 import type { TranslationKey } from "../common/entities/language";
 import { useTranslation } from "../common/shared/i18n/hooks/useTranslation";
 import { translate } from "../common/shared/i18n/translate";
 import type { SprintFilter, WorkflowTab, WorkflowTabOption } from "./entities/sprintTrain";
+import { formatDate, points, teamName } from "./utils/sprintTrain";
+import { firstValidationError, sprintSchema, taskSchema } from "../common/validation/schemas";
+import { useToast } from "../common/features/notifications/useToast";
 
 const sprintFilterLabelKeys: Record<SprintFilter, TranslationKey> = {
   all: "sprintTrain.filterAll", active: "sprintTrain.filterActive", future: "sprintTrain.filterFuture",
 };
 
-function points(task: Task) {
-  const parsed = Number.parseFloat(task.estimate);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function formatDate(value: string | null) {
-  if (!value) return translate("sprintTrain.datesNotSet");
-  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${value}T00:00:00`));
-}
-
-function teamName(task: Task) {
-  return task.tags[0] ?? task.work_type.replace("_", " ");
-}
-
 export default function SprintTrainPage() {
   const { t } = useTranslation();
+  const toast = useToast();
   const { projects, selectedId: projectId } = useProjectContext();
-  const [trainProjectId, setTrainProjectId] = useState<number | null>(null);
+  const trainProjectId = projectId;
   const selectedProject = projects.find((project) => project.id === trainProjectId) ?? null;
   const agile = useAgileTasks(trainProjectId);
   const { theme, setTheme } = useTheme();
@@ -47,7 +36,6 @@ export default function SprintTrainPage() {
   const [sprintError, setSprintError] = useState("");
   const [selectedSprintId, setSelectedSprintId] = useState<number | null>(null);
   const [createSprintOpen, setCreateSprintOpen] = useState(false);
-  const [newSprintProjectId, setNewSprintProjectId] = useState("");
   const [newSprintName, setNewSprintName] = useState("");
   const [newSprintStart, setNewSprintStart] = useState("");
   const [newSprintEnd, setNewSprintEnd] = useState("");
@@ -56,7 +44,6 @@ export default function SprintTrainPage() {
   const [newSprintActive, setNewSprintActive] = useState(false);
   const [savingSprint, setSavingSprint] = useState(false);
   const [createStoryOpen, setCreateStoryOpen] = useState(false);
-  const [addStoryDrawerOpen, setAddStoryDrawerOpen] = useState(false);
   const [detailsStoryId, setDetailsStoryId] = useState<number | null>(null);
   const [sprintDisplayCount, setSprintDisplayCount] = useState(getSprintDisplayCount);
   const [showAllSprints, setShowAllSprints] = useState(false);
@@ -114,9 +101,6 @@ export default function SprintTrainPage() {
   const sprintPoints = (sprintId: number) => agile.tasks
     .filter((task) => task.sprint === sprintId && task.status !== "backlog")
     .reduce((total, task) => total + points(task), 0);
-  const totalPoints = sprints.reduce((total, sprint) => total + sprintPoints(sprint.id), 0);
-  const totalCapacity = sprints.reduce((total, sprint) => total + (sprint.capacity_points ?? 0), 0);
-  const overallProgress = totalCapacity ? Math.min(100, Math.round(totalPoints / totalCapacity * 100)) : 0;
   const searchedSprints = sprints.filter((sprint) =>
     `${sprint.name} ${sprint.goal}`.toLowerCase().includes(search.toLowerCase()),
   );
@@ -136,22 +120,25 @@ export default function SprintTrainPage() {
     setDetailsStoryId((current) => current === taskId ? null : taskId);
   }
 
-  function reorderStory(taskId: number, direction: -1 | 1) {
-    const index = sprintTasks.findIndex((task) => task.id === taskId);
-    const nextIndex = index + direction;
-    if (index < 0 || nextIndex < 0 || nextIndex >= sprintTasks.length) return;
+  function reorderStory(taskId: number, targetId: number) {
+    if (taskId === targetId) return;
     const reordered = [...sprintTasks];
-    [reordered[index], reordered[nextIndex]] = [reordered[nextIndex], reordered[index]];
+    const from = reordered.findIndex((task) => task.id === taskId);
+    const to = reordered.findIndex((task) => task.id === targetId);
+    if (from < 0 || to < 0) return;
+    reordered.splice(to, 0, ...reordered.splice(from, 1));
+    agile.setTasks((current) => current.map((task) => {
+      const rank = reordered.findIndex((item) => item.id === task.id);
+      return rank < 0 ? task : { ...task, rank };
+    }));
     void Promise.all(reordered.map((task, rank) => agile.update(task.id, { rank })));
   }
   const dependencies = agile.tasks.filter((task) => task.sprint !== null && task.blocked_by.some(
     (id) => agile.tasks.some((dependency) => dependency.id === id && dependency.status !== "done"),
   ));
-  const newSprintProject = projects.find((project) => String(project.id) === newSprintProjectId) ?? null;
-  const newSprintProjectHasActiveSprint = sprints.some((sprint) => sprint.project === newSprintProject?.id && sprint.is_active);
+  const newSprintProject = selectedProject;
 
   function openSprintForm() {
-    setNewSprintProjectId(String(projectId ?? projects[0]?.id ?? ""));
     setNewSprintName("");
     setNewSprintStart("");
     setNewSprintEnd("");
@@ -164,23 +151,10 @@ export default function SprintTrainPage() {
 
   async function submitSprint(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!newSprintProject || !newSprintName.trim()) {
-      setSprintError(t("sprintTrain.errorChooseProjectAndName"));
-      return;
-    }
-    if (newSprintStart && newSprintEnd && newSprintEnd < newSprintStart) {
-      setSprintError(t("sprintTrain.errorEndBeforeStart"));
-      return;
-    }
-    if (newSprintActive && newSprintProjectHasActiveSprint) {
-      setSprintError(t("sprintTrain.errorActiveSprintExists"));
-      return;
-    }
+    if (!newSprintProject) { const message = t("sprintTrain.errorChooseProjectAndName"); setSprintError(message); toast("error", message); return; }
+    const validationError = firstValidationError(sprintSchema, { name: newSprintName, goal: newSprintGoal, startDate: newSprintStart, endDate: newSprintEnd, capacity: newSprintCapacity });
+    if (validationError) { setSprintError(validationError); toast("error", validationError); return; }
     const capacity = newSprintCapacity.trim() ? Number(newSprintCapacity) : null;
-    if (capacity !== null && (!Number.isInteger(capacity) || capacity < 0 || capacity > 32767)) {
-      setSprintError(t("sprintTrain.errorCapacityRange"));
-      return;
-    }
     setSavingSprint(true);
     setSprintError("");
     try {
@@ -193,14 +167,14 @@ export default function SprintTrainPage() {
         newSprintGoal.trim(),
         capacity,
       );
-      setSprints((current) => [sprint, ...current.map((existing) =>
-        sprint.is_active && existing.project === sprint.project ? { ...existing, is_active: false } : existing,
-      )]);
+      setSprints((current) => [sprint, ...current]);
       setSelectedSprintId(sprint.id);
       setCreateSprintOpen(false);
-      setFeedback(t("sprintTrain.sprintCreatedFor", { sprint: sprint.name, project: newSprintProject.name }));
+      const message = t("sprintTrain.sprintCreatedFor", { sprint: sprint.name, project: newSprintProject.name });
+      setFeedback(message); toast("success", message);
     } catch (cause) {
-      setSprintError(cause instanceof Error ? cause.message : t("sprintTrain.errorCreateSprint"));
+      const message = cause instanceof Error ? cause.message : t("sprintTrain.errorCreateSprint");
+      setSprintError(message); toast("error", message);
     } finally {
       setSavingSprint(false);
     }
@@ -208,8 +182,10 @@ export default function SprintTrainPage() {
 
   async function submitStory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedSprint || !newStoryTitle.trim()) {
-      setFeedback(t("sprintTrain.errorSelectSprintAndTitle"));
+    const validationError = firstValidationError(taskSchema, { title: newStoryTitle, description: newStoryDescription });
+    if (!selectedSprint || validationError) {
+      const message = !selectedSprint ? t("sprintTrain.errorSelectSprintAndTitle") : validationError!;
+      setFeedback(message); toast("error", message);
       return;
     }
     setSavingStory(true);
@@ -236,9 +212,11 @@ export default function SprintTrainPage() {
       setNewStoryDescription("");
       setNewStoryEstimate("");
       setCreateStoryOpen(false);
-      setFeedback(t("sprintTrain.storyAddedTo", { title: story.title, sprint: selectedSprint.name }));
+      const message = t("sprintTrain.storyAddedTo", { title: story.title, sprint: selectedSprint.name });
+      setFeedback(message); toast("success", message);
     } catch (cause) {
-      setFeedback(cause instanceof Error ? cause.message : t("sprintTrain.errorCreateStory"));
+      const message = cause instanceof Error ? cause.message : t("sprintTrain.errorCreateStory");
+      setFeedback(message); toast("error", message);
     } finally {
       setSavingStory(false);
     }
@@ -289,22 +267,15 @@ export default function SprintTrainPage() {
             </div>
             {selectedProject?.my_role && <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-indigo-700">{selectedProject.my_role}</span>}
           </div>
-          <div className="ml-auto min-w-52 flex-1 md:max-w-sm">
-            <div className="mb-1 flex justify-between text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              <span>{t("sprintTrain.piOverallProgress")}</span><span>{t("sprintTrain.progressSummary", { points: totalPoints, capacity: totalCapacity, percent: overallProgress })}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${overallProgress}%` }} /></div>
-          </div>
-          <button type="button" onClick={() => { setCreateStoryOpen(false); setAddStoryDrawerOpen((open) => !open); }} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
-            <Plus size={16} />{addStoryDrawerOpen ? t("sprintTrain.closeAddStory") : t("sprintTrain.addStory")}
+          <button type="button" onClick={() => { setCreateStoryOpen(false); setIsDrawerOpen((open) => !open); }} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+            <Plus size={16} />{isDrawerOpen ? t("sprintTrain.closeAddStory") : t("sprintTrain.addStory")}
           </button>
-          <button type="button" onClick={openSprintForm} disabled={!projects.length} className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-4 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="button" onClick={openSprintForm} disabled={!projectId} className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-4 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50">
             <Plus size={16} />{t("sprintTrain.newSprint")}
           </button>
           <button type="button" aria-label={theme === "night" ? t("sprintTrain.switchToLightTheme") : t("sprintTrain.switchToNightTheme")} onClick={() => setTheme(theme === "night" ? "professional" : "night")} className="grid size-10 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">
             {theme === "night" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-          <UserMenu />
       </section>
 
       <section className="mb-5 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 lg:flex-row lg:items-center lg:justify-between">
@@ -312,7 +283,6 @@ export default function SprintTrainPage() {
           {tabs.map((tab) => <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)} className={`border-b-2 px-3 py-2 text-sm font-semibold transition ${activeTab === tab.id ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-900"}`}>{tab.label}</button>)}
         </nav>
           <div className="flex flex-wrap items-center gap-2">
-          <label className="text-xs font-medium text-slate-600"><span className="sr-only">{t("sprintTrain.filterByProject")}</span><select aria-label={t("sprintTrain.filterByProject")} value={trainProjectId ?? "all"} onChange={(event) => { setTrainProjectId(event.target.value === "all" ? null : Number(event.target.value)); setShowAllSprints(false); setSelectedSprintId(null); }} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"><option value="all">{t("sprintTrain.allProjects")}</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
           <label className="relative min-w-44 flex-1 lg:flex-none">
             <span className="sr-only">{t("sprintTrain.searchStoriesAndSprints")}</span>
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -371,21 +341,12 @@ export default function SprintTrainPage() {
               </div>
             </header>
             <div className="divide-y divide-slate-100">
-              {filteredSprintTasks.map((task) => { const order = sprintTasks.findIndex((item) => item.id === task.id); return <div key={task.id} className="flex items-center gap-1.5 px-2 py-1"><div className="flex shrink-0 flex-col"><button type="button" aria-label={t("sprintTrain.moveUpStory", { title: task.title })} title={t("sprintTrain.moveUp")} disabled={order <= 0} onClick={() => reorderStory(task.id, -1)} className="rounded p-1 text-slate-400 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-25"><ArrowUp size={13} /></button><button type="button" aria-label={t("sprintTrain.moveDownStory", { title: task.title })} title={t("sprintTrain.moveDown")} disabled={order < 0 || order >= sprintTasks.length - 1} onClick={() => reorderStory(task.id, 1)} className="rounded p-1 text-slate-400 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-25"><ArrowDown size={13} /></button></div><div className="min-w-0 flex-1"><WorkItemCard compact task={task} candidates={agile.tasks} members={projects.find((project) => project.id === task.project)?.members ?? []} onAssign={(userId) => void agile.update(task.id, { assignee: userId })} sprintAction="backlog" onSprintAction={() => void agile.update(task.id, { status: "backlog", sprint: null })} onEdit={() => toggleStoryDetails(task.id)} /></div></div>; })}
+              {filteredSprintTasks.map((task) => <div key={task.id} draggable onDragStart={(event) => onDragStart(event, task.id)} onDragOver={onDragOver} onDrop={(event) => { event.preventDefault(); event.stopPropagation(); const draggedId = Number(event.dataTransfer.getData("text/plain")); if (sprintTasks.some((item) => item.id === draggedId)) reorderStory(draggedId, task.id); else if (selectedSprint) void onDrop(event, selectedSprint); }} className="cursor-grab px-2 py-1 active:cursor-grabbing"><WorkItemCard compact task={task} candidates={agile.tasks} members={projects.find((project) => project.id === task.project)?.members ?? []} onAssign={(userId) => void agile.update(task.id, { assignee: userId })} sprintAction="backlog" onSprintAction={() => void agile.update(task.id, { status: "backlog", sprint: null })} onEdit={() => toggleStoryDetails(task.id)} /></div>)}
               {!filteredSprintTasks.length && <p className="p-8 text-center text-sm text-slate-500">{selectedSprint ? t("sprintTrain.noStoriesInSprint") : t("sprintTrain.selectSprintToViewStories")}</p>}
             </div>
           </section>
         </div>
 
-        <aside className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm xl:sticky xl:top-24">
-          <div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-indigo-600">{t("sprintTrain.summaryTitle")}</p><h3 className="mt-1 font-bold">{t("sprintTrain.deliveryAtAGlance")}</h3></div><Workflow size={19} className="text-indigo-500" /></div>
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center justify-between rounded-lg bg-slate-50 p-3"><span className="text-xs text-slate-600">{t("sprintTrain.plannedSprints")}</span><span className="font-bold">{sprints.filter((sprint) => !sprint.is_closed).length}</span></div>
-            <div className="flex items-center justify-between rounded-lg bg-emerald-50 p-3"><span className="text-xs text-emerald-800">{t("sprintTrain.activeSprints")}</span><span className="font-bold text-emerald-800">{sprints.filter((sprint) => sprint.is_active).length}</span></div>
-            <div className="flex items-center justify-between rounded-lg bg-amber-50 p-3"><span className="text-xs text-amber-800">{t("sprintTrain.backlogStories")}</span><span className="font-bold text-amber-800">{backlogItems.length}</span></div>
-          </div>
-          <button type="button" onClick={() => setIsDrawerOpen(true)} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-indigo-200 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50"><Plus size={15} />{t("sprintTrain.openGlobalBacklog")}</button>
-        </aside>
       </div>}
 
       {activeTab === "capacity" && <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -407,7 +368,7 @@ export default function SprintTrainPage() {
 
       {isDrawerOpen && <aside aria-label={t("sprintTrain.globalBacklogDrawerAria")} className="sprint-backlog-drawer fixed bottom-0 right-0 top-0 z-30 flex w-full flex-col border-l shadow-2xl sm:w-[400px]">
         <header className="sprint-backlog-header border-b p-4">
-          <div className="flex items-start justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-indigo-300">{t("sprintTrain.globalBacklogDrawer")}</p><h2 className="mt-1 text-base font-bold">{t("sprintTrain.backlogItemsAndPool")}</h2></div><button type="button" aria-label={t("sprintTrain.closeBacklogDrawer")} onClick={() => setIsDrawerOpen(false)} className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white"><X size={18} /></button></div>
+          <div className="flex items-start justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-indigo-300">{t("sprintTrain.globalBacklogDrawer")}</p><h2 className="mt-1 text-base font-bold">{t("sprintTrain.chooseFromBacklog")}</h2></div><button type="button" aria-label={t("sprintTrain.closeBacklogDrawer")} onClick={() => setIsDrawerOpen(false)} className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white"><X size={18} /></button></div>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="sprint-backlog-metric rounded-lg border p-3"><p className="text-[9px] font-semibold uppercase tracking-wide             text-slate-400">{t("sprintTrain.availableBacklogStories")}</p><p className="mt-1 text-sm font-bold">{t("sprintTrain.itemsCount", { count: backlogItems.length })}</p></div>
                         <div className="sprint-backlog-metric rounded-lg border p-3"><p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">{t("sprintTrain.totalPool")}</p><p className="mt-1 text-sm font-bold">{t("sprintTrain.points", { points: backlogItems.reduce((total, task) => total + points(task), 0) })}</p></div>
@@ -441,17 +402,7 @@ export default function SprintTrainPage() {
         </div>
         <footer className="border-t border-slate-800 p-3 text-[10px] text-slate-500"><span className="inline-flex items-center gap-1"><Plus size={12} />{t("sprintTrain.backlogFooter")}</span></footer>
       </aside>}
-      {addStoryDrawerOpen && <aside data-testid="sprint-add-story-drawer" aria-label={t("sprintTrain.addStoryDrawerAria")} className="fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l border-slate-200 bg-white shadow-2xl sm:w-[400px]">
-        <header className="flex items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 p-5"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-indigo-600">{t("app.sprintTrain")}</p><h2 className="mt-1 text-lg font-bold text-slate-900">{t("sprintTrain.addAStory")}</h2><p className="mt-1 text-xs text-slate-500">{t("sprintTrain.addStoryHint")}</p></div><button type="button" aria-label={t("sprintTrain.closeAddStoryDrawer")} onClick={() => setAddStoryDrawerOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-200"><X size={18} /></button></header>
-        {selectedSprint ? <form onSubmit={(event) => void submitStory(event)} className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
-          <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-3"><p className="text-[10px] font-semibold uppercase tracking-wide           text-indigo-500">{t("sprintTrain.selectedSprint")}</p><p className="mt-1 text-sm font-semibold text-indigo-900">{selectedSprint.name}</p><p className="text-xs text-indigo-700">{projects.find((project) => project.id === selectedSprint.project)?.name ?? t("app.project")}</p></div>
-                    <label className="block text-sm font-medium text-slate-700">{t("sprintTrain.title")}<input required maxLength={255} value={newStoryTitle} onChange={(event) => setNewStoryTitle(event.target.value)} placeholder={t("sprintTrain.storyTitlePlaceholder")} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" /></label>
-                    <label className="block text-sm font-medium text-slate-700">{t("sprintTrain.description")}<textarea value={newStoryDescription} onChange={(event) => setNewStoryDescription(event.target.value)} rows={5} placeholder={t("sprintTrain.storyDescriptionPlaceholder")} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" /></label>
-                    <label className="block text-sm font-medium text-slate-700">{t("sprintTrain.storyPoints")}<input type="number" min="0" step="0.5" value={newStoryEstimate} onChange={(event) => setNewStoryEstimate(event.target.value)} placeholder={t("sprintTrain.storyPointsPlaceholder")} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" /></label>
-                    <footer className="mt-auto border-t border-slate-100 pt-4"><button type="submit" disabled={savingStory || !newStoryTitle.trim()} className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">{savingStory ? t("sprintTrain.addingStory") : t("sprintTrain.addToSprint")}</button><button type="button" onClick={() => { setAddStoryDrawerOpen(false); setIsDrawerOpen(true); }} className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">{t("sprintTrain.chooseFromBacklog")}</button></footer>
-        </form> : <div className="p-5"><p className="text-sm text-slate-600">{t("sprintTrain.selectSprintBeforeAdding")}</p><button type="button" onClick={() => { setAddStoryDrawerOpen(false); setIsDrawerOpen(true); }} className="mt-4 rounded-lg border border-indigo-200 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50">{t("sprintTrain.openBacklog")}</button></div>}
-      </aside>}
-      {detailsStory && <SprintStoryDetailsDrawer task={detailsStory} projectName={projects.find((project) => project.id === detailsStory.project)?.name} addStoryDrawerOpen={addStoryDrawerOpen} onUpdate={(changes) => void agile.update(detailsStory.id, changes)} onClose={() => setDetailsStoryId(null)} />}
+      {detailsStory && <SprintStoryDetailsDrawer task={detailsStory} projectName={projects.find((project) => project.id === detailsStory.project)?.name} onUpdate={(changes) => void agile.update(detailsStory.id, changes)} onClose={() => setDetailsStoryId(null)} />}
       {createSprintOpen && <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/50 p-4" onClick={(event) => { if (event.target === event.currentTarget && !savingSprint) setCreateSprintOpen(false); }}>
         <section role="dialog" aria-modal="true" aria-labelledby="create-sprint-title" className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
           <header className="mb-4 flex items-start justify-between gap-4">
@@ -459,7 +410,7 @@ export default function SprintTrainPage() {
                         <button type="button" aria-label={t("sprintTrain.closeCreateSprintDialog")} disabled={savingSprint} onClick={() => setCreateSprintOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={18} /></button>
           </header>
           <form onSubmit={(event) => void submitSprint(event)} className="space-y-3">
-            <label className="block text-sm font-medium text-slate-700">{t("app.project")}<select required value={newSprintProjectId} onChange={(event) => { setNewSprintProjectId(event.target.value); setNewSprintActive(false); }} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5">{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
+            {selectedProject ? <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">{t("app.project")}: <span className="font-semibold">{selectedProject.name}</span></p> : <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">{t("sprintTrain.errorChooseProjectAndName")}</p>}
             <label className="block text-sm font-medium text-slate-700">{t("sprintTrain.sprintName")}<input required maxLength={100} value={newSprintName} onChange={(event) => setNewSprintName(event.target.value)} placeholder={t("sprintTrain.sprintNamePlaceholder")} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5" /></label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block text-sm font-medium text-slate-700">{t("sprintTrain.startDate")}<input type="date" value={newSprintStart} onChange={(event) => setNewSprintStart(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5" /></label>
@@ -467,14 +418,14 @@ export default function SprintTrainPage() {
             </div>
             <label className="block text-sm font-medium text-slate-700">{t("sprintTrain.capacityPoints")}<input type="number" min="0" max="32767" step="1" value={newSprintCapacity} onChange={(event) => setNewSprintCapacity(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5" /></label>
             <label className="block text-sm font-medium text-slate-700">{t("sprintTrain.sprintGoal")}<textarea maxLength={255} rows={2} value={newSprintGoal} onChange={(event) => setNewSprintGoal(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5" /></label>
-            <label className={`flex items-start gap-2 rounded-lg border p-3 text-sm ${newSprintProjectHasActiveSprint ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400" : "border-slate-200 text-slate-700"}`}>
-              <input type="checkbox" checked={newSprintActive} disabled={newSprintProjectHasActiveSprint} onChange={(event) => setNewSprintActive(event.target.checked)} className="mt-0.5" />
-              <span><span className="block font-medium">{t("sprintTrain.startAsActive")}</span><span className="text-xs">{newSprintProjectHasActiveSprint ? t("sprintTrain.activeSprintExistsHint") : t("sprintTrain.plannedSprintHint")}</span></span>
+            <label className="flex items-start gap-2 rounded-lg border border-slate-200 p-3 text-sm text-slate-700">
+              <input type="checkbox" checked={newSprintActive} onChange={(event) => setNewSprintActive(event.target.checked)} className="mt-0.5" />
+              <span><span className="block font-medium">{t("sprintTrain.startAsActive")}</span><span className="text-xs">{t("sprintTrain.plannedSprintHint")}</span></span>
             </label>
             {sprintError && <p role="alert" className="text-sm text-rose-600">{sprintError}</p>}
             <footer className="flex justify-end gap-2 border-t border-slate-100 pt-4">
               <button type="button" disabled={savingSprint} onClick={() => setCreateSprintOpen(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">{t("sprintTrain.cancel")}</button>
-              <button type="submit" disabled={savingSprint || !projects.length} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">{savingSprint ? t("sprintTrain.creating") : t("sprintTrain.createSprint")}</button>
+              <button type="submit" disabled={savingSprint || !projectId} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">{savingSprint ? t("sprintTrain.creating") : t("sprintTrain.createSprint")}</button>
             </footer>
           </form>
         </section>

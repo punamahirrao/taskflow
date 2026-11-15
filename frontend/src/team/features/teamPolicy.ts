@@ -4,4 +4,3 @@ export const ASSIGNABLE_ROLES: Record<string, string[]> = {
 };
 
 export const NO_ROLES: string[] = [];
-export const TEAM_FILTER_KEY = "team_project_filter";

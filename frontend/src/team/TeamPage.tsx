@@ -1,35 +1,29 @@
 import "./team.css";
-import { UsersRound } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "../common/shared/i18n/hooks/useTranslation";
 import type { TeamRosterMember } from "./entities/team";
-import { TeamMemberProfileDialog } from "./features/components/TeamMemberProfileDialog";
-import { TeamMemberRemovalDialog } from "./features/components/TeamMemberRemovalDialog";
+import { TeamMemberProfileDialog } from "./components/TeamMemberProfileDialog";
+import { TeamMemberRemovalDialog } from "./components/TeamMemberRemovalDialog";
 import { useTeam } from "./features/hooks/useTeam";
+import EmptyTeam from "./components/EmptyTeam";
+import { canRemoveMember } from "./utils/teamPermissions";
 import { AddTeamMemberForm } from "./sections/AddTeamMemberForm";
 import { TeamMemberCard } from "./sections/TeamMemberCard";
 
-export default function TeamPage() {
-  const team = useTeam();
+export default function TeamPage({ projectId, embedded = false }: { projectId?: number; embedded?: boolean } = {}) {
+  const team = useTeam(projectId);
   const { t } = useTranslation();
   const [detailsMember, setDetailsMember] = useState<TeamRosterMember | null>(null);
   const [removingMember, setRemovingMember] = useState<TeamRosterMember | null>(null);
   const canManageMembers = team.roles.length > 0;
 
-  return <main className="min-h-screen min-w-0 bg-slate-50 p-6 md:p-8">
-    <div className="mx-auto max-w-7xl">
+  return <main className={embedded ? "min-w-0 bg-slate-50 p-2" : "min-h-screen min-w-0 bg-slate-50 p-6 md:p-8"}>
+    <div className={embedded ? "w-full" : "mx-auto max-w-7xl"}>
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm text-slate-500">{t("team.subtitle")}</p>
           <p className="mt-1 text-sm font-medium text-slate-700">{t(team.members.length === 1 ? "team.memberCountOne" : "team.memberCountOther", { count: team.members.length })}</p>
         </div>
-        {team.projects.length > 0 && <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-          {t("team.viewLabel")}
-          <select aria-label={t("team.projectFilterAria")} value={team.allProjectsSelected ? "all" : team.projectId ?? ""} onChange={(event) => team.selectProject(event.target.value === "all" ? null : Number(event.target.value))} className="min-w-52 rounded-lg border border-gray-300 bg-white px-3 py-2">
-            <option value="all">{t("team.allProjects")}</option>
-            {team.projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
-          </select>
-        </label>}
       </header>
 
       {team.loading ? <p role="status" className="text-sm text-gray-500">{t("team.loading")}</p> : team.error ? <p role="alert" className="text-sm text-red-600">{team.error}</p> : team.projects.length === 0 ? <EmptyTeam title={t("team.noProjectsTitle")} message={t("team.noProjectsMessage")} /> : <div className="space-y-6">
@@ -68,22 +62,3 @@ export default function TeamPage() {
   </main>;
 }
 
-function canRemoveMember(actorRole: string | null | undefined, memberRoles: string[], removalDate?: string | null) {
-  if (removalDate) return false;
-  if (actorRole === "owner") return !memberRoles.includes("owner");
-  if (actorRole === "admin") return memberRoles.some((role) => role === "member" || role === "viewer");
-  return false;
-}
-
-interface EmptyTeamProps {
-  title: string;
-  message: string;
-}
-
-function EmptyTeam({ title, message }: EmptyTeamProps) {
-  return <section className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
-    <UsersRound size={32} aria-hidden="true" className="mx-auto text-gray-400" />
-    <h2 className="mt-3 text-base font-semibold text-gray-900">{title}</h2>
-    <p className="mt-1 text-sm text-gray-500">{message}</p>
-  </section>;
-}

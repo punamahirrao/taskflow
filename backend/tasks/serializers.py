@@ -1,9 +1,10 @@
 from rest_framework import serializers
+from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from projects.access import ADMIN, OWNER, get_role
-from tasks.models import BoardColumn, Sprint, Task, TaskComment, TaskHistory, WorkflowStatus
+from tasks.models import AgileBoard, BoardColumn, Sprint, Task, TaskComment, TaskHistory, WorkflowStatus
 
 User = get_user_model()
 
@@ -83,22 +84,83 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class BoardColumnSerializer(serializers.ModelSerializer):
     status_order = serializers.SerializerMethodField()
+    statuses = serializers.SerializerMethodField()
 
     class Meta:
         model = BoardColumn
-        fields = ("id", "name", "key", "position", "status_order", "group_name", "wip_limit")
+        fields = ("id", "name", "key", "position", "status_order", "group_name", "wip_limit", "statuses")
         read_only_fields = ("id", "key")
 
     def get_status_order(self, column):
-        status = WorkflowStatus.objects.filter(key=column.key).first()
-        return status.position if status else column.position
+        assignment = column.status_assignments.select_related("status").order_by("position", "id").first()
+        return assignment.status.position if assignment else column.position
+
+    def get_statuses(self, column):
+        return [
+            {"id": assignment.status_id, "key": assignment.status.key, "name": assignment.status.name, "position": assignment.position}
+            for assignment in column.status_assignments.select_related("status").order_by("position", "id")
+        ]
+
+
+class WorkflowStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkflowStatus
+        fields = ("id", "key", "name", "position", "is_system")
+        read_only_fields = ("id", "key", "position", "is_system")
+
+
+class AgileBoardSerializer(serializers.ModelSerializer):
+    owner_name = serializers.SerializerMethodField()
+    member_ids = serializers.PrimaryKeyRelatedField(source="members", many=True, queryset=User.objects.all(), required=False, write_only=True)
+    members = serializers.SerializerMethodField()
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    task_count = serializers.SerializerMethodField()
+    sprint_count = serializers.SerializerMethodField()
+    member_count = serializers.SerializerMethodField()
+    can_manage = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgileBoard
+        fields = ("id", "project", "project_name", "name", "description", "board_type", "owner", "owner_name", "members", "member_ids", "member_count", "task_count", "sprint_count", "is_archived", "can_manage", "created_at", "updated_at")
+        read_only_fields = ("id", "project", "owner", "owner_name", "members", "member_count", "task_count", "sprint_count", "is_archived", "created_at", "updated_at")
+
+    def get_owner_name(self, board):
+        return board.owner.get_full_name() or board.owner.email
+
+    def get_can_manage(self, board):
+        request = self.context.get("request")
+        return bool(request and (request.user.is_site_admin or board.owner_id == request.user.id or get_role(request.user, board.project) in (OWNER, ADMIN)))
+
+    def get_members(self, board):
+        users = {member.id: member for member in board.members.all()}
+        users.setdefault(board.owner_id, board.owner)
+        request = self.context.get("request")
+        result = []
+        for member in users.values():
+            photo_url = None
+            if member.profile_photo:
+                photo_url = reverse("profile_photo", args=[member.profile_photo.name])
+                if request:
+                    photo_url = request.build_absolute_uri(photo_url)
+            result.append({"id": member.id, "name": member.get_full_name() or member.email, "photo_url": photo_url})
+        return result
+
+    def get_member_count(self, board):
+        return board.members.exclude(id=board.owner_id).count() + 1
+
+    def get_task_count(self, board):
+        return board.project.tasks.filter(Q(sprint__board=board) | Q(sprint__isnull=True)).count()
+
+    def get_sprint_count(self, board):
+        return board.sprints.count()
 
 
 class SprintSerializer(serializers.ModelSerializer):
+    board_name = serializers.CharField(source="board.name", read_only=True, allow_null=True)
     class Meta:
         model = Sprint
-        fields = ("id", "project", "name", "start_date", "end_date", "is_active", "is_closed", "goal", "capacity_points", "velocity_points", "outcome_summary", "retrospective", "created_at")
-        read_only_fields = ("id", "project", "is_closed", "created_at")
+        fields = ("id", "project", "board", "board_name", "name", "start_date", "end_date", "is_active", "is_closed", "goal", "capacity_points", "velocity_points", "outcome_summary", "retrospective", "created_at")
+        read_only_fields = ("id", "project", "board", "board_name", "is_closed", "created_at")
 
 
 class TaskCommentSerializer(serializers.ModelSerializer):

@@ -13,6 +13,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     members = serializers.SerializerMethodField()
     is_default = serializers.SerializerMethodField()
     progress = serializers.SerializerMethodField()
+    can_create_board = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -20,9 +21,11 @@ class ProjectSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
+            "status",
             "expected_start_date",
             "end_date",
             "progress",
+            "can_create_board",
             "owner",
             "my_role",
             "members",
@@ -70,6 +73,13 @@ class ProjectSerializer(serializers.ModelSerializer):
         if not statuses:
             return 0
         return round(100 * statuses.count("done") / len(statuses))
+
+    def get_can_create_board(self, project):
+        request = self.context.get("request")
+        if request is None:
+            return False
+        role = self.get_my_role(project)
+        return role in (ProjectRole.OWNER, ProjectRole.ADMIN) or request.user.has_perm("tasks.create_agileboard")
 
     def get_is_default(self, project):
         request = self.context.get("request")

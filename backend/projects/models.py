@@ -17,8 +17,18 @@ class ProjectRole(models.Model):
 
 
 class Project(models.Model):
+    STATUS_IN_PROGRESS = "in_progress"
+    STATUS_UPCOMING = "upcoming"
+    STATUS_ARCHIVED = "archived"
+    STATUS_CHOICES = (
+        (STATUS_IN_PROGRESS, "In progress"),
+        (STATUS_UPCOMING, "Upcoming"),
+        (STATUS_ARCHIVED, "Archived"),
+    )
+
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_IN_PROGRESS)
     expected_start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

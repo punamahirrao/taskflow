@@ -2,11 +2,13 @@ export interface Project {
   id: number;
   name: string;
   description: string;
+  status: "in_progress" | "upcoming" | "archived";
   expected_start_date?: string | null;
   end_date?: string | null;
   progress?: number;
   owner: number;
   my_role?: string | null;
+  can_create_board?: boolean;
   is_default?: boolean;
   members?: ProjectMember[];
 }
@@ -23,6 +25,7 @@ export interface ProjectMember {
 }
 
 export interface ProjectCreateInput extends Pick<Project, "name" | "description"> {
+  status?: Project["status"];
   expected_start_date?: string | null;
   end_date?: string | null;
 }

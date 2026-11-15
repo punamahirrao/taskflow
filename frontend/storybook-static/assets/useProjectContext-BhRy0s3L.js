@@ -1,0 +1,1 @@
+import{n as e}from"./rolldown-runtime-DkW27tQK.js";import{t}from"./react-BZJXY1be.js";import{D as n,E as r}from"./iframe-BQTBrSOw.js";function i(){let e=(0,a.useContext)(r);if(!e)throw Error(`useProjectContext must be used within ProjectProvider.`);return e}var a;function o(){return(o=e((()=>{a=t(),n()})))()}export{i as n,o as t};

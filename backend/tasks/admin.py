@@ -1,4 +1,4 @@
 from django.contrib import admin
-from tasks.models import BoardColumn, Sprint, Task, WorkflowStatus
+from tasks.models import AgileBoard, BoardColumn, Sprint, Task, WorkflowStatus
 
-admin.site.register((Task, Sprint, BoardColumn, WorkflowStatus))
+admin.site.register((Task, Sprint, BoardColumn, WorkflowStatus, AgileBoard))

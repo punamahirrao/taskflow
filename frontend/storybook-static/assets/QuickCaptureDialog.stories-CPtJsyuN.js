@@ -1,0 +1,5 @@
+import{n as e}from"./rolldown-runtime-DkW27tQK.js";import{_ as t,g as n,h as r}from"./iframe-BQTBrSOw.js";import{n as i,t as a}from"./QuickCaptureDialog-D0E6VeHy.js";var o,s,c,l,u;function d(){return(d=e((()=>{r(),i(),{fn:o}=__STORYBOOK_MODULE_TEST__,s={title:`Backlog/Features/QuickCapture`,component:a,tags:[`autodocs`],args:{projects:t,defaultProjectId:n.id,onClose:o(),onCreated:o()},parameters:{docs:{description:{component:`Quickly capture an idea or work item into the selected project backlog. Validation and network responses are mocked for isolated stories.`}}}},c={},l={args:{defaultProjectId:null}},u=[`DialogOpen`,`NoProjectSelected`],c.parameters={...c.parameters,docs:{...c.parameters?.docs,source:{originalSource:`{}`,...c.parameters?.docs?.source}}},l.parameters={...l.parameters,docs:{...l.parameters?.docs,source:{originalSource:`{
+  args: {
+    defaultProjectId: null
+  }
+}`,...l.parameters?.docs?.source}}}})))()}d();export{c as DialogOpen,l as NoProjectSelected,u as __namedExportsOrder,s as default};

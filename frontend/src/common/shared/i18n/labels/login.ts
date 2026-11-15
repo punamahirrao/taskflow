@@ -15,5 +15,5 @@ export const loginLabels = defineLabels({
   "login.orContinueWith": "OR CONTINUE WITH", "login.microsoftEnableHint": "Set VITE_MICROSOFT_CLIENT_ID to enable Microsoft sign-in",
   "login.continueMicrosoft": "Continue with Microsoft", "login.microsoftNeedsClientId": "Microsoft sign-in needs an app client ID.",
   "login.termsNotice": "Terms of Service · Privacy Policy · Need an account? ", "login.register": "Register",
-  "login.errorEnterBoth": "Please enter both email and password.", "login.errorFailed": "Login failed.",
+  "login.errorEnterBoth": "Please enter both email and password.", "login.errorFailed": "Login failed.", "login.signedInToast": "Signed in successfully.",
 });

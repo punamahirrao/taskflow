@@ -2,9 +2,9 @@ import { defineLabels } from "./defineLabels";
 
 export const commonLabels = defineLabels({
   "app.dashboard": "Dashboard", "app.projects": "Projects", "app.backlog": "Backlog", "app.sprintTrain": "Sprint Train", "app.boards": "Boards",
-  "app.portfolio": "Portfolio", "app.documents": "Documents", "app.team": "Team", "app.calendar": "Calendar",
+  "app.portfolio": "Portfolio", "app.documents": "Documents", "app.team": "Team", "app.calendar": "Calendar", "app.projectSettings": "Project Settings",
   "app.reports": "Reports", "app.aiEstimator": "AI Estimator", "app.profile": "My Profile", "app.settings": "Settings", "app.users": "Users",
-  "app.project": "Project", "app.taskflow": "TaskFlow", "nav.main": "Main navigation", "nav.administration": "Administration",
+  "app.project": "Project", "app.taskflow": "TaskFlow", "nav.main": "Main navigation", "nav.administration": "Administration", "projectSettings.workflow": "Workflow and columns",
   "nav.searchProjects": "Search projects", "nav.myProfile": "My Profile",
   "language.english": "English", "language.swedish": "Swedish",
   "theme.original": "Original", "theme.professional": "Professional", "theme.night": "Night",
@@ -15,6 +15,7 @@ export const commonLabels = defineLabels({
   "common.loading": "Loading...", "common.cancel": "Cancel", "common.saving": "Saving…",
   "common.apiUnreachable": "Cannot reach the TaskFlow API at {url}. Start the backend and try again.",
   "common.requestFailed": "Request failed.", "common.sessionExpired": "Session expired. Please log in again.",
+  "notifications.dismiss": "Dismiss notification",
   "auth.benefitProjects": "Projects and tasks in one clear workspace.",
   "auth.benefitRoles": "Role-based access for owners, admins, members and viewers.",
   "auth.benefitDashboard": "A live dashboard to track progress at a glance.",
@@ -35,7 +36,7 @@ export const commonLabels = defineLabels({
   "agile.unassigned": "Unassigned", "agile.independentWork": "Independent work", "agile.noSprintGoal": "No sprint goal",
   "agile.titleRequired": "A title is required.",
   "agile.saveFailedAccess": "Unable to save this work item. Check your access and try again.",
-  "agile.saveFailed": "Unable to save this work item.",
+  "agile.saveFailed": "Unable to save this work item.", "agile.itemSaved": "Work item saved.",
   "agile.editWorkItem": "Edit work item", "agile.closeEditor": "Close editor", "agile.saveChanges": "Save changes",
   "agile.fieldTitle": "Title", "agile.fieldDescription": "Description", "agile.fieldType": "Type", "agile.fieldStatus": "Status",
   "agile.fieldPriority": "Priority", "agile.fieldEstimate": "Estimate", "agile.fieldDueDate": "Due date",
@@ -64,7 +65,7 @@ export const commonLabels = defineLabels({
   "agile.openDetailsFor": "Open details for {title}", "agile.openTaskDetails": "Open task details",
 }, {
   "app.dashboard": "Översikt", "app.projects": "Projekt", "app.backlog": "Produktbacklogg", "app.sprintTrain": "Sprinttåg", "app.boards": "Tavlor",
-  "app.portfolio": "Portfölj", "app.documents": "Dokument", "app.team": "Team", "app.calendar": "Kalender",
+  "app.portfolio": "Portfölj", "app.documents": "Dokument", "app.team": "Team", "app.calendar": "Kalender", "app.projectSettings": "Projektinställningar", "projectSettings.workflow": "Arbetsflöde och kolumner",
   "app.reports": "Rapporter", "app.aiEstimator": "AI-uppskattning", "app.profile": "Min profil", "app.settings": "Inställningar", "app.users": "Användare",
   "app.project": "Projekt", "app.taskflow": "TaskFlow", "nav.main": "Huvudnavigering", "nav.administration": "Administration",
   "nav.searchProjects": "Sök projekt", "nav.myProfile": "Min profil",
@@ -73,5 +74,5 @@ export const commonLabels = defineLabels({
   "theme.originalDescription": "TaskFlows nuvarande färger och kontrast.",
   "theme.professionalDescription": "En ljus och stilren arbetsyta med diskreta skiffergrå ytor och tydliga blå accenter.",
   "theme.nightDescription": "Djup marinblå arbetsyta, krämfärgad navigering, indigoåtgärder och tydliga statusfärger.",
-  "common.tryAgain": "Försök igen", "common.save": "Spara",
+  "common.tryAgain": "Försök igen", "common.save": "Spara", "notifications.dismiss": "Stäng avisering",
 });

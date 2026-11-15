@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { getProjects } from "../../../../common/api/projects";
-import { getUsers } from "../../../../common/api/users";
-import { addProjectMember, removeProjectMember, updateProjectMember } from "../../../../common/api/projectMembers";
+import { getProjects } from "../../../../projects/api/projects";
+import { getUsers } from "../../../../users/api/users";
+import { addProjectMember, removeProjectMember, updateProjectMember } from "../../../../team/api/projectMembers";
 import type { Project, ProjectMember } from "../../../../common/entities/project";
 import type { SiteUser } from "../../../../common/entities/user";
 import { translate } from "../../../../common/shared/i18n/translate";

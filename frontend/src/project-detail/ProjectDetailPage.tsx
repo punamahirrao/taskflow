@@ -11,7 +11,9 @@ import { ProjectTabs } from "./sections/ProjectTabs";
 import { TaskBoard } from "./sections/TaskBoard";
 import { useProjectContext } from "../common/features/projects/context/useProjectContext";
 import { useTranslation } from "../common/shared/i18n/hooks/useTranslation";
-import { EditProjectDialog } from "./features/projects/components/EditProjectDialog";
+import { EditProjectDialog } from "./components/EditProjectDialog";
+import DocumentsPage from "../documents/DocumentsPage";
+import { ProjectTimelineCalendar } from "./sections/ProjectTimelineCalendar";
 
 export default function ProjectDetailPage() {
   const { t } = useTranslation();
@@ -29,12 +31,13 @@ export default function ProjectDetailPage() {
   const completed = tasks.filter((task) => task.status === "done").length;
   const addTask = (task: Task) => setTasks((current) => [...current, task]);
 
-  return <main className="min-w-0"><div className="min-h-screen bg-gray-100 p-2"><div className="mx-auto max-w-8xl">
+  return <main className="min-w-0"><div className="min-h-screen bg-gray-100 p-2">
     <ProjectHeader project={project} completed={completed} total={tasks.length} onEdit={() => setEditingProject(true)} />
     {editingProject && <EditProjectDialog project={project} onClose={() => setEditingProject(false)} onUpdated={(updated) => { setProject(updated); setEditingProject(false); void reload(); }} />}
     <ProjectTabs active={tab} onChange={setTab} />
     {tab === "overview" && <ProjectOverview project={project} tasks={tasks} />}
-    {(tab === "timeline" || tab === "files") && <div className="mt-2 rounded-xl border border-gray-200 bg-white p-10 text-center text-gray-500 shadow-sm">{t("projectDetail.comingSoon")}</div>}
+    {tab === "timeline" && <ProjectTimelineCalendar project={project} tasks={tasks} />}
+    {tab === "files" && <div className="mt-2"><DocumentsPage key={project.id} projectId={project.id} /></div>}
     {tab === "tasks" && <TaskBoard project={project} tasks={tasks} error={error} onAdd={addTask} onMove={(taskId, status) => void moveTask(taskId, status)} />}
-  </div></div></main>;
+  </div></main>;
 }

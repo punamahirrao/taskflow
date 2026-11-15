@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getProjectTasks, updateTaskStatus } from "../../../../common/api/tasks";
+import { getProjectTasks, updateTaskStatus } from "../../../api/tasks";
 import type { Task, TaskStatus } from "../../../../common/entities/task";
 import { translate } from "../../../../common/shared/i18n/translate";
 
@@ -9,8 +9,15 @@ export function useProjectTasks(projectId: number | string | undefined) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!projectId) return;
     let active = true;
+    setLoading(true);
+    setError("");
+    setTasks([]);
+    if (!projectId) {
+      setError(translate("projectDetail.notFound"));
+      setLoading(false);
+      return () => { active = false; };
+    }
     getProjectTasks(projectId).then((result) => { if (active) setTasks(result); })
       .catch((cause: unknown) => { if (active) setError(cause instanceof Error ? cause.message : translate("projectDetail.unableToLoadTasks")); })
       .finally(() => { if (active) setLoading(false); });

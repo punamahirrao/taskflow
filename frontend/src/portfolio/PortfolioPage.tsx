@@ -1,15 +1,15 @@
 import "./portfolio.css";
+import { Page } from "../common/components/styled";
 import { useEffect, useMemo, useState } from "react";
 import { Activity, AlertTriangle, BriefcaseBusiness, Link2, Target } from "lucide-react";
-import { getSprints } from "../common/api/tasks";
-import type { Sprint, Task } from "../common/entities/task";
+import { getSprints } from "../project-detail/api/tasks";
+import type { Sprint } from "../common/entities/task";
 import { useAgileProjectScope } from "../common/features/agile/hooks/useAgileProjectScope";
 import { useAgileTasks } from "../common/features/agile/hooks/useAgileTasks";
-import { AgileProjectFilter } from "../common/features/agile/components/AgileProjectFilter";
 import { useTranslation } from "../common/shared/i18n/hooks/useTranslation";
-import type { BurnupSeries, CrossProjectDependency } from "./entities/portfolio";
-
-interface SmallStatProps { label: string; value: number }
+import type { CrossProjectDependency } from "./entities/portfolio";
+import SmallStat from "./components/SmallStat";
+import { buildBurnup, pointsFor, recentVelocity } from "./utils/portfolioMetrics";
 
 export default function PortfolioPage() {
   const { t } = useTranslation();
@@ -27,8 +27,8 @@ export default function PortfolioPage() {
   const burnup = buildBurnup(releaseTasks, now);
   const overloaded = Object.entries(agile.tasks.filter((task) => task.status !== "done" && task.assignee).reduce<Record<string, number>>((acc, task) => { const name = task.assignee_name || t("portfolio.assignedMember"); acc[name] = (acc[name] ?? 0) + 1; return acc; }, {})).filter(([, count]) => count > 5);
 
-  return <main className="min-h-screen bg-[#f7f7fb] p-5 md:p-8"><div className="mx-auto max-w-[1440px]">
-    <header className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-indigo-600">{t("portfolio.eyebrow")}</p><h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">{t("portfolio.title")}</h2><p className="mt-2 max-w-2xl text-sm text-slate-500">{t("portfolio.subtitle")}</p></div><AgileProjectFilter projects={scope.projects} value={scope.projectId} onChange={scope.selectProject} /></header>
+  return <Page className="p-5 md:p-8"><div className="mx-auto max-w-[1440px]">
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-indigo-600">{t("portfolio.eyebrow")}</p><h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">{t("portfolio.title")}</h2><p className="mt-2 max-w-2xl text-sm text-slate-500">{t("portfolio.subtitle")}</p></div></header>
     <section className="grid gap-4 lg:grid-cols-3">
       {scope.projects.filter((project) => !scope.projectId || project.id === scope.projectId).map((project) => { const tasks = agile.tasks.filter((task) => task.project === project.id); const done = tasks.filter((task) => task.status === "done").length; const active = tasks.filter((task) => task.status !== "done" && task.status !== "backlog").length; const blocked = tasks.filter((task) => task.blocked || task.blocked_by.some((id) => agile.tasks.some((dep) => dep.id === id && dep.status !== "done"))).length; return <article key={project.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-2"><BriefcaseBusiness size={17} className="text-indigo-600" /><h3 className="font-semibold text-slate-900">{project.name}</h3></div><div className="mt-4 grid grid-cols-3 gap-2 text-center"><SmallStat label={t("portfolio.statActive")} value={active} /><SmallStat label={t("portfolio.statDone")} value={done} /><SmallStat label={t("portfolio.statBlocked")} value={blocked} /></div><div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-indigo-500" style={{ width: `${tasks.length ? Math.round(done / tasks.length * 100) : 0}%` }} /></div><p className="mt-2 text-[11px] text-slate-400">{t("portfolio.completeSummary", { percent: tasks.length ? Math.round(done / tasks.length * 100) : 0, total: tasks.length })}</p></article>; })}
       {!scope.projects.length && <div className="rounded-xl bg-white p-8 text-sm text-slate-500">{t("portfolio.noProjects")}</div>}
@@ -42,17 +42,6 @@ export default function PortfolioPage() {
       <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-2"><AlertTriangle size={17} className="text-amber-600" /><h3 className="font-semibold text-slate-900">{t("portfolio.deliverySignals")}</h3></div><div className="mt-3 space-y-2">{overloaded.map(([name, count]) => <p key={name} className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">{t("portfolio.overloaded", { name, count })}</p>)}{agile.tasks.filter((task) => task.status === "in_progress" && task.updated_at && now - Date.parse(task.updated_at) > 3 * 86400000).slice(0, 5).map((task) => <p key={task.id} className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-800">{t("portfolio.noRecentUpdate", { title: task.title })}</p>)}{!overloaded.length && !agile.tasks.some((task) => task.status === "in_progress" && task.updated_at && now - Date.parse(task.updated_at) > 3 * 86400000) && <p className="text-sm text-slate-500">{t("portfolio.noSignals")}</p>}</div></article>
     </section>
     {agile.error && <p role="alert" className="mt-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700">{agile.error}</p>}
-  </div></main>;
+  </div></Page>;
 }
 
-function SmallStat({ label, value }: SmallStatProps) { return <div className="rounded-lg bg-slate-50 p-2"><p className="text-lg font-bold text-slate-800">{value}</p><p className="text-[10px] text-slate-400">{label}</p></div>; }
-function pointsFor(estimate: string) { const parsed = Number.parseFloat(estimate); return Number.isFinite(parsed) ? parsed : 0; }
-function recentVelocity(sprints: Sprint[]) { const recent = sprints.slice(0, 3); return recent.length ? Math.round(recent.reduce((sum, sprint) => sum + (sprint.velocity_points ?? 0), 0) / recent.length) : 0; }
-function buildBurnup(tasks: Task[], now: number): BurnupSeries {
-  const start = now - 56 * 86400000;
-  const baseline = tasks.filter((task) => task.completed_at && Date.parse(task.completed_at) < start).length;
-  const x = (index: number) => 12 + index * 39;
-  const y = (count: number) => 82 - (tasks.length ? count / tasks.length : 0) * 68;
-  const values = Array.from({ length: 8 }, (_, week) => baseline + tasks.filter((task) => task.completed_at && Date.parse(task.completed_at) >= start && Date.parse(task.completed_at) <= start + (week + 1) * 7 * 86400000).length);
-  return { scope: `12,${y(tasks.length)} 285,${y(tasks.length)}`, done: values.map((count, index) => `${x(index)},${y(count)}`).join(" ") };
-}

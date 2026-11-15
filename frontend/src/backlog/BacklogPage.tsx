@@ -1,22 +1,24 @@
 import "./backlog.css";
 import { useEffect, useMemo, useState } from "react";
 import { Check, CircleHelp, Layers3, Plus, CalendarClock, Sparkles } from "lucide-react";
-import { closeSprint, createSprint, getSprints, updateSprint } from "../common/api/tasks";
+import { closeSprint, createSprint, getSprints, updateSprint } from "../project-detail/api/tasks";
 import type { Sprint, Task } from "../common/entities/task";
 import { useAgileProjectScope } from "../common/features/agile/hooks/useAgileProjectScope";
 import { useAgileTasks } from "../common/features/agile/hooks/useAgileTasks";
-import { AgileProjectFilter } from "../common/features/agile/components/AgileProjectFilter";
-import { QuickCaptureDialog } from "./features/agile/components/QuickCaptureDialog";
+import { QuickCaptureDialog } from "./components/QuickCaptureDialog";
 import { EditWorkItemDialog } from "../common/features/agile/components/EditWorkItemDialog";
-import { BacklogMetric } from "./features/agile/components/BacklogMetric";
-import { BacklogSprintPanel } from "./features/agile/components/BacklogSprintPanel";
-import { BacklogWorkList } from "./features/agile/components/BacklogWorkList";
-import { BacklogControls, type BacklogMode } from "./features/agile/components/BacklogControls";
+import { BacklogMetric } from "./components/BacklogMetric";
+import { BacklogSprintPanel } from "./components/BacklogSprintPanel";
+import { BacklogWorkList } from "./components/BacklogWorkList";
+import { BacklogControls, type BacklogMode } from "./components/BacklogControls";
 import { getDefinitionOfReady, groupBacklogTasks, priorityOrder, suggestionReason, suggestedPriority, type BacklogGroupBy } from "./features/agile/utils/backlog";
 import { useTranslation } from "../common/shared/i18n/hooks/useTranslation";
+import { firstValidationError, sprintSchema } from "../common/validation/schemas";
+import { useToast } from "../common/features/notifications/useToast";
 
 export default function BacklogPage() {
   const { t } = useTranslation();
+  const toast = useToast();
   const scope = useAgileProjectScope("backlog_project_scope");
   const agile = useAgileTasks(scope.projectId);
   const { sync } = agile;
@@ -26,6 +28,7 @@ export default function BacklogPage() {
   const [search, setSearch] = useState("");
   const [captureOpen, setCaptureOpen] = useState(false);
   const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [selectedActiveSprintId, setSelectedActiveSprintId] = useState<number | null>(null);
   const [sprintName, setSprintName] = useState("");
   const [sprintGoal, setSprintGoal] = useState("");
   const [sprintCapacity, setSprintCapacity] = useState("");
@@ -63,21 +66,25 @@ export default function BacklogPage() {
     return [epic.id, { done: children.filter((task) => task.status === "done").length, total: children.length }] as const;
   })), [agile.tasks]);
   const grouped = groupBacklogTasks(backlog, scope.projects, groupBy);
-  const activeSprint = sprints.find((sprint) => sprint.is_active);
+  const activeSprints = sprints.filter((sprint) => sprint.is_active);
+  const activeSprint = activeSprints.find((sprint) => sprint.id === selectedActiveSprintId) ?? activeSprints[0];
   const editingTask = agile.tasks.find((task) => task.id === editingTaskId) ?? null;
   const editingProject = editingTask ? scope.projects.find((project) => project.id === editingTask.project) : undefined;
 
   async function startSprint() {
-    if (!scope.projectId || !sprintName.trim()) return;
+    if (!scope.projectId) { const message = t("backlog.errChooseProject"); setMessage(message); toast("error", message); return; }
+    const validationError = firstValidationError(sprintSchema, { name: sprintName, goal: sprintGoal, startDate: sprintStartDate, endDate: sprintEndDate, capacity: sprintCapacity });
+    if (validationError) { setMessage(validationError); toast("error", validationError); return; }
     setSprintBusy(true);
     try {
-      const sprint = await createSprint(scope.projectId, sprintName.trim(), !activeSprint, sprintStartDate, sprintEndDate, sprintGoal.trim(), sprintCapacity ? Number(sprintCapacity) : null);
-      setSprints((current) => [sprint, ...current.map((item) => sprint.is_active ? { ...item, is_active: false } : item)]);
+      const sprint = await createSprint(scope.projectId, sprintName.trim(), false, sprintStartDate, sprintEndDate, sprintGoal.trim(), sprintCapacity ? Number(sprintCapacity) : null);
+      setSprints((current) => [sprint, ...current]);
       setSprintName("");
       setSprintGoal(""); setSprintCapacity("");
       setSprintStartDate(""); setSprintEndDate("");
       setMessage(sprint.is_active ? t("backlog.sprintNowActive", { name: sprint.name }) : t("backlog.sprintPlanned", { name: sprint.name }));
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : t("backlog.errStartSprint")); }
+      toast("success", t(sprint.is_active ? "backlog.sprintNowActive" : "backlog.sprintPlanned", { name: sprint.name }));
+    } catch (cause) { const message = cause instanceof Error ? cause.message : t("backlog.errStartSprint"); setMessage(message); toast("error", message); }
     finally { setSprintBusy(false); }
   }
 
@@ -85,18 +92,21 @@ export default function BacklogPage() {
     setSprintBusy(true);
     try {
       const active = await updateSprint(sprint.id, { is_active: true });
-      setSprints((current) => current.map((item) => ({ ...item, is_active: item.id === active.id })));
+      setSprints((current) => current.map((item) => item.id === active.id ? active : item));
+      setSelectedActiveSprintId(active.id);
       setMessage(t("backlog.plannedSprintNowActive", { name: active.name }));
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : t("backlog.errStartThisSprint")); }
     finally { setSprintBusy(false); }
   }
 
-  async function finishSprint() {
-    if (!activeSprint || !window.confirm(t("backlog.confirmCloseSprint", { name: activeSprint.name }))) return;
+  async function finishSprint(sprintId: number) {
+    const sprintToClose = sprints.find((sprint) => sprint.id === sprintId);
+    if (!sprintToClose || !window.confirm(t("backlog.confirmCloseSprint", { name: sprintToClose.name }))) return;
     setSprintBusy(true);
     try {
-      const result = await closeSprint(activeSprint.id);
+      const result = await closeSprint(sprintToClose.id);
       setSprints(await getSprints(scope.projectId));
+      setSelectedActiveSprintId(null);
       await agile.sync();
       setMessage(result.message);
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : t("backlog.errCloseSprint")); }
@@ -132,7 +142,7 @@ export default function BacklogPage() {
   return <main className="min-h-screen bg-[#f7f7fb] p-5 md:p-8"><div className="mx-auto max-w-[1440px]">
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div><p className="text-xs font-bold uppercase tracking-[.2em] text-violet-600">{t("backlog.eyebrow")}</p><h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">{t("backlog.title")}</h2><p className="mt-2 max-w-2xl text-sm text-slate-500">{t("backlog.subtitle")}</p></div>
-      <div className="flex flex-wrap items-end gap-3"><AgileProjectFilter projects={scope.projects} value={scope.projectId} onChange={scope.selectProject} /><button type="button" onClick={() => setCaptureOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700"><Plus size={16} /> {t("backlog.captureIdea")}</button></div>
+      <div className="flex flex-wrap items-end gap-3"><button type="button" onClick={() => setCaptureOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700"><Plus size={16} /> {t("backlog.captureIdea")}</button></div>
     </header>
 
     <section className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label={t("backlog.healthLabel")}>
@@ -148,7 +158,7 @@ export default function BacklogPage() {
       {message && <p role="status" className="border-b border-slate-100 bg-emerald-50 px-5 py-2.5 text-sm text-emerald-800">{message}</p>}
       {agile.error && <p role="alert" className="border-b border-slate-100 bg-rose-50 px-5 py-2.5 text-sm text-rose-700">{agile.error}</p>}
 
-      <BacklogSprintPanel projectId={scope.projectId} projectRole={scope.project?.my_role} sprints={sprints} activeSprint={activeSprint} readyCount={ready.length} backlogPoints={backlog.reduce((sum, task) => sum + (Number.parseFloat(task.estimate) || 0), 0)} busy={sprintBusy} name={sprintName} setName={setSprintName} goal={sprintGoal} setGoal={setSprintGoal} capacity={sprintCapacity} setCapacity={setSprintCapacity} startDate={sprintStartDate} setStartDate={setSprintStartDate} endDate={sprintEndDate} setEndDate={setSprintEndDate} onCreate={() => void startSprint()} onPlanReady={() => void planReadyItems()} onStartPlanned={(sprint) => void startPlannedSprint(sprint)} onClose={() => void finishSprint()} onUpdate={(id, changes) => void saveSprintChanges(id, changes)} />
+      <BacklogSprintPanel projectId={scope.projectId} projectRole={scope.project?.my_role} sprints={sprints} activeSprints={activeSprints} activeSprint={activeSprint} onSelectActive={setSelectedActiveSprintId} readyCount={ready.length} backlogPoints={backlog.reduce((sum, task) => sum + (Number.parseFloat(task.estimate) || 0), 0)} busy={sprintBusy} name={sprintName} setName={setSprintName} goal={sprintGoal} setGoal={setSprintGoal} capacity={sprintCapacity} setCapacity={setSprintCapacity} startDate={sprintStartDate} setStartDate={setSprintStartDate} endDate={sprintEndDate} setEndDate={setSprintEndDate} onCreate={() => void startSprint()} onPlanReady={() => void planReadyItems()} onStartPlanned={(sprint) => void startPlannedSprint(sprint)} onClose={(id) => void finishSprint(id)} onUpdate={(id, changes) => void saveSprintChanges(id, changes)} />
 
 
       <BacklogWorkList loading={agile.loading} backlog={backlog} tasks={agile.tasks} projects={scope.projects} groups={grouped} activeSprint={activeSprint} sprintBusy={sprintBusy} epicRollups={epicRollups} onCapture={() => setCaptureOpen(true)} onReorder={(task, direction) => void reorder(task, direction)} onUpdate={agile.update} onEdit={setEditingTaskId} />
