@@ -1,3 +1,5 @@
+
+
 import { CheckCircle2, FileText, LoaderCircle, Trash2, Upload, ArrowRight } from "lucide-react";
 import type { WorkspaceDocument } from "../../common/entities/document";
 import type { Project } from "../../common/entities/project";

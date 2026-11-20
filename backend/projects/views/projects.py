@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from projects.access import visible_projects
 from projects.permissions import ProjectRolePermission
 from projects.serializers import ProjectSerializer
+from projects.services import set_default_project
 
 
 class ProjectListView(APIView):
@@ -46,8 +47,8 @@ class DefaultProjectView(APIView):
                     {"detail": "Project not found."}, status=status.HTTP_404_NOT_FOUND
                 )
             request.user.default_project = project
-        request.user.save(update_fields=["default_project"])
-        return Response({"default_project_id": request.user.default_project_id})
+        default_project_id = set_default_project(user=request.user, project=request.user.default_project)
+        return Response({"default_project_id": default_project_id})
 
 
 class ProjectDetailView(RetrieveUpdateDestroyAPIView):

@@ -198,6 +198,17 @@ class Sprint(models.Model):
 
     class Meta:
         ordering = ("-is_active", "-start_date", "-id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("board",),
+                condition=models.Q(is_active=True, is_closed=False, board__isnull=False),
+                name="unique_open_active_sprint_per_board",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(is_active=True, is_closed=True),
+                name="closed_sprint_cannot_be_active",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.project}: {self.name}"

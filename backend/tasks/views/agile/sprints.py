@@ -6,35 +6,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from projects.access import EDIT_PROJECT_ROLES, get_role, visible_projects
-from tasks.models import AgileBoard, Sprint
+from tasks.models import AgileBoard
+from tasks.repositories.sprints import visible_sprint, visible_sprints
+from tasks.services.sprints import sync_sprint_board
+from tasks.permissions import CanManageSprint
 from tasks.serializers import SprintSerializer
-
-
-def sync_sprint_board(sprint, owner):
-    if sprint.is_active and not sprint.is_closed:
-        if sprint.board_id and not Sprint.objects.filter(board_id=sprint.board_id).exclude(id=sprint.id).exists():
-            if sprint.board.name != sprint.name:
-                sprint.board.name = sprint.name
-                sprint.board.save(update_fields=["name", "updated_at"])
-            return sprint.board
-        board = AgileBoard.objects.create(
-            project=sprint.project,
-            name=sprint.name,
-            description=f"Active sprint board for {sprint.name}.",
-            board_type=AgileBoard.SCRUM,
-            owner=owner,
-        )
-        board.members.add(owner)
-        sprint.board = board
-        sprint.save(update_fields=["board"])
-        return board
-    if sprint.board_id:
-        board = sprint.board
-        sprint.board = None
-        sprint.save(update_fields=["board"])
-        if not Sprint.objects.filter(board_id=board.id).exists():
-            board.delete()
-    return None
 
 
 class SprintListCreateView(APIView):
@@ -44,7 +20,9 @@ class SprintListCreateView(APIView):
         projects = visible_projects(request.user)
         if request.query_params.get("project_id"):
             projects = projects.filter(id=request.query_params["project_id"])
-        sprints = Sprint.objects.filter(project__in=projects)
+        sprints = visible_sprints(request.user)
+        if request.query_params.get("project_id"):
+            sprints = sprints.filter(project_id=request.query_params["project_id"])
         board_id = request.query_params.get("board_id")
         if board_id:
             board = get_object_or_404(AgileBoard.objects.filter(project__in=projects, is_archived=False), id=board_id)
@@ -71,13 +49,16 @@ class SprintListCreateView(APIView):
 class SprintDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        permissions = super().get_permissions()
+        if self.request.method in {"PATCH", "PUT"}:
+            permissions.append(CanManageSprint())
+        return permissions
+
     @transaction.atomic
     def patch(self, request, sprint_id):
-        sprint = get_object_or_404(Sprint.objects.filter(project__in=visible_projects(request.user)), id=sprint_id)
-        if sprint.board_id and sprint.board.owner_id != request.user.id and not request.user.is_site_admin and get_role(request.user, sprint.project) not in EDIT_PROJECT_ROLES:
-            return Response({"detail": "Only the board owner or project administrators can update this sprint."}, status=status.HTTP_403_FORBIDDEN)
-        if get_role(request.user, sprint.project) not in EDIT_PROJECT_ROLES and (not sprint.board_id or sprint.board.owner_id != request.user.id):
-            return Response({"detail": "Only owners and managers can update a sprint."}, status=status.HTTP_403_FORBIDDEN)
+        sprint = get_object_or_404(visible_sprint(request.user, sprint_id))
+        self.check_object_permissions(request, sprint)
         serializer = SprintSerializer(sprint, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         if serializer.validated_data.get("is_active"):

@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.db import transaction
-from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -11,44 +10,22 @@ from rest_framework.views import APIView
 from projects.access import EDIT_PROJECT_ROLES, get_role, visible_projects
 from tasks.models import AgileBoard, BoardColumn, BoardColumnStatus, Sprint, Task, WorkflowStatus
 from tasks.serializers import AgileBoardSerializer, BoardColumnSerializer, WorkflowStatusSerializer
-from tasks.views.list_create import ensure_default_columns
+from tasks.services.workflows import (
+    assign_status,
+    available_statuses,
+    ensure_board_columns,
+    ensure_default_columns,
+    unique_status_key,
+)
+from tasks.services.boards import (
+    BoardMembershipError,
+    assign_board_members,
+    create_agile_board,
+    validate_board_members,
+)
+from tasks.permissions import CanCreateBoard, CanEditBoard
 
 BUILT_IN_WORKFLOW_KEYS = {"todo", "in_progress", "done"}
-
-
-def available_statuses(project):
-    project_statuses = WorkflowStatus.objects.filter(project=project)
-    shadowed_keys = project_statuses.values_list("key", flat=True)
-    return WorkflowStatus.objects.filter(Q(project=project) | (Q(project__isnull=True, is_system=True) & ~Q(key__in=shadowed_keys))).order_by("position", "id")
-
-
-def unique_status_key(project, name):
-    base = slugify(name).replace("-", "_")[:32] or "status"
-    key = base
-    suffix = 2
-    while WorkflowStatus.objects.filter(Q(project__isnull=True) | Q(project=project), key=key).exists():
-        key = f"{base[:35]}_{suffix}"[:40]
-        suffix += 1
-    return key
-
-
-def assign_status(project, status_obj, column):
-    BoardColumnStatus.objects.filter(column__project=project, column__board__isnull=True, status=status_obj).delete()
-    if column is not None:
-        position = column.status_assignments.count()
-        BoardColumnStatus.objects.create(column=column, status=status_obj, position=position)
-
-
-def ensure_board_columns(board):
-    if board.columns.exists():
-        return
-    ensure_default_columns(board.project)
-    defaults = board.project.board_columns.filter(board__isnull=True).prefetch_related("status_assignments__status")
-    for column in defaults:
-        copy = BoardColumn.objects.create(project=board.project, board=board, name=column.name, key=column.key,
-            position=column.position, group_name=column.group_name, wip_limit=column.wip_limit)
-        for assignment in column.status_assignments.all():
-            BoardColumnStatus.objects.create(column=copy, status=assignment.status, position=assignment.position)
 
 
 class ProjectWorkflowView(APIView):
@@ -234,6 +211,14 @@ class ProjectBoardColumnsView(APIView):
 class ProjectAgileBoardsView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        permissions = super().get_permissions()
+        if self.request.method == "POST":
+            permissions.append(CanCreateBoard())
+        elif self.request.method in {"PATCH", "PUT"}:
+            permissions.append(CanEditBoard())
+        return permissions
+
     def get(self, request, project_id=None, board_id=None):
         if project_id is None:
             boards = AgileBoard.objects.filter(project__in=visible_projects(request.user)).select_related("owner", "project").prefetch_related("members")
@@ -283,8 +268,7 @@ class ProjectAgileBoardsView(APIView):
             project_id = board.project_id
         project = get_object_or_404(visible_projects(request.user), id=project_id)
         board = get_object_or_404(project.agile_boards, id=board_id)
-        if not request.user.is_site_admin and board.owner_id != request.user.id and get_role(request.user, project) not in EDIT_PROJECT_ROLES and not request.user.has_perm("tasks.create_agileboard"):
-            return Response({"detail": "Only the board owner or a project administrator can edit this board."}, status=status.HTTP_403_FORBIDDEN)
+        self.check_object_permissions(request, board)
         if request.data.get("is_archived") is True:
             if board.sprints.filter(is_active=True, is_closed=False).exists():
                 return Response({"detail": "An active sprint board cannot be archived."}, status=status.HTTP_400_BAD_REQUEST)
@@ -295,12 +279,13 @@ class ProjectAgileBoardsView(APIView):
         serializer.is_valid(raise_exception=True)
         member_ids = serializer.validated_data.pop("members", None)
         if member_ids is not None:
-            project_members = set(project.memberships.filter(Q(removal_date__isnull=True) | Q(removal_date__gt=timezone.localdate())).values_list("user_id", flat=True))
-            if not {member.id for member in member_ids}.issubset(project_members):
-                return Response({"member_ids": "Board members must be active members of the project."}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                member_ids = validate_board_members(project, member_ids)
+            except BoardMembershipError as error:
+                return Response({"member_ids": str(error)}, status=status.HTTP_400_BAD_REQUEST)
         board = serializer.save()
         if member_ids is not None:
-            board.members.set(member_ids)
+            assign_board_members(board, member_ids)
         return Response(AgileBoardSerializer(board, context={"request": request}).data)
 
     def post(self, request, project_id=None):
@@ -310,12 +295,10 @@ class ProjectAgileBoardsView(APIView):
             return Response({"detail": "BOARD_CREATE permission is required to create boards."}, status=status.HTTP_403_FORBIDDEN)
         serializer = AgileBoardSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        member_ids = [member.id for member in serializer.validated_data.pop("members", [])]
-        project_members = set(project.memberships.filter(Q(removal_date__isnull=True) | Q(removal_date__gt=timezone.localdate())).values_list("user_id", flat=True))
-        if not set(member_ids).issubset(project_members):
-            return Response({"member_ids": "Board members must be active members of the project."}, status=status.HTTP_400_BAD_REQUEST)
-        board = serializer.save(project=project, owner=request.user)
-        board.members.set(set(member_ids) | {request.user.id})
+        try:
+            board = create_agile_board(project, request.user, serializer.validated_data)
+        except BoardMembershipError as error:
+            return Response({"member_ids": str(error)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(AgileBoardSerializer(board, context={"request": request}).data, status=status.HTTP_201_CREATED)
 
 

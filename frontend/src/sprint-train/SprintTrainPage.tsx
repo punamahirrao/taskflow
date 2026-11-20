@@ -256,8 +256,9 @@ export default function SprintTrainPage() {
     { id: "dependencies", label: t(dependencies.length === 1 ? "sprintTrain.tabDependenciesSingular" : "sprintTrain.tabDependenciesPlural", { count: dependencies.length }) },
   ];
 
-  return <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
-    <div className="mx-auto max-w-[1800px]">
+  return <main className={`min-h-screen min-w-0 bg-slate-50 text-slate-900 ${isDrawerOpen ? "p-0" : "p-4 md:p-6"}`}>
+    <div className={`mx-auto grid min-h-screen w-full transition-[grid-template-columns] duration-300 ${isDrawerOpen ? "max-w-none grid-cols-1 gap-0 lg:grid-cols-[minmax(0,1fr)_400px]" : "max-w-[1800px] grid-cols-1"}`}>
+    <div className={`min-w-0 ${isDrawerOpen ? "p-4 md:p-6" : ""}`}>
       <section data-testid="app-header" className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
           <div className="flex min-w-0 items-center gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-indigo-600 text-white" aria-hidden="true"><TrainFront size={21} /></span>
@@ -366,7 +367,8 @@ export default function SprintTrainPage() {
         })}{!dependencies.length && <p className="p-8 text-center text-sm text-slate-500">{t("sprintTrain.noUnresolvedDependencies")}</p>}</div>
       </section>}
 
-      {isDrawerOpen && <aside aria-label={t("sprintTrain.globalBacklogDrawerAria")} className="sprint-backlog-drawer fixed bottom-0 right-0 top-0 z-30 flex w-full flex-col border-l shadow-2xl sm:w-[400px]">
+    </div>
+      {isDrawerOpen && <aside aria-label={t("sprintTrain.globalBacklogDrawerAria")} className="sprint-backlog-drawer sticky top-0 flex h-screen w-full flex-col border-l shadow-2xl">
         <header className="sprint-backlog-header border-b p-4">
           <div className="flex items-start justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-indigo-300">{t("sprintTrain.globalBacklogDrawer")}</p><h2 className="mt-1 text-base font-bold">{t("sprintTrain.chooseFromBacklog")}</h2></div><button type="button" aria-label={t("sprintTrain.closeBacklogDrawer")} onClick={() => setIsDrawerOpen(false)} className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white"><X size={18} /></button></div>
           <div className="mt-4 grid grid-cols-2 gap-2">
@@ -402,7 +404,8 @@ export default function SprintTrainPage() {
         </div>
         <footer className="border-t border-slate-800 p-3 text-[10px] text-slate-500"><span className="inline-flex items-center gap-1"><Plus size={12} />{t("sprintTrain.backlogFooter")}</span></footer>
       </aside>}
-      {detailsStory && <SprintStoryDetailsDrawer task={detailsStory} projectName={projects.find((project) => project.id === detailsStory.project)?.name} onUpdate={(changes) => void agile.update(detailsStory.id, changes)} onClose={() => setDetailsStoryId(null)} />}
+    </div>
+      {detailsStory && <SprintStoryDetailsDrawer task={detailsStory} projectName={projects.find((project) => project.id === detailsStory.project)?.name} onUpdate={(changes) => void agile.update(detailsStory.id, changes)} onClose={() => setDetailsStoryId(null)} backlogDrawerOpen={isDrawerOpen} />}
       {createSprintOpen && <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/50 p-4" onClick={(event) => { if (event.target === event.currentTarget && !savingSprint) setCreateSprintOpen(false); }}>
         <section role="dialog" aria-modal="true" aria-labelledby="create-sprint-title" className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
           <header className="mb-4 flex items-start justify-between gap-4">
@@ -430,6 +433,5 @@ export default function SprintTrainPage() {
           </form>
         </section>
       </div>}
-    </div>
   </main>;
 }

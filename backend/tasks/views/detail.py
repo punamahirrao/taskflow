@@ -56,7 +56,7 @@ class TaskDetailView(APIView):
         if "status" in serializer.validated_data:
             valid_statuses = WorkflowStatus.objects.filter(columns__project=task.project).values_list("key", flat=True)
             if not valid_statuses.exists():
-                from tasks.views.list_create import ensure_default_columns
+                from tasks.services.workflows import ensure_default_columns
                 ensure_default_columns(task.project)
                 valid_statuses = WorkflowStatus.objects.filter(columns__project=task.project).values_list("key", flat=True)
             if serializer.validated_data["status"] not in valid_statuses:

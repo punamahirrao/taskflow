@@ -1,10 +1,11 @@
-from django.db import transaction
-from django.db.models import Q
-from django.utils import timezone
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
-from projects.models import Project, ProjectMembership, ProjectRole
+from projects.models import Project, ProjectRole
 from projects.serializers.membership import ProjectMemberSerializer
+from projects.repositories import active_project_memberships
+from projects.services import create_project
+from common.validators import validate_project_dates
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -38,11 +39,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         cache = self.__dict__.setdefault("_membership_cache", {})
 
         if project.pk not in cache:
-            cache[project.pk] = list(
-                project.memberships.select_related("user", "role")
-                .filter(Q(removal_date__isnull=True) | Q(removal_date__gt=timezone.localdate()))
-                .order_by("id")
-            )
+            cache[project.pk] = list(active_project_memberships(project).order_by("id"))
 
         return cache[project.pk]
 
@@ -88,8 +85,10 @@ class ProjectSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         start = attrs.get("expected_start_date", getattr(self.instance, "expected_start_date", None))
         end = attrs.get("end_date", getattr(self.instance, "end_date", None))
-        if start and end and end < start:
-            raise serializers.ValidationError({"end_date": "End date must be on or after the expected start date."})
+        try:
+            validate_project_dates(start, end)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(error.message_dict if hasattr(error, "message_dict") else error.messages) from error
         return attrs
 
     def get_members(self, project):
@@ -97,13 +96,5 @@ class ProjectSerializer(serializers.ModelSerializer):
             self._memberships(project), many=True, context=self.context
         ).data
 
-    @transaction.atomic
     def create(self, validated_data):
-        project = Project.objects.create(**validated_data)
-        ProjectMembership.objects.create(
-            project=project,
-            user=self.context["request"].user,
-            role=ProjectRole.objects.get(role_name=ProjectRole.OWNER),
-        )
-
-        return project
+        return create_project(owner=self.context["request"].user, validated_data=validated_data)

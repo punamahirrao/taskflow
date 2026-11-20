@@ -15,6 +15,7 @@ interface SprintStoryDetailsDrawerProps {
   onClose: () => void;
   projectName?: string;
   onUpdate: (changes: Partial<Task>) => void;
+  backlogDrawerOpen?: boolean;
 }
 
 type DrawerTab = "details" | "comments" | "history";
@@ -66,7 +67,7 @@ function EditableText({ value, onSave, placeholder, multiline = false, type = "t
     : <input autoFocus type={type} value={draft} onChange={(event) => setDraft(event.target.value)} onBlur={commit} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); commit(); } if (event.key === "Escape") { setDraft(value); setEditing(false); } }} placeholder={placeholder} className={className} />;
 }
 
-export function SprintStoryDetailsDrawer({ task, onClose, projectName, onUpdate }: SprintStoryDetailsDrawerProps) {
+export function SprintStoryDetailsDrawer({ task, onClose, projectName, onUpdate, backlogDrawerOpen = false }: SprintStoryDetailsDrawerProps) {
   const { t } = useTranslation();
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<DrawerTab>("details");
@@ -147,7 +148,7 @@ export function SprintStoryDetailsDrawer({ task, onClose, projectName, onUpdate 
     { labelKey: "sprintTrain.readyForSprint", ready: task.ready_for_sprint },
   ];
 
-  return <aside data-testid="sprint-story-details" aria-label={t("sprintTrain.detailsFor", { title: task.title })} className="fixed inset-y-0 right-0 z-[60] flex w-full flex-col border-r border-slate-200 bg-white shadow-2xl sm:w-[min(840px,100vw)]">
+  return <aside data-testid="sprint-story-details" aria-label={t("sprintTrain.detailsFor", { title: task.title })} className={`fixed inset-y-0 z-[60] flex w-full flex-col border-r border-slate-200 bg-white shadow-2xl sm:w-[min(840px,100vw)] ${backlogDrawerOpen ? "right-0 lg:right-[400px] lg:w-[min(840px,calc(100vw-650px))]" : "right-0"}`}>
     <header className="border-b border-slate-200 bg-slate-50 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1"><p className="font-mono text-[10px] font-bold uppercase tracking-widest text-indigo-600">NEX-{task.id} · {task.work_type.replace("_", " ")}</p><div className="mt-1"><EditableText value={task.title} onSave={(title) => onUpdate({ title })} placeholder={t("sprintTrain.addTitle")} /></div></div>

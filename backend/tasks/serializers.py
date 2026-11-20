@@ -1,9 +1,11 @@
 from rest_framework import serializers
 from django.db.models import Q
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.urls import reverse
 
 from projects.access import ADMIN, OWNER, get_role
+from common.validators import validate_board_name, validate_sprint_dates, validate_task_estimate
 from tasks.models import AgileBoard, BoardColumn, Sprint, Task, TaskComment, TaskHistory, WorkflowStatus
 
 User = get_user_model()
@@ -22,6 +24,13 @@ class TaskSerializer(serializers.ModelSerializer):
     def validate_status(self, value):
         if not WorkflowStatus.objects.filter(key=value).exists():
             raise serializers.ValidationError("Choose a status defined in the workflow.")
+        return value
+
+    def validate_estimate(self, value):
+        try:
+            validate_task_estimate(value)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(error.messages) from error
         return value
 
     class Meta:
@@ -119,6 +128,13 @@ class AgileBoardSerializer(serializers.ModelSerializer):
     member_count = serializers.SerializerMethodField()
     can_manage = serializers.SerializerMethodField()
 
+    def validate_name(self, value):
+        try:
+            validate_board_name(value)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(error.messages) from error
+        return value.strip()
+
     class Meta:
         model = AgileBoard
         fields = ("id", "project", "project_name", "name", "description", "board_type", "owner", "owner_name", "members", "member_ids", "member_count", "task_count", "sprint_count", "is_archived", "can_manage", "created_at", "updated_at")
@@ -157,6 +173,16 @@ class AgileBoardSerializer(serializers.ModelSerializer):
 
 class SprintSerializer(serializers.ModelSerializer):
     board_name = serializers.CharField(source="board.name", read_only=True, allow_null=True)
+
+    def validate(self, attrs):
+        start_date = attrs.get("start_date", getattr(self.instance, "start_date", None))
+        end_date = attrs.get("end_date", getattr(self.instance, "end_date", None))
+        try:
+            validate_sprint_dates(start_date, end_date)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(error.message_dict if hasattr(error, "message_dict") else error.messages) from error
+        return attrs
+
     class Meta:
         model = Sprint
         fields = ("id", "project", "board", "board_name", "name", "start_date", "end_date", "is_active", "is_closed", "goal", "capacity_points", "velocity_points", "outcome_summary", "retrospective", "created_at")

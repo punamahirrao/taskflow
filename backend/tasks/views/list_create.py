@@ -8,9 +8,11 @@ from django.db.models import Q
 from django.utils import timezone
 from projects.access import EDIT_PROJECT_ROLES, WRITE_TASK_ROLES, get_role, visible_projects
 from projects.models import ProjectMembership
-from tasks.models import AgileBoard, BoardColumn, Sprint, Task, TaskHistory, WorkflowStatus
+from tasks.models import AgileBoard, Sprint, Task, WorkflowStatus
 from tasks.permissions import NO_WRITE_PERMISSION
 from tasks.serializers import TaskSerializer
+from tasks.services.workflows import ensure_default_columns
+from tasks.services.tasks import create_task
 
 
 class TaskListCreateView(APIView):
@@ -18,6 +20,8 @@ class TaskListCreateView(APIView):
 
     def get(self, request):
         project_id = request.query_params.get("project_id")
+        if not project_id:
+            return Response({"detail": "A project_id is required."}, status=status.HTTP_400_BAD_REQUEST)
         projects = visible_projects(request.user)
         if project_id:
             if not project_id.isdigit():
@@ -80,39 +84,8 @@ class TaskListCreateView(APIView):
         if parent and (parent.project_id != project.id or parent.work_type not in ("epic", "initiative")):
             return Response({"parent": "Choose an epic or initiative from this project."}, status=status.HTTP_400_BAD_REQUEST)
 
-        task = serializer.save(project=project, created_by=request.user, blocked_since=timezone.now() if serializer.validated_data.get("blocked") else None)
-        TaskHistory.objects.create(task=task, actor=request.user, action="created", changes={"title": {"new": task.title}, "status": {"new": task.status}})
+        task = create_task(project=project, actor=request.user, validated_data=serializer.validated_data)
 
         return Response(TaskSerializer(task, context={"request": request}).data, status=status.HTTP_201_CREATED)
 
 
-DEFAULT_COLUMNS = (
-    ("backlog", "Backlog", "Planning"),
-    ("todo", "To Do", "Active work"),
-    ("in_progress", "In Progress", "Active work"),
-    ("review", "Review", "Quality"),
-    ("waiting", "Waiting", "Waiting"),
-    ("done", "Done", "Complete"),
-)
-
-
-def ensure_default_columns(project):
-    for position, (key, name, group_name) in enumerate(DEFAULT_COLUMNS):
-        workflow_status, _ = WorkflowStatus.objects.get_or_create(
-            project=None,
-            key=key,
-            defaults={"name": name, "position": position, "is_system": True},
-        )
-        column, _ = BoardColumn.objects.get_or_create(
-            project=project,
-            board=None,
-            key=key,
-            defaults={"name": name, "position": position, "group_name": group_name},
-        )
-        column.status_assignments.get_or_create(status=workflow_status, defaults={"position": 0})
-    for column in project.board_columns.filter(board__isnull=True):
-        if column.status_assignments.exists():
-            continue
-        workflow_status = WorkflowStatus.objects.filter(Q(project=project) | Q(project__isnull=True, is_system=True), key=column.key).first()
-        if workflow_status:
-            column.status_assignments.get_or_create(status=workflow_status, defaults={"position": 0})
