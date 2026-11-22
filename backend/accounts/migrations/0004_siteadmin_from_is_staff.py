@@ -15,7 +15,6 @@ def siteadmin_to_staff(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("accounts", "0003_user_role"),
     ]

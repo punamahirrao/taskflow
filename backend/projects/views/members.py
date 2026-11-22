@@ -29,11 +29,19 @@ class ProjectMemberListView(APIView):
 
     def get(self, request, pk):
         project = get_object_or_404(visible_projects(request.user), pk=pk)
-        memberships = project.memberships.select_related("user", "role").filter(
-            Q(removal_date__isnull=True) | Q(removal_date__gt=timezone.localdate())
-        ).order_by("id")
+        memberships = (
+            project.memberships.select_related("user", "role")
+            .filter(
+                Q(removal_date__isnull=True) | Q(removal_date__gt=timezone.localdate())
+            )
+            .order_by("id")
+        )
 
-        return Response(ProjectMemberSerializer(memberships, many=True, context={"request": request}).data)
+        return Response(
+            ProjectMemberSerializer(
+                memberships, many=True, context={"request": request}
+            ).data
+        )
 
     def post(self, request, pk):
         project = get_object_or_404(visible_projects(request.user), pk=pk)
@@ -64,7 +72,9 @@ class ProjectMemberListView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        user = User.objects.filter(id=user_id, is_active=True).first()
+        user = User.objects.filter(
+            id=user_id, is_active=True, organizations=project.organization_id
+        ).first()
 
         if user is None:
             return Response(

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tasks', '0005_task_parent_alter_task_work_type'),
+        ("tasks", "0005_task_parent_alter_task_work_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='sprint',
-            name='is_closed',
+            model_name="sprint",
+            name="is_closed",
             field=models.BooleanField(default=False),
         ),
     ]

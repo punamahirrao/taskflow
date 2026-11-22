@@ -2,11 +2,16 @@ from django.contrib.auth.models import BaseUserManager
 
 
 class UserManager(BaseUserManager):
+    def get_by_natural_key(self, username):
+        return self.get(email__iexact=username.strip())
+
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email is required")
 
-        user = self.model(email=self.normalize_email(email), **extra_fields)
+        user = self.model(
+            email=self.normalize_email(email.strip()).lower(), **extra_fields
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -21,8 +26,4 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
 
-        return self.create_user(
-            email=email,
-            password=password,
-            **extra_fields
-        )
+        return self.create_user(email=email, password=password, **extra_fields)

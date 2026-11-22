@@ -1,7 +1,13 @@
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from estimator_proxy import EstimatorDocuments, EstimatorRuns, EstimatorRunDetail, EstimatorCreateStories, EstimatorTestCases
+from estimator_proxy import (
+    EstimatorDocuments,
+    EstimatorRuns,
+    EstimatorRunDetail,
+    EstimatorCreateStories,
+    EstimatorTestCases,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -18,18 +24,46 @@ urlpatterns = [
     path("api/v1/documents/", include("documents.urls")),
     path("api/v1/dashboard/", include("dashboard.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    path("api/v1/ai-estimator/", include(([
-        path("projects/<int:project_id>/documents/", EstimatorDocuments.as_view()),
-        path("projects/<int:project_id>/runs/", EstimatorRuns.as_view()),
-        path("runs/<str:run_id>/", EstimatorRunDetail.as_view()),
-        path("runs/<str:run_id>/stories/", EstimatorCreateStories.as_view()),
-        path("runs/<str:run_id>/test-cases/", EstimatorTestCases.as_view()),
-    ], "ai_estimator"))),
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(
+        "api/v1/ai-estimator/",
+        include(
+            (
+                [
+                    path(
+                        "projects/<int:project_id>/documents/",
+                        EstimatorDocuments.as_view(),
+                    ),
+                    path("projects/<int:project_id>/runs/", EstimatorRuns.as_view()),
+                    path("runs/<str:run_id>/", EstimatorRunDetail.as_view()),
+                    path(
+                        "runs/<str:run_id>/stories/", EstimatorCreateStories.as_view()
+                    ),
+                    path("runs/<str:run_id>/test-cases/", EstimatorTestCases.as_view()),
+                ],
+                "ai_estimator",
+            )
+        ),
+    ),
     # Old estimator URLs remain valid during frontend/service migration.
-    path("api/ai-estimator/v1/projects/<int:project_id>/documents/", EstimatorDocuments.as_view()),
-    path("api/ai-estimator/v1/projects/<int:project_id>/runs/", EstimatorRuns.as_view()),
+    path(
+        "api/ai-estimator/v1/projects/<int:project_id>/documents/",
+        EstimatorDocuments.as_view(),
+    ),
+    path(
+        "api/ai-estimator/v1/projects/<int:project_id>/runs/", EstimatorRuns.as_view()
+    ),
     path("api/ai-estimator/v1/runs/<str:run_id>/", EstimatorRunDetail.as_view()),
-    path("api/ai-estimator/v1/runs/<str:run_id>/stories/", EstimatorCreateStories.as_view()),
-    path("api/ai-estimator/v1/runs/<str:run_id>/test-cases/", EstimatorTestCases.as_view()),
+    path(
+        "api/ai-estimator/v1/runs/<str:run_id>/stories/",
+        EstimatorCreateStories.as_view(),
+    ),
+    path(
+        "api/ai-estimator/v1/runs/<str:run_id>/test-cases/",
+        EstimatorTestCases.as_view(),
+    ),
 ]

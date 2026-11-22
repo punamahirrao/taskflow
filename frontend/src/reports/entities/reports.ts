@@ -1,4 +1,4 @@
-import type { Sprint } from "../../common/entities/task";
+import type { Sprint } from "../../features/tasks/entities/task";
 
 export interface StatusDefinition {
   label: string;

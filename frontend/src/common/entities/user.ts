@@ -5,6 +5,7 @@ export interface User {
   email: string;
   account_type: "private" | "organization";
   job_title: string;
+  organization_role?: "owner" | "admin" | "member" | null;
   is_staff: boolean;
   is_active: boolean;
   date_joined: string;
@@ -16,7 +17,10 @@ export interface SiteUser extends User {
   date_joined: string;
 }
 
-export interface CreateUserInput extends Pick<User, "first_name" | "last_name" | "email" | "job_title" | "account_type"> {
+export interface CreateUserInput extends Pick<
+  User,
+  "first_name" | "last_name" | "email" | "job_title" | "account_type"
+> {
   password: string;
 }
 
@@ -31,7 +35,17 @@ export interface Profile {
   photo_url: string | null;
 }
 
-export type TeamMemberProfile = Pick<Profile, "id" | "first_name" | "last_name" | "email" | "job_title" | "department" | "about_me" | "photo_url">;
+export type TeamMemberProfile = Pick<
+  Profile,
+  | "id"
+  | "first_name"
+  | "last_name"
+  | "email"
+  | "job_title"
+  | "department"
+  | "about_me"
+  | "photo_url"
+>;
 
 export interface ChangePasswordInput {
   current_password: string;

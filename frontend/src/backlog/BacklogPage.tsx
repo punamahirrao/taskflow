@@ -1,169 +1,221 @@
-import "./backlog.css";
 import { useEffect, useMemo, useState } from "react";
 import { Check, CircleHelp, Layers3, Plus, CalendarClock, Sparkles } from "lucide-react";
-import { closeSprint, createSprint, getSprints, updateSprint } from "../project-detail/api/tasks";
-import type { Sprint, Task } from "../common/entities/task";
+import { getSprints } from "../features/tasks/api/sprints";
+import type { Sprint } from "../features/tasks/entities/task";
 import { useAgileProjectScope } from "../common/features/agile/hooks/useAgileProjectScope";
-import { useAgileTasks } from "../common/features/agile/hooks/useAgileTasks";
+import { useAgileTasks } from "../features/tasks/hooks/useAgileTasks";
 import { QuickCaptureDialog } from "./components/QuickCaptureDialog";
-import { EditWorkItemDialog } from "../common/features/agile/components/EditWorkItemDialog";
+import { EditWorkItemDialog } from "../features/tasks/components/EditWorkItemDialog";
 import { BacklogMetric } from "./components/BacklogMetric";
-import { BacklogSprintPanel } from "./components/BacklogSprintPanel";
 import { BacklogWorkList } from "./components/BacklogWorkList";
 import { BacklogControls, type BacklogMode } from "./components/BacklogControls";
-import { getDefinitionOfReady, groupBacklogTasks, priorityOrder, suggestionReason, suggestedPriority, type BacklogGroupBy } from "./features/agile/utils/backlog";
+import {
+  groupBacklogTasks,
+  priorityOrder,
+  type BacklogGroupBy,
+} from "./features/agile/utils/backlog";
 import { useTranslation } from "../common/shared/i18n/hooks/useTranslation";
-import { firstValidationError, sprintSchema } from "../common/validation/schemas";
-import { useToast } from "../common/features/notifications/useToast";
 
 export default function BacklogPage() {
   const { t } = useTranslation();
-  const toast = useToast();
-  const scope = useAgileProjectScope("backlog_project_scope");
+  const scope = useAgileProjectScope();
   const agile = useAgileTasks(scope.projectId);
-  const { sync } = agile;
   const [asOf] = useState(() => Date.now());
   const [mode, setMode] = useState<BacklogMode>("groom");
   const [groupBy, setGroupBy] = useState<BacklogGroupBy>("project");
   const [search, setSearch] = useState("");
   const [captureOpen, setCaptureOpen] = useState(false);
   const [sprints, setSprints] = useState<Sprint[]>([]);
-  const [selectedActiveSprintId, setSelectedActiveSprintId] = useState<number | null>(null);
-  const [sprintName, setSprintName] = useState("");
-  const [sprintGoal, setSprintGoal] = useState("");
-  const [sprintCapacity, setSprintCapacity] = useState("");
-  const [sprintBusy, setSprintBusy] = useState(false);
-  const [sprintStartDate, setSprintStartDate] = useState("");
-  const [sprintEndDate, setSprintEndDate] = useState("");
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let active = true;
     void Promise.resolve().then(async () => {
-      if (!scope.projectId) { if (active) setSprints([]); return; }
-      try { const result = await getSprints(scope.projectId); if (active) setSprints(result); }
-      catch { if (active) setSprints([]); }
+      if (!scope.projectId) {
+        if (active) setSprints([]);
+        return;
+      }
+      try {
+        const result = await getSprints(scope.projectId);
+        if (active) setSprints(result);
+      } catch {
+        if (active) setSprints([]);
+      }
     });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [scope.projectId]);
-  useEffect(() => {
-    const timer = window.setInterval(() => { void sync(); }, 20000);
-    return () => window.clearInterval(timer);
-  }, [sync]);
 
-  const backlog = useMemo(() => agile.tasks.filter((task) => task.status === "backlog" &&
-    `${task.title} ${task.description} ${task.tags.join(" ")}`.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => priorityOrder(a.priority) - priorityOrder(b.priority) || a.rank - b.rank || a.id - b.id), [agile.tasks, search]);
-  const ready = backlog.filter((task) => task.ready_for_sprint && getDefinitionOfReady(task, agile.tasks).ready === getDefinitionOfReady(task, agile.tasks).total);
-  const staleItems = backlog.filter((task) => asOf - Date.parse(task.updated_at ?? task.created_at ?? new Date(asOf).toISOString()) > 14 * 86400000);
+  const backlog = useMemo(
+    () =>
+      agile.tasks
+        .filter(
+          (task) =>
+            task.status === "backlog" &&
+            `${task.title} ${task.description} ${task.tags.join(" ")}`
+              .toLowerCase()
+              .includes(search.toLowerCase()),
+        )
+        .sort(
+          (a, b) =>
+            a.rank - b.rank || priorityOrder(a.priority) - priorityOrder(b.priority) || a.id - b.id,
+        ),
+    [agile.tasks, search],
+  );
+  const staleItems = backlog.filter(
+    (task) =>
+      asOf - Date.parse(task.updated_at ?? task.created_at ?? new Date(asOf).toISOString()) >
+      14 * 86400000,
+  );
   const missingEstimate = backlog.filter((task) => !task.estimate.trim());
-  const blockedItems = backlog.filter((task) => task.blocked || task.blocked_by.some((id) => agile.tasks.some((dependency) => dependency.id === id && dependency.status !== "done")));
-  const prioritySuggestions = backlog.map((task) => ({ task, priority: suggestedPriority(task, asOf), reason: suggestionReason(task, asOf) }))
-    .filter(({ task, priority }) => task.priority !== priority).slice(0, 3);
-  const epicRollups = useMemo(() => new Map(agile.tasks.filter((task) => task.work_type === "epic" || task.work_type === "initiative").map((epic) => {
-    const children = agile.tasks.filter((task) => task.parent === epic.id);
-    return [epic.id, { done: children.filter((task) => task.status === "done").length, total: children.length }] as const;
-  })), [agile.tasks]);
+  const blockedItems = backlog.filter(
+    (task) =>
+      task.blocked ||
+      task.blocked_by.some((id) =>
+        agile.tasks.some((dependency) => dependency.id === id && dependency.status !== "done"),
+      ),
+  );
+  const epicRollups = useMemo(
+    () =>
+      new Map(
+        agile.tasks
+          .filter((task) => task.work_type === "epic" || task.work_type === "initiative")
+          .map((epic) => {
+            const children = agile.tasks.filter((task) => task.parent === epic.id);
+            return [
+              epic.id,
+              {
+                done: children.filter((task) => task.status === "done").length,
+                total: children.length,
+              },
+            ] as const;
+          }),
+      ),
+    [agile.tasks],
+  );
   const grouped = groupBacklogTasks(backlog, scope.projects, groupBy);
-  const activeSprints = sprints.filter((sprint) => sprint.is_active);
-  const activeSprint = activeSprints.find((sprint) => sprint.id === selectedActiveSprintId) ?? activeSprints[0];
+  const activeSprint = sprints.find((sprint) => sprint.is_active && !sprint.is_closed);
   const editingTask = agile.tasks.find((task) => task.id === editingTaskId) ?? null;
-  const editingProject = editingTask ? scope.projects.find((project) => project.id === editingTask.project) : undefined;
+  const editingProject = editingTask
+    ? scope.projects.find((project) => project.id === editingTask.project)
+    : undefined;
 
-  async function startSprint() {
-    if (!scope.projectId) { const message = t("backlog.errChooseProject"); setMessage(message); toast("error", message); return; }
-    const validationError = firstValidationError(sprintSchema, { name: sprintName, goal: sprintGoal, startDate: sprintStartDate, endDate: sprintEndDate, capacity: sprintCapacity });
-    if (validationError) { setMessage(validationError); toast("error", validationError); return; }
-    setSprintBusy(true);
-    try {
-      const sprint = await createSprint(scope.projectId, sprintName.trim(), false, sprintStartDate, sprintEndDate, sprintGoal.trim(), sprintCapacity ? Number(sprintCapacity) : null);
-      setSprints((current) => [sprint, ...current]);
-      setSprintName("");
-      setSprintGoal(""); setSprintCapacity("");
-      setSprintStartDate(""); setSprintEndDate("");
-      setMessage(sprint.is_active ? t("backlog.sprintNowActive", { name: sprint.name }) : t("backlog.sprintPlanned", { name: sprint.name }));
-      toast("success", t(sprint.is_active ? "backlog.sprintNowActive" : "backlog.sprintPlanned", { name: sprint.name }));
-    } catch (cause) { const message = cause instanceof Error ? cause.message : t("backlog.errStartSprint"); setMessage(message); toast("error", message); }
-    finally { setSprintBusy(false); }
-  }
+  return (
+    <main className="min-h-screen bg-[#f7f7fb] p-5 md:p-8">
+      <div className="mx-auto max-w-[1440px]">
+        <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">
+              {t("backlog.title")}
+            </h2>
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            <button
+              type="button"
+              onClick={() => setCaptureOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700"
+            >
+              <Plus size={16} /> {t("backlog.captureIdea")}
+            </button>
+          </div>
+        </header>
 
-  async function startPlannedSprint(sprint: Sprint) {
-    setSprintBusy(true);
-    try {
-      const active = await updateSprint(sprint.id, { is_active: true });
-      setSprints((current) => current.map((item) => item.id === active.id ? active : item));
-      setSelectedActiveSprintId(active.id);
-      setMessage(t("backlog.plannedSprintNowActive", { name: active.name }));
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : t("backlog.errStartThisSprint")); }
-    finally { setSprintBusy(false); }
-  }
+        <section
+          className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
+          aria-label={t("backlog.healthLabel")}
+        >
+          <BacklogMetric
+            label={t("backlog.metricIdeasInPipeline")}
+            value={agile.tasks.filter((task) => task.status === "backlog").length}
+            icon={<Layers3 size={16} />}
+          />
+          <BacklogMetric
+            label={t("backlog.metricReadyForSprint")}
+            value={
+              agile.tasks.filter((task) => task.status === "backlog" && task.ready_for_sprint)
+                .length
+            }
+            icon={<Check size={16} />}
+            tint="green"
+          />
+          <BacklogMetric
+            label={t("backlog.metricNeedsEstimate")}
+            value={missingEstimate.length}
+            icon={<CircleHelp size={16} />}
+            tint="amber"
+          />
+          <BacklogMetric
+            label={t("backlog.metricBlocked")}
+            value={blockedItems.length}
+            icon={<Sparkles size={16} />}
+            tint="rose"
+          />
+          <BacklogMetric
+            label={t("backlog.metricStale")}
+            value={staleItems.length}
+            icon={<CalendarClock size={16} />}
+            tint="amber"
+          />
+        </section>
 
-  async function finishSprint(sprintId: number) {
-    const sprintToClose = sprints.find((sprint) => sprint.id === sprintId);
-    if (!sprintToClose || !window.confirm(t("backlog.confirmCloseSprint", { name: sprintToClose.name }))) return;
-    setSprintBusy(true);
-    try {
-      const result = await closeSprint(sprintToClose.id);
-      setSprints(await getSprints(scope.projectId));
-      setSelectedActiveSprintId(null);
-      await agile.sync();
-      setMessage(result.message);
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : t("backlog.errCloseSprint")); }
-    finally { setSprintBusy(false); }
-  }
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <BacklogControls
+            mode={mode}
+            setMode={setMode}
+            groupBy={groupBy}
+            setGroupBy={setGroupBy}
+            search={search}
+            setSearch={setSearch}
+          />
+          {agile.isReordering && (
+            <p role="status" className="sr-only">
+              Saving backlog order…
+            </p>
+          )}
+          {agile.error && (
+            <p
+              role="alert"
+              className="border-b border-slate-100 bg-rose-50 px-5 py-2.5 text-sm text-rose-700"
+            >
+              {agile.error}
+            </p>
+          )}
 
-  async function saveSprintChanges(sprintId: number, changes: Partial<Sprint>) {
-    try {
-      const updated = await updateSprint(sprintId, changes);
-      setSprints((current) => current.map((item) => item.id === updated.id ? updated : item));
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : t("backlog.errUpdateSprint")); }
-  }
-
-  async function planReadyItems() {
-    if (!activeSprint) return;
-    setSprintBusy(true);
-    const planned = await Promise.all(ready.map((task) => agile.update(task.id, { sprint: activeSprint.id, status: "todo" })));
-    const movedCount = planned.filter(Boolean).length;
-    setMessage(t(movedCount === 1 ? "backlog.readyItemMoved" : "backlog.readyItemsMoved", { count: movedCount, name: activeSprint.name }));
-    setSprintBusy(false);
-  }
-
-  async function reorder(task: Task, direction: -1 | 1) {
-    const siblings = backlog.filter((item) => item.project === task.project);
-    const index = siblings.findIndex((item) => item.id === task.id);
-    const target = siblings[index + direction];
-    if (!target) return;
-    const next = [...siblings];
-    [next[index], next[index + direction]] = [next[index + direction], next[index]];
-    await Promise.all(next.map((item, rank) => agile.update(item.id, { rank })));
-  }
-
-  return <main className="min-h-screen bg-[#f7f7fb] p-5 md:p-8"><div className="mx-auto max-w-[1440px]">
-    <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
-      <div><p className="text-xs font-bold uppercase tracking-[.2em] text-violet-600">{t("backlog.eyebrow")}</p><h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">{t("backlog.title")}</h2><p className="mt-2 max-w-2xl text-sm text-slate-500">{t("backlog.subtitle")}</p></div>
-      <div className="flex flex-wrap items-end gap-3"><button type="button" onClick={() => setCaptureOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700"><Plus size={16} /> {t("backlog.captureIdea")}</button></div>
-    </header>
-
-    <section className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label={t("backlog.healthLabel")}>
-      <BacklogMetric label={t("backlog.metricIdeasInPipeline")} value={agile.tasks.filter((task) => task.status === "backlog").length} detail={t("backlog.metricIdeasInPipelineDetail")} icon={<Layers3 size={16} />} />
-      <BacklogMetric label={t("backlog.metricReadyForSprint")} value={agile.tasks.filter((task) => task.status === "backlog" && task.ready_for_sprint).length} detail={t("backlog.metricReadyForSprintDetail")} icon={<Check size={16} />} tint="green" />
-      <BacklogMetric label={t("backlog.metricNeedsEstimate")} value={missingEstimate.length} detail={t("backlog.metricNeedsEstimateDetail")} icon={<CircleHelp size={16} />} tint="amber" />
-      <BacklogMetric label={t("backlog.metricBlocked")} value={blockedItems.length} detail={t("backlog.metricBlockedDetail")} icon={<Sparkles size={16} />} tint="rose" />
-      <BacklogMetric label={t("backlog.metricStale")} value={staleItems.length} detail={t("backlog.metricStaleDetail")} icon={<CalendarClock size={16} />} tint="amber" />
-    </section>
-
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <BacklogControls mode={mode} setMode={setMode} groupBy={groupBy} setGroupBy={setGroupBy} search={search} setSearch={setSearch} suggestions={prioritySuggestions} onSetPriority={(task, priority) => void agile.update(task.id, { priority })} />
-      {message && <p role="status" className="border-b border-slate-100 bg-emerald-50 px-5 py-2.5 text-sm text-emerald-800">{message}</p>}
-      {agile.error && <p role="alert" className="border-b border-slate-100 bg-rose-50 px-5 py-2.5 text-sm text-rose-700">{agile.error}</p>}
-
-      <BacklogSprintPanel projectId={scope.projectId} projectRole={scope.project?.my_role} sprints={sprints} activeSprints={activeSprints} activeSprint={activeSprint} onSelectActive={setSelectedActiveSprintId} readyCount={ready.length} backlogPoints={backlog.reduce((sum, task) => sum + (Number.parseFloat(task.estimate) || 0), 0)} busy={sprintBusy} name={sprintName} setName={setSprintName} goal={sprintGoal} setGoal={setSprintGoal} capacity={sprintCapacity} setCapacity={setSprintCapacity} startDate={sprintStartDate} setStartDate={setSprintStartDate} endDate={sprintEndDate} setEndDate={setSprintEndDate} onCreate={() => void startSprint()} onPlanReady={() => void planReadyItems()} onStartPlanned={(sprint) => void startPlannedSprint(sprint)} onClose={(id) => void finishSprint(id)} onUpdate={(id, changes) => void saveSprintChanges(id, changes)} />
-
-
-      <BacklogWorkList loading={agile.loading} backlog={backlog} tasks={agile.tasks} projects={scope.projects} groups={grouped} activeSprint={activeSprint} sprintBusy={sprintBusy} epicRollups={epicRollups} onCapture={() => setCaptureOpen(true)} onReorder={(task, direction) => void reorder(task, direction)} onUpdate={agile.update} onEdit={setEditingTaskId} />
-    </section>
-    {captureOpen && <QuickCaptureDialog projects={scope.projects} defaultProjectId={scope.projectId} onClose={() => setCaptureOpen(false)} onCreated={(task) => agile.setTasks((current) => [...current, task])} />}
-    {editingTask && editingProject && <EditWorkItemDialog task={editingTask} project={editingProject} candidates={agile.tasks} onClose={() => setEditingTaskId(null)} onSave={(changes) => agile.update(editingTask.id, changes)} />}
-  </div></main>;
+          <BacklogWorkList
+            loading={agile.loading}
+            backlog={backlog}
+            tasks={agile.tasks}
+            projects={scope.projects}
+            groups={grouped}
+            activeSprint={activeSprint}
+            sprintBusy={false}
+            epicRollups={epicRollups}
+            onCapture={() => setCaptureOpen(true)}
+            onReorder={(taskIds) => void agile.reorder(taskIds)}
+            reordering={agile.isReordering}
+            onUpdate={agile.update}
+            onEdit={setEditingTaskId}
+          />
+        </section>
+        {captureOpen && (
+          <QuickCaptureDialog
+            projects={scope.projects}
+            defaultProjectId={scope.projectId}
+            onClose={() => setCaptureOpen(false)}
+            onCreated={(task) => agile.setTasks((current) => [...current, task])}
+          />
+        )}
+        {editingTask && editingProject && (
+          <EditWorkItemDialog
+            task={editingTask}
+            project={editingProject}
+            candidates={agile.tasks}
+            onClose={() => setEditingTaskId(null)}
+            onSave={(changes) => agile.update(editingTask.id, changes)}
+          />
+        )}
+      </div>
+    </main>
+  );
 }

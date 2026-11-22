@@ -1,4 +1,4 @@
-import type { BoardColumn } from "../../common/entities/task";
+import type { BoardColumn } from "../../features/tasks/entities/task";
 
 export interface ProjectOption {
   id: number;

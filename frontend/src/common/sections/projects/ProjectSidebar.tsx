@@ -1,109 +1,107 @@
-import {
-  BarChart3,
-  CalendarDays,
-  Columns3,
-  ChevronDown,
-  FolderKanban,
-  LayoutDashboard,
-  BrainCircuit,
-  ListTodo,
-  Settings,
-  ShieldCheck,
-  TrainFront,
-  UsersRound,
-} from "lucide-react";
+import { ChevronDown, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useState } from "react";
-import ProjectSwitcher from "../../features/projects/components/ProjectSwitcher";
 import { NavLink, useLocation } from "react-router-dom";
-import type { TranslationKey } from "../../entities/language";
+import ProjectSwitcher from "../../features/projects/components/ProjectSwitcher";
 import { useTranslation } from "../../shared/i18n/hooks/useTranslation";
-import { useProjectContext } from "../../features/projects/context/useProjectContext";
-import UserMenu from "../../features/profile/components/UserMenu";
+import OrganizationSwitcher from "../../../organizations/components/OrganizationSwitcher";
+import { NAVIGATION_ITEMS, type NavigationItem } from "../../features/navigation/navigationCatalog";
+import { useNavigation } from "../../features/navigation/NavigationContext";
+import TaskflowLogo from "../../components/TaskflowLogo";
 
-interface NavItem {
-  path: string;
-  icon: typeof LayoutDashboard;
-  label: TranslationKey;
-}
+const primary = NAVIGATION_ITEMS.filter((item) => item.section === "primary");
+const planning = NAVIGATION_ITEMS.filter((item) => item.section === "planning");
+const utility = NAVIGATION_ITEMS.filter((item) => item.section === "utility");
+const planningItem = NAVIGATION_ITEMS.find((item) => item.id === "planning")!;
 
-const NAV_ITEMS: NavItem[] = [
-  { path: "/dashboard", icon: LayoutDashboard, label: "app.dashboard" },
-  { path: "/projects", icon: FolderKanban, label: "app.projects" },
-  { path: "/backlog", icon: ListTodo, label: "app.backlog" },
-  { path: "/sprint-train", icon: TrainFront, label: "app.sprintTrain" },
-  { path: "/boards", icon: Columns3, label: "app.boards" },
-  { path: "/ai-estimator", icon: BrainCircuit, label: "app.aiEstimator" },
-  { path: "/calendar", icon: CalendarDays, label: "app.calendar" },
-  { path: "/reports", icon: BarChart3, label: "app.reports" },
-];
-
-function ProjectSidebar() {
-  const [isAdministrationOpen, setIsAdministrationOpen] = useState(false);
+export default function ProjectSidebar({
+  collapsed,
+  onToggle,
+}: {
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
   const { pathname } = useLocation();
   const { t } = useTranslation();
-  const { selectedId } = useProjectContext();
-  const projectSettingsPath = selectedId ? `/project/${selectedId}/settings` : "/projects";
-  const isProjectPage = pathname.startsWith("/project/") && !pathname.endsWith("/settings");
-  const menuClass = (isActive: boolean) =>
-    `flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
-      isActive
-        ? "bg-purple-100 font-semibold text-purple-700"
-        : "text-gray-600 hover:bg-gray-200/70 hover:text-gray-900"
-    }`;
-
+  const { resolve } = useNavigation();
+  const {
+    label: planningLabel,
+    Icon: PlanningIcon,
+    icon: planningIcon,
+    color: planningColor,
+  } = resolve(planningItem);
+  const [planningOpen, setPlanningOpen] = useState(pathname.startsWith("/planning"));
+  function link(item: NavigationItem) {
+    const { label, Icon, icon, color } = resolve(item);
+    const path = item.path;
+    return (
+      <NavLink
+        key={item.id}
+        to={path}
+        title={collapsed ? label : undefined}
+        aria-label={label}
+        data-icon={icon}
+        data-testid={`nav-${path.slice(1).replaceAll("/", "-")}`}
+        className={({ isActive }) =>
+          `shell-nav-link ${isActive || (path === "/projects" && /^\/project\/\d+$/.test(pathname)) ? "active" : ""}`
+        }
+      >
+        <Icon
+          size={18}
+          aria-hidden="true"
+          style={{ color: `color-mix(in srgb, ${color} 60%, white)` }}
+        />
+        {!collapsed && <span>{label}</span>}
+      </NavLink>
+    );
+  }
   return (
-    <aside className="platform-sidebar border-b border-gray-200 bg-gray-50 p-5 md:sticky md:top-0 md:flex md:h-screen md:flex-col md:overflow-y-auto md:border-r md:border-b-0">
-      <div className="mb-5 px-3">
-        <h2 className="text-2xl font-bold text-purple-700">{t("app.taskflow")}</h2>
-      </div>
-
-      <ProjectSwitcher />
-
-      <nav aria-label={t("nav.main")} className="space-y-1 md:flex-1">
-        {NAV_ITEMS.map(({ path, icon: Icon, label }) => <NavLink key={path} to={path} data-testid={`nav-${path.slice(1)}`} className={({ isActive }) => menuClass(isActive || (path === "/projects" && isProjectPage) || (path === "/boards" && pathname.startsWith("/boards/")))}>
-          <Icon size={18} aria-hidden="true" />{t(label)}
-        </NavLink>)}
-        <NavLink to={projectSettingsPath} className={({ isActive }) => menuClass(isActive || pathname.endsWith("/settings"))}>
-          <Settings size={18} aria-hidden="true" />{t("app.projectSettings")}
+    <aside className={`platform-sidebar shell-sidebar ${collapsed ? "is-collapsed" : ""}`}>
+      <div className="shell-brand">
+        <NavLink to="/dashboard" aria-label="Taskflow home">
+          <TaskflowLogo compact={collapsed} inverse />
         </NavLink>
-        <div>
-          <button
-            type="button"
-            onClick={() => setIsAdministrationOpen((isOpen) => !isOpen)}
-            aria-expanded={isAdministrationOpen}
-            aria-controls="administration-menu"
-            data-testid="nav-administration-toggle"
-            className={menuClass(false)}
-          >
-            <ShieldCheck size={18} aria-hidden="true" />
-            {t("nav.administration")}
-            <ChevronDown
-              size={16}
-              aria-hidden="true"
-              className={`ml-auto transition-transform ${isAdministrationOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-          <div id="administration-menu" hidden={!isAdministrationOpen} className="ml-5 mt-1 space-y-1 border-l border-gray-200 pl-3">
-            <NavLink
-              to="/users"
-              className={({ isActive }) => menuClass(isActive)}
-            >
-              <UsersRound size={16} aria-hidden="true" />
-              {t("app.users")}
-            </NavLink>
-            <NavLink to="/portfolio" className={({ isActive }) => menuClass(isActive)}><FolderKanban size={16} aria-hidden="true" />{t("app.portfolio")}</NavLink>
-            <NavLink to="/settings" className={({ isActive }) => menuClass(isActive)}>
-              <Settings size={16} aria-hidden="true" />
-              {t("app.settings")}
-            </NavLink>
-          </div>
-        </div>
-      </nav>
-      <div className="mt-6 border-t border-gray-200 pt-4 md:mt-auto">
-        <UserMenu />
+        <button
+          type="button"
+          className="sidebar-toggle"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-expanded={!collapsed}
+          onClick={onToggle}
+        >
+          {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+        </button>
       </div>
+      <ProjectSwitcher collapsed={collapsed} />
+      <nav aria-label={t("nav.main")} className="shell-navigation">
+        {primary.map(link)}
+        <button
+          type="button"
+          data-testid="nav-planning"
+          data-icon={planningIcon}
+          title={collapsed ? planningLabel : undefined}
+          aria-label={planningLabel}
+          aria-expanded={planningOpen}
+          className={`shell-nav-link ${pathname.startsWith("/planning") ? "active" : ""}`}
+          onClick={() => setPlanningOpen(!planningOpen)}
+        >
+          <PlanningIcon
+            size={18}
+            style={{ color: `color-mix(in srgb, ${planningColor} 60%, white)` }}
+          />
+          {!collapsed && (
+            <>
+              <span>{planningLabel}</span>
+              <ChevronDown size={14} className={`ml-auto ${planningOpen ? "rotate-180" : ""}`} />
+            </>
+          )}
+        </button>
+        {planningOpen && (
+          <div className={collapsed ? "" : "shell-submenu"}>{planning.map(link)}</div>
+        )}
+        <div className="shell-nav-divider" />
+        {utility.map(link)}
+      </nav>
+      <OrganizationSwitcher collapsed={collapsed} />
     </aside>
   );
 }
-
-export default ProjectSidebar;

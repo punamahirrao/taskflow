@@ -6,11 +6,18 @@ export interface Project {
   expected_start_date?: string | null;
   end_date?: string | null;
   progress?: number;
-  owner: number;
+  owner: number | null;
+  owner_details?: ProjectOwner | null;
   my_role?: string | null;
   can_create_board?: boolean;
   is_default?: boolean;
   members?: ProjectMember[];
+}
+
+export interface ProjectOwner {
+  id: number;
+  name: string;
+  photo_url?: string | null;
 }
 
 export interface ProjectMember {

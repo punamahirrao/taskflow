@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('projects', '0008_project_due_date'),
+        ("projects", "0008_project_due_date"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='project',
-            old_name='due_date',
-            new_name='end_date',
+            model_name="project",
+            old_name="due_date",
+            new_name="end_date",
         ),
         migrations.AddField(
-            model_name='project',
-            name='expected_start_date',
+            model_name="project",
+            name="expected_start_date",
             field=models.DateField(blank=True, null=True),
         ),
     ]

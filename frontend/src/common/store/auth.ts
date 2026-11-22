@@ -1,18 +1,13 @@
 import { store } from "./index";
-import { sessionActions } from "./sessionSlice";
-import { projectActions } from "./projectsSlice";
-import { boardActions } from "./boardsSlice";
-import { dashboardActions } from "./dashboardSlice";
+import { resetSessionState } from "./sessionEffects";
 
 export function clearAuthSession() {
+  sessionStorage.removeItem("active_organization_id");
   sessionStorage.removeItem("access_token");
   sessionStorage.removeItem("refresh_token");
   sessionStorage.removeItem("user");
   sessionStorage.removeItem("selected_project");
-  store.dispatch(sessionActions.userChanged(null));
-  store.dispatch(projectActions.projectSelectionCleared());
-  store.dispatch(boardActions.boardsCleared());
-  store.dispatch(dashboardActions.dashboardCleared());
+  resetSessionState(store.dispatch);
 }
 
 export function hasAccessToken() {

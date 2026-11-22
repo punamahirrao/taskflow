@@ -6,15 +6,23 @@ from .base import *  # noqa: F403
 
 DEBUG = False
 SECRET_KEY = os.environ["SECRET_KEY"]
-ALLOWED_HOSTS = [host.strip() for host in os.environ["ALLOWED_HOSTS"].split(",") if host.strip()]
+ALLOWED_HOSTS = [
+    host.strip() for host in os.environ["ALLOWED_HOSTS"].split(",") if host.strip()
+]
 if not SECRET_KEY.strip():
     raise RuntimeError("SECRET_KEY must not be empty in production.")
 if not ALLOWED_HOSTS:
-    raise RuntimeError("ALLOWED_HOSTS must contain at least one hostname in production.")
+    raise RuntimeError(
+        "ALLOWED_HOSTS must contain at least one hostname in production."
+    )
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL must be configured for production.")
 
-CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if origin.strip()]
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "true").lower() == "true"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True

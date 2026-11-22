@@ -1,4 +1,14 @@
-from .board_columns import AgileBoardColumnDetailView, AgileBoardColumnsView, BoardWorkflowView, ProjectAgileBoardsView, ProjectBoardColumnDetailView, ProjectBoardColumnsView, ProjectWorkflowStatusDetailView, ProjectWorkflowStatusListView, ProjectWorkflowView
+from .board_columns import (
+    AgileBoardColumnDetailView,
+    AgileBoardColumnsView,
+    BoardWorkflowView,
+    ProjectAgileBoardsView,
+    ProjectBoardColumnDetailView,
+    ProjectBoardColumnsView,
+    ProjectWorkflowStatusDetailView,
+    ProjectWorkflowStatusListView,
+    ProjectWorkflowView,
+)
 from .sprints import SprintDetailView, SprintListCreateView
 from .sprint_close import SprintCloseView
 

@@ -15,7 +15,8 @@ export const profileLabels = defineLabels({
   "profile.jobTitle": "Job Title",
   "profile.department": "Department",
   "profile.aboutMe": "About Me",
-  "profile.aboutMePlaceholder": "Share your experience, tech stack, interests, and other professional details.",
+  "profile.aboutMePlaceholder":
+    "Share your experience, tech stack, interests, and other professional details.",
   "profile.email": "Email Address",
   "profile.loginSecurity": "Login & Security",
   "profile.currentPassword": "Current Password",

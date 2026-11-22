@@ -34,25 +34,38 @@ def overview_for_user(user: Any, project_id: int | None = None) -> dict[str, int
     }
 
 
-def active_sprints_for_user(user: Any, project_id: int | None = None) -> QuerySet[Sprint]:
+def active_sprints_for_user(
+    user: Any, project_id: int | None = None
+) -> QuerySet[Sprint]:
     return Sprint.objects.filter(
         project__in=scoped_projects(user, project_id), is_active=True, is_closed=False
     ).select_related("project", "board")
 
 
 def my_tasks_for_user(user: Any, project_id: int | None = None) -> QuerySet[Task]:
-    return Task.objects.filter(
-        project__in=scoped_projects(user, project_id), assignee=user
-    ).exclude(status="done").select_related("project", "assignee", "sprint").order_by(
-        "due_date", "rank", "id"
+    return (
+        Task.objects.filter(
+            project__in=scoped_projects(user, project_id), assignee=user
+        )
+        .exclude(status="done")
+        .select_related("project", "assignee", "sprint")
+        .order_by("due_date", "rank", "id")
     )
 
 
-def project_health_for_user(user: Any, project_id: int | None = None) -> list[dict[str, Any]]:
-    projects = scoped_projects(user, project_id).annotate(
-        task_count=Count("tasks", distinct=True),
-        completed_tasks=Count("tasks", filter=Q(tasks__status="done"), distinct=True),
-    ).order_by("name", "id")
+def project_health_for_user(
+    user: Any, project_id: int | None = None
+) -> list[dict[str, Any]]:
+    projects = (
+        scoped_projects(user, project_id)
+        .annotate(
+            task_count=Count("tasks", distinct=True),
+            completed_tasks=Count(
+                "tasks", filter=Q(tasks__status="done"), distinct=True
+            ),
+        )
+        .order_by("name", "id")
+    )
     sprint_counts = dict(
         Sprint.objects.filter(project__in=projects, is_active=True, is_closed=False)
         .values_list("project_id")
@@ -61,13 +74,17 @@ def project_health_for_user(user: Any, project_id: int | None = None) -> list[di
     result = []
     for project in projects:
         total = project.task_count
-        result.append({
-            "id": project.id,
-            "name": project.name,
-            "status": project.status,
-            "task_count": total,
-            "completed_tasks": project.completed_tasks,
-            "completion_rate": round(project.completed_tasks / total * 100) if total else 0,
-            "active_sprints": sprint_counts.get(project.id, 0),
-        })
+        result.append(
+            {
+                "id": project.id,
+                "name": project.name,
+                "status": project.status,
+                "task_count": total,
+                "completed_tasks": project.completed_tasks,
+                "completion_rate": round(project.completed_tasks / total * 100)
+                if total
+                else 0,
+                "active_sprints": sprint_counts.get(project.id, 0),
+            }
+        )
     return result

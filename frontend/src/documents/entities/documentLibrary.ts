@@ -1,4 +1,8 @@
-import type { DocumentFolder, ResourceLink, WorkspaceDocument } from "../../common/entities/document";
+import type {
+  DocumentFolder,
+  ResourceLink,
+  OrganizationDocument,
+} from "../../common/entities/document";
 
 export interface DocumentCrumb {
   id: number;
@@ -7,7 +11,7 @@ export interface DocumentCrumb {
 
 export interface DocumentLibraryState {
   folders: DocumentFolder[];
-  documents: WorkspaceDocument[];
+  documents: OrganizationDocument[];
   links: ResourceLink[];
   loading: boolean;
   busy: boolean;
@@ -18,7 +22,7 @@ export interface DocumentLibraryState {
   uploadFiles: (files: File[]) => Promise<boolean>;
   renameFolder: (folder: DocumentFolder, name: string) => Promise<void>;
   removeFolder: (folder: DocumentFolder) => Promise<void>;
-  removeDocument: (document: WorkspaceDocument) => Promise<void>;
+  removeDocument: (document: OrganizationDocument) => Promise<void>;
   saveLink: (name: string, url: string) => Promise<boolean>;
   removeLink: (link: ResourceLink) => Promise<void>;
 }

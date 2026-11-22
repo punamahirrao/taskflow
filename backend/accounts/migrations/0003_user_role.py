@@ -3,7 +3,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("accounts", "0002_alter_user_managers"),
         ("projects", "0007_remove_project_owner_and_members"),

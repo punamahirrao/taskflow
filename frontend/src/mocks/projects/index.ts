@@ -13,13 +13,43 @@ export const mockProject: Project = {
   can_create_board: true,
   is_default: true,
   members: [
-    { id: 1, first_name: "Avery", last_name: "Morgan", email: "avery@example.test", job_title: "Product manager", role: "owner" },
-    { id: 2, first_name: "Jordan", last_name: "Lee", email: "jordan@example.test", job_title: "Engineer", role: "member" },
-    { id: 3, first_name: "Sam", last_name: "Patel", email: "sam@example.test", job_title: "Designer", role: "member" },
+    {
+      id: 1,
+      first_name: "Avery",
+      last_name: "Morgan",
+      email: "avery@example.test",
+      job_title: "Product manager",
+      role: "owner",
+    },
+    {
+      id: 2,
+      first_name: "Jordan",
+      last_name: "Lee",
+      email: "jordan@example.test",
+      job_title: "Engineer",
+      role: "member",
+    },
+    {
+      id: 3,
+      first_name: "Sam",
+      last_name: "Patel",
+      email: "sam@example.test",
+      job_title: "Designer",
+      role: "member",
+    },
   ],
 };
 
-export const mockProjects: Project[] = [mockProject, {
-  ...mockProject, id: 102, name: "Mobile Checkout", description: "Improve conversion across mobile purchase journeys.",
-  status: "in_progress", progress: 34, owner: 1, is_default: false,
-}];
+export const mockProjects: Project[] = [
+  mockProject,
+  {
+    ...mockProject,
+    id: 102,
+    name: "Mobile Checkout",
+    description: "Improve conversion across mobile purchase journeys.",
+    status: "in_progress",
+    progress: 34,
+    owner: 1,
+    is_default: false,
+  },
+];

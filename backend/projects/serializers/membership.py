@@ -16,7 +16,16 @@ class ProjectMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectMembership
-        fields = ("id", "first_name", "last_name", "email", "job_title", "role", "photo_url", "removal_date")
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "job_title",
+            "role",
+            "photo_url",
+            "removal_date",
+        )
 
     def get_photo_url(self, membership):
         photo = membership.user.profile_photo
@@ -43,5 +52,7 @@ class MemberRemovalSerializer(serializers.Serializer):
 
     def validate_removal_date(self, value):
         if value <= timezone.localdate():
-            raise serializers.ValidationError("Choose a future date or remove the member now.")
+            raise serializers.ValidationError(
+                "Choose a future date or remove the member now."
+            )
         return value

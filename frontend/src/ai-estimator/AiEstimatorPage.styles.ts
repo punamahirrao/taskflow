@@ -6,7 +6,9 @@ export const EstimatorPageSurface = styled.main`
   color: var(--theme-text);
   padding: 1.25rem;
 
-  @media (min-width: 768px) { padding: 2rem; }
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
 `;
 
 export const EstimatorPageContent = styled.div`
@@ -21,5 +23,7 @@ export const EstimatorPanel = styled.section`
   padding: 1.5rem;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
 
-  @media (min-width: 768px) { padding: 2rem; }
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
 `;

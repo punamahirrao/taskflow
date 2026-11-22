@@ -29,7 +29,6 @@ def copy_owners_and_members(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("projects", "0005_project_roles_and_memberships"),
     ]

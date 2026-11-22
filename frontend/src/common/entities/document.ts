@@ -10,7 +10,7 @@ export interface DocumentFolder {
   updated_at: string;
 }
 
-export interface WorkspaceDocument {
+export interface OrganizationDocument {
   id: number;
   name: string;
   size: number;
@@ -41,7 +41,7 @@ export interface ResourceLink {
 
 export interface DocumentLibrary {
   folders: DocumentFolder[];
-  documents: WorkspaceDocument[];
+  documents: OrganizationDocument[];
   links: ResourceLink[];
 }
 

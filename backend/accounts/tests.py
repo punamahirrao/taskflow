@@ -21,7 +21,9 @@ class CorsTests(SimpleTestCase):
             HTTP_ACCESS_CONTROL_REQUEST_HEADERS="content-type",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["access-control-allow-origin"], "http://localhost:5174")
+        self.assertEqual(
+            response["access-control-allow-origin"], "http://localhost:5174"
+        )
 
 
 @override_settings(PROFILE_PICS_ROOT=TMP)
@@ -38,7 +40,12 @@ class ProfileTests(APITestCase):
     def test_update_profile_keeps_email_frozen(self):
         r = self.client.patch(
             "/accounts/me/",
-            {"first_name": "Maya", "job_title": "PM", "department": "Product", "email": "x@y.co"},
+            {
+                "first_name": "Maya",
+                "job_title": "PM",
+                "department": "Product",
+                "email": "x@y.co",
+            },
             format="json",
         )
         self.assertEqual(r.status_code, 200)
@@ -63,14 +70,26 @@ class ProfileTests(APITestCase):
         self.assertEqual(list(TMP.iterdir()), [])
 
     def test_rejects_non_image(self):
-        bad = SimpleUploadedFile("x.png", b"not an image at all", content_type="image/png")
+        bad = SimpleUploadedFile(
+            "x.png", b"not an image at all", content_type="image/png"
+        )
         r = self.client.post("/accounts/me/photo/", {"photo": bad}, format="multipart")
         self.assertEqual(r.status_code, 400)
 
     def test_change_password(self):
-        body = {"current_password": "wrong", "new_password": "N3w-strong-pass", "confirm_password": "N3w-strong-pass"}
-        self.assertEqual(self.client.post("/accounts/me/password/", body, format="json").status_code, 400)
+        body = {
+            "current_password": "wrong",
+            "new_password": "N3w-strong-pass",
+            "confirm_password": "N3w-strong-pass",
+        }
+        self.assertEqual(
+            self.client.post("/accounts/me/password/", body, format="json").status_code,
+            400,
+        )
         body["current_password"] = "Str0ng-pass-1"
-        self.assertEqual(self.client.post("/accounts/me/password/", body, format="json").status_code, 200)
+        self.assertEqual(
+            self.client.post("/accounts/me/password/", body, format="json").status_code,
+            200,
+        )
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password("N3w-strong-pass"))

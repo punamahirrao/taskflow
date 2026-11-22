@@ -1,4 +1,4 @@
-import type { Task } from "../../common/entities/task";
+import type { Task } from "../../features/tasks/entities/task";
 
 export interface Suggestion {
   task: Task;

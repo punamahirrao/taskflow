@@ -11,7 +11,9 @@ class CanCreateBoard(BasePermission):
     def has_permission(self, request, view):
         project_id = view.kwargs.get("project_id") or request.data.get("project_id")
         if not project_id:
-            return True  # Let the API view return its normal project-not-found response.
+            return (
+                True  # Let the API view return its normal project-not-found response.
+            )
         project = visible_projects(request.user).filter(id=project_id).first()
         if project is None:
             return True

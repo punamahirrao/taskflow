@@ -6,7 +6,6 @@ import { commonLabels } from "../labels/common";
 import { dashboardLabels } from "../labels/dashboard";
 import { documentsLabels } from "../labels/documents";
 import { loginLabels } from "../labels/login";
-import { portfolioLabels } from "../labels/portfolio";
 import { profileLabels } from "../labels/profile";
 import { projectDetailLabels } from "../labels/project-detail";
 import { projectsLabels } from "../labels/projects";
@@ -19,8 +18,22 @@ import { teamLabels } from "../labels/team";
 import { usersLabels } from "../labels/users";
 
 export const en = {
-  ...commonLabels.en, ...aiEstimatorLabels.en, ...backlogLabels.en, ...boardsLabels.en, ...calendarLabels.en,
-  ...dashboardLabels.en, ...documentsLabels.en, ...loginLabels.en, ...portfolioLabels.en, ...profileLabels.en,
-  ...projectDetailLabels.en, ...projectsLabels.en, ...registerLabels.en, ...reportsLabels.en, ...settingsLabels.en,
-  ...shareProjectLabels.en, ...sprintTrainLabels.en, ...teamLabels.en, ...usersLabels.en,
+  ...commonLabels.en,
+  ...aiEstimatorLabels.en,
+  ...backlogLabels.en,
+  ...boardsLabels.en,
+  ...calendarLabels.en,
+  ...dashboardLabels.en,
+  ...documentsLabels.en,
+  ...loginLabels.en,
+  ...profileLabels.en,
+  ...projectDetailLabels.en,
+  ...projectsLabels.en,
+  ...registerLabels.en,
+  ...reportsLabels.en,
+  ...settingsLabels.en,
+  ...shareProjectLabels.en,
+  ...sprintTrainLabels.en,
+  ...teamLabels.en,
+  ...usersLabels.en,
 };

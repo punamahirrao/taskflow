@@ -26,11 +26,11 @@ function AddUser({ onClose, onCreated }: AddUserProps) {
   useDialogBehavior(onClose, submitting);
 
   const requestClose = () => {
-  if (submitting) return;
-  onClose();
-};
+    if (submitting) return;
+    onClose();
+  };
 
-  const handleSubmit = async (event:React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (submitting) {
@@ -38,25 +38,36 @@ function AddUser({ onClose, onCreated }: AddUserProps) {
     }
 
     setError("");
-    const validationError = firstValidationError(userSchema, { firstName, lastName, email, jobTitle, password });
-    if (validationError) { setError(validationError); toast("error", validationError); return; }
+    const validationError = firstValidationError(userSchema, {
+      firstName,
+      lastName,
+      email,
+      jobTitle,
+      password,
+    });
+    if (validationError) {
+      setError(validationError);
+      toast("error", validationError);
+      return;
+    }
     setSubmitting(true);
 
     try {
       const newUser = await createUser({
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          email: email.trim(),
-          job_title: jobTitle.trim(),
-          account_type: accountType,
-          password,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: email.trim(),
+        job_title: jobTitle.trim(),
+        account_type: accountType,
+        password,
       });
 
       onCreated(newUser);
       toast("success", t("users.createdToast", { name: `${firstName} ${lastName}`.trim() }));
     } catch (err) {
       const message = err instanceof Error ? err.message : t("users.createFailed");
-      setError(message); toast("error", message);
+      setError(message);
+      toast("error", message);
       setSubmitting(false);
     }
   };
@@ -66,132 +77,143 @@ function AddUser({ onClose, onCreated }: AddUserProps) {
 
   return (
     <div
-        onClick={(event) => {
-            if (event.target === event.currentTarget) requestClose();
-        }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        >
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="add-user-title"
-            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
-        >
+      onClick={(event) => {
+        if (event.target === event.currentTarget) requestClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-user-title"
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+      >
         <div className="mb-4 flex items-center justify-between">
-        <h2
-            id="add-user-title"
-            className="text-lg font-semibold text-gray-900"
-        >
+          <h2 id="add-user-title" className="text-lg font-semibold text-gray-900">
             {t("users.addUser")}
-        </h2>
+          </h2>
 
-        <button
+          <button
             type="button"
             onClick={requestClose}
             disabled={submitting}
             aria-label={t("users.closeDialog")}
             className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-50"
-        >
+          >
             <X size={20} aria-hidden="true" />
-        </button>
+          </button>
         </div>
 
-      <form onSubmit={handleSubmit} aria-busy={submitting}>
-        <fieldset disabled={submitting} className="space-y-4">
-          <legend className="sr-only">{t("users.newAccountDetails")}</legend>
+        <form onSubmit={handleSubmit} aria-busy={submitting}>
+          <fieldset disabled={submitting} className="space-y-4">
+            <legend className="sr-only">{t("users.newAccountDetails")}</legend>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm font-medium text-gray-700">
+                {t("users.firstName")}
+                <input
+                  type="text"
+                  autoComplete="off"
+                  maxLength={150}
+                  value={firstName}
+                  onChange={(event) => setFirstName(event.target.value)}
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="block text-sm font-medium text-gray-700">
+                {t("users.lastName")}
+                <input
+                  type="text"
+                  autoComplete="off"
+                  maxLength={150}
+                  value={lastName}
+                  onChange={(event) => setLastName(event.target.value)}
+                  className={inputClass}
+                />
+              </label>
+            </div>
+
             <label className="block text-sm font-medium text-gray-700">
-              {t("users.firstName")}
+              {t("users.email")}
               <input
-                type="text"
+                type="email"
+                required
+                maxLength={254}
                 autoComplete="off"
-                maxLength={150}
-                value={firstName}
-                onChange={(event) => setFirstName(event.target.value)}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 className={inputClass}
               />
             </label>
 
             <label className="block text-sm font-medium text-gray-700">
-              {t("users.lastName")}
+              {t("users.jobTitle")}
               <input
                 type="text"
-                autoComplete="off"
-                maxLength={150}
-                value={lastName}
-                onChange={(event) => setLastName(event.target.value)}
+                required
+                maxLength={100}
+                autoComplete="organization-title"
+                value={jobTitle}
+                onChange={(event) => setJobTitle(event.target.value)}
                 className={inputClass}
               />
             </label>
-          </div>
 
-          <label className="block text-sm font-medium text-gray-700">
-            {t("users.email")}
-            <input
-              type="email"
-              required
-              maxLength={254}
-              autoComplete="off"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className={inputClass}
-            />
-          </label>
+            <label className="block text-sm font-medium text-gray-700">
+              {t("users.accountType")}
+              <select
+                value={accountType}
+                onChange={(event) => setAccountType(event.target.value as User["account_type"])}
+                className={inputClass}
+              >
+                <option value="private">{t("users.privateUser")}</option>
+                <option value="organization">{t("users.organizationUser")}</option>
+              </select>
+            </label>
 
-          <label className="block text-sm font-medium text-gray-700">
-            {t("users.jobTitle")}
-            <input type="text" required maxLength={100} autoComplete="organization-title" value={jobTitle} onChange={(event) => setJobTitle(event.target.value)} className={inputClass} />
-          </label>
+            <label className="block text-sm font-medium text-gray-700">
+              {t("users.password")}
+              <input
+                type="password"
+                required
+                autoComplete="new-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className={inputClass}
+              />
+            </label>
 
-          <label className="block text-sm font-medium text-gray-700">
-            {t("users.accountType")}
-            <select value={accountType} onChange={(event) => setAccountType(event.target.value as User["account_type"])} className={inputClass}>
-              <option value="private">{t("users.privateUser")}</option>
-              <option value="organization">{t("users.organizationUser")}</option>
-            </select>
-          </label>
-
-          <label className="block text-sm font-medium text-gray-700">
-            {t("users.password")}
-            <input
-              type="password"
-              required
-              autoComplete="new-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className={inputClass}
-            />
-          </label>
-
-          <p className="text-sm text-gray-500">
-            {accountType === "organization" ? t("users.createdAsActiveOrganization") : t("users.createdAsActivePrivate")}
-          </p>
-
-          {error && (
-            <p role="alert" className="text-sm text-red-600">
-              {error}
+            <p className="text-sm text-gray-500">
+              {accountType === "organization"
+                ? t("users.createdAsActiveOrganization")
+                : t("users.createdAsActivePrivate")}
             </p>
-          )}
 
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm disabled:opacity-50"
-            >
-              {t("users.cancel")}
-            </button>
+            {error && (
+              <p role="alert" className="text-sm text-red-600">
+                {error}
+              </p>
+            )}
 
-            <button
-              type="submit"
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
-            >
-              {submitting ? t("users.creating") : t("users.createUser")}
-            </button>
-          </div>
-        </fieldset>
-      </form>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm disabled:opacity-50"
+              >
+                {t("users.cancel")}
+              </button>
+
+              <button
+                type="submit"
+                className="rounded-lg bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
+              >
+                {submitting ? t("users.creating") : t("users.createUser")}
+              </button>
+            </div>
+          </fieldset>
+        </form>
       </div>
     </div>
   );

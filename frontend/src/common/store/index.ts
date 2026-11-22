@@ -1,14 +1,30 @@
-import { configureStore } from "@reduxjs/toolkit";
-import { useDispatch, useSelector, type TypedUseSelectorHook } from "react-redux";
-import notificationsReducer from "./notificationsSlice";
-import projectsReducer from "./projectsSlice";
-import themeReducer from "./themeSlice";
-import sessionReducer from "./sessionSlice";
-import boardsReducer from "./boardsSlice";
-import dashboardReducer from "./dashboardSlice";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { useDispatch, useSelector } from "react-redux";
+import notifications from "./notificationsSlice";
+import theme from "./themeSlice";
+import session from "./sessionSlice";
+import projectSelection from "../../projects/store/projectSelectionSlice";
+import { queryApi } from "../api/queryApi";
 
-export const store = configureStore({ reducer: { notifications: notificationsReducer, projects: projectsReducer, theme: themeReducer, session: sessionReducer, boards: boardsReducer, dashboard: dashboardReducer } });
-export type RootState = ReturnType<typeof store.getState>;
+const rootReducer = combineReducers({
+  notifications,
+  theme,
+  session,
+  projectSelection,
+  [queryApi.reducerPath]: queryApi.reducer,
+});
+
+export type RootState = ReturnType<typeof rootReducer>;
+
+export function createAppStore(preloadedState?: Partial<RootState>) {
+  return configureStore({
+    reducer: rootReducer,
+    middleware: (defaults) => defaults().concat(queryApi.middleware),
+    preloadedState,
+  });
+}
+
+export const store = createAppStore();
 export type AppDispatch = typeof store.dispatch;
-export const useAppDispatch = () => useDispatch<AppDispatch>();
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+export const useAppSelector = useSelector.withTypes<RootState>();

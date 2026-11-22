@@ -1,8 +1,4 @@
-import {
-  CreateProjectField,
-  CreateProjectInput,
-  CreateProjectLabel,
-} from "../Projects.styles";
+import { CreateProjectField, CreateProjectInput, CreateProjectLabel } from "../Projects.styles";
 import { useTranslation } from "../../common/shared/i18n/hooks/useTranslation";
 
 interface ProjectNameFieldProps {

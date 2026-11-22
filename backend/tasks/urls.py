@@ -1,4 +1,6 @@
 from django.urls import path
+from tasks.views.reorder import BacklogReorderView
+from tasks.views.agile.capacity import SprintCapacityView, SprintAbsenceView, SprintHolidayView
 
 from tasks.views import (
     ProjectBoardColumnDetailView,
@@ -22,25 +24,89 @@ from tasks.views import (
 
 urlpatterns = [
     path("", TaskListCreateView.as_view(), name="task-list-create"),
+    path("reorder/", BacklogReorderView.as_view(), name="backlog-reorder"),
     path("boards/", ProjectAgileBoardsView.as_view(), name="accessible-agile-boards"),
-    path("boards/<int:board_id>/", ProjectAgileBoardsView.as_view(), name="accessible-agile-board-detail"),
+    path(
+        "boards/<int:board_id>/",
+        ProjectAgileBoardsView.as_view(),
+        name="accessible-agile-board-detail",
+    ),
     path("boards/", ProjectAgileBoardsView.as_view(), name="accessible-agile-boards"),
-    path("boards/<int:board_id>/", ProjectAgileBoardsView.as_view(), name="accessible-agile-board-detail"),
+    path(
+        "boards/<int:board_id>/",
+        ProjectAgileBoardsView.as_view(),
+        name="accessible-agile-board-detail",
+    ),
     path("sprints/", SprintListCreateView.as_view(), name="sprint-list-create"),
+    path("sprints/<int:sprint_id>/capacity/", SprintCapacityView.as_view(), name="sprint-capacity"),
+    path("sprints/<int:sprint_id>/capacity/absences/", SprintAbsenceView.as_view(), name="sprint-absences"),
+    path("sprints/<int:sprint_id>/capacity/absences/<int:entry_id>/", SprintAbsenceView.as_view(), name="sprint-absence-detail"),
+    path("sprints/<int:sprint_id>/capacity/holidays/", SprintHolidayView.as_view(), name="sprint-holidays"),
+    path("sprints/<int:sprint_id>/capacity/holidays/<int:entry_id>/", SprintHolidayView.as_view(), name="sprint-holiday-detail"),
     path("sprints/<int:sprint_id>/", SprintDetailView.as_view(), name="sprint-detail"),
-    path("sprints/<int:sprint_id>/close/", SprintCloseView.as_view(), name="sprint-close"),
-    path("<int:task_id>/comments/", TaskCommentListCreateView.as_view(), name="task-comments"),
-    path("<int:task_id>/comments/<int:comment_id>/", TaskCommentDetailView.as_view(), name="task-comment-detail"),
+    path(
+        "sprints/<int:sprint_id>/close/", SprintCloseView.as_view(), name="sprint-close"
+    ),
+    path(
+        "<int:task_id>/comments/",
+        TaskCommentListCreateView.as_view(),
+        name="task-comments",
+    ),
+    path(
+        "<int:task_id>/comments/<int:comment_id>/",
+        TaskCommentDetailView.as_view(),
+        name="task-comment-detail",
+    ),
     path("<int:task_id>/history/", TaskHistoryListView.as_view(), name="task-history"),
-    path("projects/<int:project_id>/columns/", ProjectBoardColumnsView.as_view(), name="board-columns"),
-    path("projects/<int:project_id>/workflow/", ProjectWorkflowView.as_view(), name="project-workflow"),
-    path("projects/<int:project_id>/statuses/", ProjectWorkflowStatusListView.as_view(), name="project-workflow-statuses"),
-    path("projects/<int:project_id>/statuses/<int:status_id>/", ProjectWorkflowStatusDetailView.as_view(), name="project-workflow-status-detail"),
-    path("projects/<int:project_id>/boards/", ProjectAgileBoardsView.as_view(), name="agile-boards"),
-    path("projects/<int:project_id>/boards/<int:board_id>/", ProjectAgileBoardsView.as_view(), name="agile-board-detail"),
-    path("projects/<int:project_id>/boards/<int:board_id>/columns/", AgileBoardColumnsView.as_view(), name="agile-board-columns"),
-    path("projects/<int:project_id>/boards/<int:board_id>/columns/<int:column_id>/", AgileBoardColumnDetailView.as_view(), name="agile-board-column-detail"),
-    path("projects/<int:project_id>/boards/<int:board_id>/workflow/", BoardWorkflowView.as_view(), name="agile-board-workflow"),
-    path("projects/<int:project_id>/columns/<int:column_id>/", ProjectBoardColumnDetailView.as_view(), name="board-column-detail"),
+    path(
+        "projects/<int:project_id>/columns/",
+        ProjectBoardColumnsView.as_view(),
+        name="board-columns",
+    ),
+    path(
+        "projects/<int:project_id>/workflow/",
+        ProjectWorkflowView.as_view(),
+        name="project-workflow",
+    ),
+    path(
+        "projects/<int:project_id>/statuses/",
+        ProjectWorkflowStatusListView.as_view(),
+        name="project-workflow-statuses",
+    ),
+    path(
+        "projects/<int:project_id>/statuses/<int:status_id>/",
+        ProjectWorkflowStatusDetailView.as_view(),
+        name="project-workflow-status-detail",
+    ),
+    path(
+        "projects/<int:project_id>/boards/",
+        ProjectAgileBoardsView.as_view(),
+        name="agile-boards",
+    ),
+    path(
+        "projects/<int:project_id>/boards/<int:board_id>/",
+        ProjectAgileBoardsView.as_view(),
+        name="agile-board-detail",
+    ),
+    path(
+        "projects/<int:project_id>/boards/<int:board_id>/columns/",
+        AgileBoardColumnsView.as_view(),
+        name="agile-board-columns",
+    ),
+    path(
+        "projects/<int:project_id>/boards/<int:board_id>/columns/<int:column_id>/",
+        AgileBoardColumnDetailView.as_view(),
+        name="agile-board-column-detail",
+    ),
+    path(
+        "projects/<int:project_id>/boards/<int:board_id>/workflow/",
+        BoardWorkflowView.as_view(),
+        name="agile-board-workflow",
+    ),
+    path(
+        "projects/<int:project_id>/columns/<int:column_id>/",
+        ProjectBoardColumnDetailView.as_view(),
+        name="board-column-detail",
+    ),
     path("<int:task_id>/", TaskDetailView.as_view(), name="task-detail"),
 ]

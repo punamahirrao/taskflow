@@ -12,12 +12,22 @@ interface ProjectDateFieldProps {
   min?: string;
 }
 
-export default function ProjectDateField({ id, testId, inputTestId, label, value, onChange, min }: ProjectDateFieldProps) {
+export default function ProjectDateField({
+  id,
+  testId,
+  inputTestId,
+  label,
+  value,
+  onChange,
+  min,
+}: ProjectDateFieldProps) {
   const { t } = useTranslation();
 
   return (
     <CreateProjectField>
-      <CreateProjectLabel data-testid={testId} htmlFor={id}>{t(label)}</CreateProjectLabel>
+      <CreateProjectLabel data-testid={testId} htmlFor={id}>
+        {t(label)}
+      </CreateProjectLabel>
       <CreateProjectInput
         data-testid={inputTestId}
         id={id}

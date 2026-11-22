@@ -11,11 +11,16 @@ export function useLogin(): LoginState {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function submit(email: string, password: string, accountType: User["account_type"] = "private") {
+  async function submit(
+    email: string,
+    password: string,
+    accountType: User["account_type"] = "private",
+  ) {
     setError("");
     const validationError = firstValidationError(loginSchema, { email, password });
     if (validationError) {
-      setError(validationError); toast("error", validationError);
+      setError(validationError);
+      toast("error", validationError);
       return false;
     }
     setLoading(true);
@@ -25,7 +30,8 @@ export function useLogin(): LoginState {
       return needsProfileCompletion ? "/profile" : "/dashboard";
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : translate("login.errorFailed");
-      setError(message); toast("error", message);
+      setError(message);
+      toast("error", message);
       return false;
     } finally {
       setLoading(false);

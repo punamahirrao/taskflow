@@ -5,25 +5,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0005_remove_user_is_staff'),
+        ("accounts", "0005_remove_user_is_staff"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='department',
+            model_name="user",
+            name="department",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='user',
-            name='job_title',
+            model_name="user",
+            name="job_title",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='user',
-            name='profile_photo',
-            field=models.FileField(blank=True, null=True, storage=accounts.storage.profile_pics_storage, upload_to=''),
+            model_name="user",
+            name="profile_photo",
+            field=models.FileField(
+                blank=True,
+                null=True,
+                storage=accounts.storage.profile_pics_storage,
+                upload_to="",
+            ),
         ),
     ]

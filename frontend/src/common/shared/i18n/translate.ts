@@ -13,10 +13,16 @@ export function getStoredLanguage(): LanguageCode {
 }
 
 /** Resolves a label for a language, replacing `{name}` placeholders with the supplied params. */
-export function translateLabel(language: LanguageCode, key: TranslationKey, params?: LabelParams): string {
+export function translateLabel(
+  language: LanguageCode,
+  key: TranslationKey,
+  params?: LabelParams,
+): string {
   const template = (language === "sv" ? sv[key] : undefined) ?? en[key];
   if (!params) return template;
-  return template.replace(/\{(\w+)\}/g, (placeholder, name: string) => (name in params ? String(params[name]) : placeholder));
+  return template.replace(/\{(\w+)\}/g, (placeholder, name: string) =>
+    name in params ? String(params[name]) : placeholder,
+  );
 }
 
 /** Non-React variant for api/hooks/utils code; uses the language saved in local storage. */

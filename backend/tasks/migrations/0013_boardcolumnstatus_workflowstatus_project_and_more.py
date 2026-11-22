@@ -10,7 +10,11 @@ def attach_legacy_statuses(apps, schema_editor):
     WorkflowStatus = apps.get_model("tasks", "WorkflowStatus")
     db = schema_editor.connection.alias
     for column in BoardColumn.objects.using(db).all().iterator():
-        status_obj = WorkflowStatus.objects.using(db).filter(project__isnull=True, key=column.key).first()
+        status_obj = (
+            WorkflowStatus.objects.using(db)
+            .filter(project__isnull=True, key=column.key)
+            .first()
+        )
         if status_obj:
             BoardColumnStatus.objects.using(db).get_or_create(
                 column_id=column.id,
@@ -20,55 +24,84 @@ def attach_legacy_statuses(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('projects', '0010_projectmembership_removal_date'),
-        ('tasks', '0012_alter_sprint_board'),
+        ("projects", "0010_projectmembership_removal_date"),
+        ("tasks", "0012_alter_sprint_board"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='BoardColumnStatus',
+            name="BoardColumnStatus",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('position', models.PositiveSmallIntegerField(default=0)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("position", models.PositiveSmallIntegerField(default=0)),
             ],
             options={
-                'ordering': ('position', 'id'),
+                "ordering": ("position", "id"),
             },
         ),
         migrations.AddField(
-            model_name='workflowstatus',
-            name='project',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='workflow_statuses', to='projects.project'),
+            model_name="workflowstatus",
+            name="project",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="workflow_statuses",
+                to="projects.project",
+            ),
         ),
         migrations.AlterField(
-            model_name='workflowstatus',
-            name='key',
+            model_name="workflowstatus",
+            name="key",
             field=models.SlugField(max_length=40),
         ),
         migrations.AddConstraint(
-            model_name='workflowstatus',
-            constraint=models.UniqueConstraint(fields=('project', 'key'), name='unique_workflow_status_key_per_project'),
+            model_name="workflowstatus",
+            constraint=models.UniqueConstraint(
+                fields=("project", "key"), name="unique_workflow_status_key_per_project"
+            ),
         ),
         migrations.AddField(
-            model_name='boardcolumnstatus',
-            name='column',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='status_assignments', to='tasks.boardcolumn'),
+            model_name="boardcolumnstatus",
+            name="column",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="status_assignments",
+                to="tasks.boardcolumn",
+            ),
         ),
         migrations.AddField(
-            model_name='boardcolumnstatus',
-            name='status',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='column_assignments', to='tasks.workflowstatus'),
+            model_name="boardcolumnstatus",
+            name="status",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="column_assignments",
+                to="tasks.workflowstatus",
+            ),
         ),
         migrations.AddField(
-            model_name='boardcolumn',
-            name='statuses',
-            field=models.ManyToManyField(related_name='columns', through='tasks.BoardColumnStatus', to='tasks.workflowstatus'),
+            model_name="boardcolumn",
+            name="statuses",
+            field=models.ManyToManyField(
+                related_name="columns",
+                through="tasks.BoardColumnStatus",
+                to="tasks.workflowstatus",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='boardcolumnstatus',
-            constraint=models.UniqueConstraint(fields=('column', 'status'), name='unique_status_per_board_column'),
+            model_name="boardcolumnstatus",
+            constraint=models.UniqueConstraint(
+                fields=("column", "status"), name="unique_status_per_board_column"
+            ),
         ),
         migrations.RunPython(attach_legacy_statuses, migrations.RunPython.noop),
     ]

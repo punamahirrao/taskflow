@@ -12,7 +12,9 @@ from projects.models import Project
 def document_upload_path(instance, filename):
     suffix = Path(filename).suffix[:20]
     if instance.project_id:
-        project_name = slugify(instance.project.name) or f"project-{instance.project_id}"
+        project_name = (
+            slugify(instance.project.name) or f"project-{instance.project_id}"
+        )
         location = f"{project_name}/"
     else:
         location = f"personal/{instance.owner_id or 'unassigned'}/"
@@ -20,10 +22,28 @@ def document_upload_path(instance, filename):
 
 
 class Folder(models.Model):
+    organization = models.ForeignKey(
+        "accounts.Organization",
+        on_delete=models.CASCADE,
+        related_name="document_folders",
+    )
     name = models.CharField(max_length=120)
-    project = models.ForeignKey(Project, null=True, blank=True, on_delete=models.CASCADE, related_name="document_folders")
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="document_folders")
-    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="children")
+    project = models.ForeignKey(
+        Project,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="document_folders",
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="document_folders",
+    )
+    parent = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="children"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -35,13 +55,33 @@ class Folder(models.Model):
 
 
 class Document(models.Model):
+    organization = models.ForeignKey(
+        "accounts.Organization", on_delete=models.CASCADE, related_name="documents"
+    )
     name = models.CharField(max_length=255)
     file = models.FileField(storage=documents_storage(), upload_to=document_upload_path)
     size = models.PositiveBigIntegerField(default=0)
     content_type = models.CharField(max_length=150, blank=True)
-    project = models.ForeignKey(Project, null=True, blank=True, on_delete=models.CASCADE, related_name="documents")
-    folder = models.ForeignKey(Folder, null=True, blank=True, on_delete=models.SET_NULL, related_name="documents")
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="documents")
+    project = models.ForeignKey(
+        Project,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="documents",
+    )
+    folder = models.ForeignKey(
+        Folder,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="documents",
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="documents",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -53,11 +93,31 @@ class Document(models.Model):
 
 
 class ResourceLink(models.Model):
+    organization = models.ForeignKey(
+        "accounts.Organization", on_delete=models.CASCADE, related_name="resource_links"
+    )
     name = models.CharField(max_length=160)
     url = models.URLField(max_length=2000)
-    project = models.ForeignKey(Project, null=True, blank=True, on_delete=models.CASCADE, related_name="resource_links")
-    folder = models.ForeignKey(Folder, null=True, blank=True, on_delete=models.SET_NULL, related_name="resource_links")
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="resource_links")
+    project = models.ForeignKey(
+        Project,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="resource_links",
+    )
+    folder = models.ForeignKey(
+        Folder,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="resource_links",
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="resource_links",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

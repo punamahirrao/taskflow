@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('projects', '0009_rename_due_date_project_end_date_and_more'),
+        ("projects", "0009_rename_due_date_project_end_date_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='projectmembership',
-            name='removal_date',
+            model_name="projectmembership",
+            name="removal_date",
             field=models.DateField(blank=True, null=True),
         ),
     ]

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('projects', '0007_remove_project_owner_and_members'),
+        ("projects", "0007_remove_project_owner_and_members"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='due_date',
+            model_name="project",
+            name="due_date",
             field=models.DateField(blank=True, null=True),
         ),
     ]

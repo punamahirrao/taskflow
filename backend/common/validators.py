@@ -1,17 +1,33 @@
 from django.core.exceptions import ValidationError
+from math import isfinite
 
 
-def validate_date_range(start_date, end_date, *, start_label="start date", end_label="end date"):
+def validate_date_range(
+    start_date, end_date, *, start_label="start date", end_label="end date"
+):
     if start_date and end_date and end_date < start_date:
-        raise ValidationError({end_label.replace(" ", "_"): f"{end_label.capitalize()} must be on or after the {start_label}."})
+        raise ValidationError(
+            {
+                end_label.replace(
+                    " ", "_"
+                ): f"{end_label.capitalize()} must be on or after the {start_label}."
+            }
+        )
 
 
 def validate_project_dates(start_date, end_date):
-    validate_date_range(start_date, end_date, start_label="expected start date", end_label="end date")
+    validate_date_range(
+        start_date, end_date, start_label="expected start date", end_label="end date"
+    )
 
 
 def validate_sprint_dates(start_date, end_date):
-    validate_date_range(start_date, end_date, start_label="sprint start date", end_label="sprint end date")
+    validate_date_range(
+        start_date,
+        end_date,
+        start_label="sprint start date",
+        end_label="sprint end date",
+    )
 
 
 def validate_task_estimate(value):
@@ -21,7 +37,7 @@ def validate_task_estimate(value):
         estimate = float(value)
     except (TypeError, ValueError) as error:
         raise ValidationError("Estimate must be a non-negative number.") from error
-    if estimate < 0:
+    if not isfinite(estimate) or estimate < 0:
         raise ValidationError("Estimate must be a non-negative number.")
 
 

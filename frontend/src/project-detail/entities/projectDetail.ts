@@ -1,5 +1,5 @@
 import type { TranslationKey } from "../../common/entities/language";
-import type { TaskStatus } from "../../common/entities/task";
+import type { TaskStatus } from "../../features/tasks/entities/task";
 
 export type ProjectTab = "overview" | "tasks" | "timeline" | "files";
 

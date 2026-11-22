@@ -1,25 +1,179 @@
-import { Download, ExternalLink, File, FileText, Folder, Link2, MoreHorizontal, Trash2 } from "lucide-react";
-import type { DocumentFolder, WorkspaceDocument } from "../../common/entities/document";
+import {
+  Download,
+  ExternalLink,
+  File,
+  FileText,
+  Folder,
+  Link2,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
+import type { DocumentFolder, OrganizationDocument } from "../../common/entities/document";
 import { useTranslation } from "../../common/shared/i18n/hooks/useTranslation";
 
-interface FolderRowProps { folder: DocumentFolder; canManage: boolean; onOpen: () => void; onRename: () => void; onDelete: () => void }
+interface FolderRowProps {
+  folder: DocumentFolder;
+  canManage: boolean;
+  onOpen: () => void;
+  onRename: () => void;
+  onDelete: () => void;
+}
 
 export function FolderRow({ folder, canManage, onOpen, onRename, onDelete }: FolderRowProps) {
   const { t } = useTranslation();
-  return <div className="group flex items-center gap-3 px-4 py-3 hover:bg-slate-50 md:px-5"><button type="button" onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3 text-left"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600"><Folder size={17} /></span><span className="min-w-0"><span className="block truncate text-sm font-semibold text-slate-800">{folder.name}</span><span className="block text-[10px] text-slate-400">{folder.project_name ?? t("documents.privateFolder")}</span></span></button><span className="hidden text-xs text-slate-400 sm:block">{t("documents.folderOwner", { owner: folder.owner_name })}</span>{canManage && <details className="relative"><summary aria-label={t("documents.folderActions", { name: folder.name })} className="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-lg text-slate-400 hover:bg-white hover:text-slate-700"><MoreHorizontal size={17} /></summary><div className="absolute right-0 z-20 mt-1 w-36 rounded-lg border border-slate-200 bg-white p-1 shadow-lg"><button type="button" onClick={onRename} className="w-full rounded px-2 py-1.5 text-left text-xs text-slate-600 hover:bg-slate-50">{t("documents.rename")}</button><button type="button" onClick={onDelete} className="w-full rounded px-2 py-1.5 text-left text-xs text-rose-600 hover:bg-rose-50">{t("documents.deleteEmptyFolder")}</button></div></details>}</div>;
+  return (
+    <div className="group flex items-center gap-3 px-4 py-3 hover:bg-slate-50 md:px-5">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+          <Folder size={17} />
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-semibold text-slate-800">{folder.name}</span>
+          <span className="block text-[calc(10px*var(--taskflow-font-scale,1))] text-slate-400">
+            {folder.project_name ?? t("documents.privateFolder")}
+          </span>
+        </span>
+      </button>
+      <span className="hidden text-xs text-slate-400 sm:block">
+        {t("documents.folderOwner", { owner: folder.owner_name })}
+      </span>
+      {canManage && (
+        <details className="relative">
+          <summary
+            aria-label={t("documents.folderActions", { name: folder.name })}
+            className="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-lg text-slate-400 hover:bg-white hover:text-slate-700"
+          >
+            <MoreHorizontal size={17} />
+          </summary>
+          <div className="absolute right-0 z-20 mt-1 w-36 rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
+            <button
+              type="button"
+              onClick={onRename}
+              className="w-full rounded px-2 py-1.5 text-left text-xs text-slate-600 hover:bg-slate-50"
+            >
+              {t("documents.rename")}
+            </button>
+            <button
+              type="button"
+              onClick={onDelete}
+              className="w-full rounded px-2 py-1.5 text-left text-xs text-rose-600 hover:bg-rose-50"
+            >
+              {t("documents.deleteEmptyFolder")}
+            </button>
+          </div>
+        </details>
+      )}
+    </div>
+  );
 }
 
-interface FileRowProps { document: WorkspaceDocument; canManage: boolean; onDownload: () => void; onDelete: () => void }
+interface FileRowProps {
+  document: OrganizationDocument;
+  canManage: boolean;
+  onDownload: () => void;
+  onDelete: () => void;
+}
 
 export function FileRow({ document, canManage, onDownload, onDelete }: FileRowProps) {
   const { t } = useTranslation();
-  function formatSize(size: number) { if (size < 1024) return t("documents.sizeBytes", { size }); if (size < 1024 * 1024) return t("documents.sizeKb", { size: (size / 1024).toFixed(0) }); return t("documents.sizeMb", { size: (size / (1024 * 1024)).toFixed(1) }); }
-  return <div className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 md:px-5"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-600">{document.content_type.startsWith("text/") || document.content_type.includes("pdf") ? <FileText size={17} /> : <File size={17} />}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-slate-800">{document.name}</span><span className="block truncate text-[10px] text-slate-400">{t("documents.fileMeta", { project: document.project_name ?? t("documents.myPrivateFiles"), owner: document.owner_name })}</span></span><span className="hidden text-xs text-slate-400 sm:block">{formatSize(document.size)}</span><span className="hidden text-xs text-slate-400 md:block">{new Date(document.updated_at).toLocaleDateString()}</span><button type="button" onClick={onDownload} title={t("documents.downloadFile", { name: document.name })} aria-label={t("documents.downloadFile", { name: document.name })} className="rounded-lg p-2 text-slate-400 hover:bg-sky-50 hover:text-sky-700"><Download size={16} /></button>{canManage && <button type="button" onClick={onDelete} title={t("documents.deleteFile", { name: document.name })} aria-label={t("documents.deleteFile", { name: document.name })} className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={15} /></button>}</div>;
+  function formatSize(size: number) {
+    if (size < 1024) return t("documents.sizeBytes", { size });
+    if (size < 1024 * 1024) return t("documents.sizeKb", { size: (size / 1024).toFixed(0) });
+    return t("documents.sizeMb", { size: (size / (1024 * 1024)).toFixed(1) });
+  }
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 md:px-5">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
+        {document.content_type.startsWith("text/") || document.content_type.includes("pdf") ? (
+          <FileText size={17} />
+        ) : (
+          <File size={17} />
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium text-slate-800">{document.name}</span>
+        <span className="block truncate text-[calc(10px*var(--taskflow-font-scale,1))] text-slate-400">
+          {t("documents.fileMeta", {
+            project: document.project_name ?? t("documents.myPrivateFiles"),
+            owner: document.owner_name,
+          })}
+        </span>
+      </span>
+      <span className="hidden text-xs text-slate-400 sm:block">{formatSize(document.size)}</span>
+      <span className="hidden text-xs text-slate-400 md:block">
+        {new Date(document.updated_at).toLocaleDateString()}
+      </span>
+      <button
+        type="button"
+        onClick={onDownload}
+        title={t("documents.downloadFile", { name: document.name })}
+        aria-label={t("documents.downloadFile", { name: document.name })}
+        className="rounded-lg p-2 text-slate-400 hover:bg-sky-50 hover:text-sky-700"
+      >
+        <Download size={16} />
+      </button>
+      {canManage && (
+        <button
+          type="button"
+          onClick={onDelete}
+          title={t("documents.deleteFile", { name: document.name })}
+          aria-label={t("documents.deleteFile", { name: document.name })}
+          className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+        >
+          <Trash2 size={15} />
+        </button>
+      )}
+    </div>
+  );
 }
 
-interface ResourceRowProps { name: string; url: string; location: string; canManage: boolean; onDelete: () => void }
+interface ResourceRowProps {
+  name: string;
+  url: string;
+  location: string;
+  canManage: boolean;
+  onDelete: () => void;
+}
 
 export function ResourceRow({ name, url, location, canManage, onDelete }: ResourceRowProps) {
   const { t } = useTranslation();
-  return <div className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 md:px-5"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600"><Link2 size={17} /></span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-slate-800">{name}</span><span className="block truncate text-[10px] text-slate-400">{url}</span></span><span className="hidden text-xs text-slate-400 sm:block">{location}</span><a href={url} target="_blank" rel="noopener noreferrer" title={t("documents.openLink", { name })} aria-label={t("documents.openLinkNewTab", { name })} className="rounded-lg p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-700"><ExternalLink size={16} /></a>{canManage && <button type="button" onClick={onDelete} title={t("documents.removeLink", { name })} aria-label={t("documents.removeLink", { name })} className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={15} /></button>}</div>;
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 md:px-5">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+        <Link2 size={17} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium text-slate-800">{name}</span>
+        <span className="block truncate text-[calc(10px*var(--taskflow-font-scale,1))] text-slate-400">
+          {url}
+        </span>
+      </span>
+      <span className="hidden text-xs text-slate-400 sm:block">{location}</span>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={t("documents.openLink", { name })}
+        aria-label={t("documents.openLinkNewTab", { name })}
+        className="rounded-lg p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-700"
+      >
+        <ExternalLink size={16} />
+      </a>
+      {canManage && (
+        <button
+          type="button"
+          onClick={onDelete}
+          title={t("documents.removeLink", { name })}
+          aria-label={t("documents.removeLink", { name })}
+          className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+        >
+          <Trash2 size={15} />
+        </button>
+      )}
+    </div>
+  );
 }

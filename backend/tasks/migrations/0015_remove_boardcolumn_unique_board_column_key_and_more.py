@@ -5,28 +5,41 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('projects', '0011_project_status'),
-        ('tasks', '0014_scope_legacy_workflow_statuses'),
+        ("projects", "0011_project_status"),
+        ("tasks", "0014_scope_legacy_workflow_statuses"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='boardcolumn',
-            name='unique_board_column_key',
+            model_name="boardcolumn",
+            name="unique_board_column_key",
         ),
         migrations.AddField(
-            model_name='boardcolumn',
-            name='board',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='columns', to='tasks.agileboard'),
+            model_name="boardcolumn",
+            name="board",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="columns",
+                to="tasks.agileboard",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='boardcolumn',
-            constraint=models.UniqueConstraint(condition=models.Q(('board__isnull', True)), fields=('project', 'key'), name='unique_project_board_column_key'),
+            model_name="boardcolumn",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("board__isnull", True)),
+                fields=("project", "key"),
+                name="unique_project_board_column_key",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='boardcolumn',
-            constraint=models.UniqueConstraint(condition=models.Q(('board__isnull', False)), fields=('board', 'key'), name='unique_agile_board_column_key'),
+            model_name="boardcolumn",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("board__isnull", False)),
+                fields=("board", "key"),
+                name="unique_agile_board_column_key",
+            ),
         ),
     ]

@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tasks', '0002_task_assignee_task_blocked_task_due_date_and_more'),
+        ("tasks", "0002_task_assignee_task_blocked_task_due_date_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='completed_at',
+            model_name="task",
+            name="completed_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='task',
-            name='started_at',
+            model_name="task",
+            name="started_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

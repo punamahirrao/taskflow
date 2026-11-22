@@ -1,4 +1,4 @@
-import type { Task } from "../../common/entities/task";
+import type { Task } from "../../features/tasks/entities/task";
 import { translate } from "../../common/shared/i18n/translate";
 
 export function points(task: Task): number {
@@ -8,7 +8,11 @@ export function points(task: Task): number {
 
 export function formatDate(value: string | null): string {
   if (!value) return translate("sprintTrain.datesNotSet");
-  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${value}T00:00:00`));
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(`${value}T00:00:00`));
 }
 
 export function teamName(task: Task): string {

@@ -10,15 +10,25 @@ export function useProject(id: string | undefined) {
 
   useEffect(() => {
     let active = true;
-    getProjects().then((projects) => {
-      if (!active) return;
-      const selected = projects.find((item) => item.id === Number(id));
-      if (selected) setProject(selected);
-      else setError(translate("projectDetail.notFound"));
-    }).catch((cause: unknown) => {
-      if (active) setError(cause instanceof Error ? cause.message : translate("projectDetail.unableToLoadProject"));
-    }).finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+    getProjects()
+      .then((projects) => {
+        if (!active) return;
+        const selected = projects.find((item) => item.id === Number(id));
+        if (selected) setProject(selected);
+        else setError(translate("projectDetail.notFound"));
+      })
+      .catch((cause: unknown) => {
+        if (active)
+          setError(
+            cause instanceof Error ? cause.message : translate("projectDetail.unableToLoadProject"),
+          );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   return { project, setProject, loading, error };

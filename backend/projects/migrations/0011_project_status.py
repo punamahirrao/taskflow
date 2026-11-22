@@ -4,15 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('projects', '0010_projectmembership_removal_date'),
+        ("projects", "0010_projectmembership_removal_date"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='status',
-            field=models.CharField(choices=[('in_progress', 'In progress'), ('upcoming', 'Upcoming'), ('archived', 'Archived')], default='in_progress', max_length=20),
+            model_name="project",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("in_progress", "In progress"),
+                    ("upcoming", "Upcoming"),
+                    ("archived", "Archived"),
+                ],
+                default="in_progress",
+                max_length=20,
+            ),
         ),
     ]

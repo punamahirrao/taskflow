@@ -7,7 +7,6 @@ import { commonLabels } from "../labels/common";
 import { dashboardLabels } from "../labels/dashboard";
 import { documentsLabels } from "../labels/documents";
 import { loginLabels } from "../labels/login";
-import { portfolioLabels } from "../labels/portfolio";
 import { profileLabels } from "../labels/profile";
 import { projectDetailLabels } from "../labels/project-detail";
 import { projectsLabels } from "../labels/projects";
@@ -21,8 +20,22 @@ import { usersLabels } from "../labels/users";
 
 // Keys without a Swedish translation fall back to English (see translate.ts).
 export const sv: Partial<Record<TranslationKey, string>> = {
-  ...commonLabels.sv, ...aiEstimatorLabels.sv, ...backlogLabels.sv, ...boardsLabels.sv, ...calendarLabels.sv,
-  ...dashboardLabels.sv, ...documentsLabels.sv, ...loginLabels.sv, ...portfolioLabels.sv, ...profileLabels.sv,
-  ...projectDetailLabels.sv, ...projectsLabels.sv, ...registerLabels.sv, ...reportsLabels.sv, ...settingsLabels.sv,
-  ...shareProjectLabels.sv, ...sprintTrainLabels.sv, ...teamLabels.sv, ...usersLabels.sv,
+  ...commonLabels.sv,
+  ...aiEstimatorLabels.sv,
+  ...backlogLabels.sv,
+  ...boardsLabels.sv,
+  ...calendarLabels.sv,
+  ...dashboardLabels.sv,
+  ...documentsLabels.sv,
+  ...loginLabels.sv,
+  ...profileLabels.sv,
+  ...projectDetailLabels.sv,
+  ...projectsLabels.sv,
+  ...registerLabels.sv,
+  ...reportsLabels.sv,
+  ...settingsLabels.sv,
+  ...shareProjectLabels.sv,
+  ...sprintTrainLabels.sv,
+  ...teamLabels.sv,
+  ...usersLabels.sv,
 };

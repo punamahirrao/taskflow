@@ -34,7 +34,8 @@ export const reportsLabels = defineLabels({
   "reports.unassigned": "Unassigned",
   "reports.memberLoad": "{count} items · {points} pts",
   "reports.noActiveWork": "No active work to compare.",
-  "reports.heatNote": "Heat is estimated from open items and numeric estimates, not individual capacity.",
+  "reports.heatNote":
+    "Heat is estimated from open items and numeric estimates, not individual capacity.",
   "reports.sprintBurndown": "Sprint burndown",
   "reports.activeSprints": "Active sprints",
   "reports.sprintWithGoal": "{name} · {goal}",
@@ -42,11 +43,14 @@ export const reportsLabels = defineLabels({
   "reports.burndownAria": "Burndown chart for {name}",
   "reports.burndownStart": "Start",
   "reports.burndownEnd": "End",
-  "reports.startSprintHint": "Start a sprint to see its burndown. Estimates provide the most useful trend.",
-  "reports.burndownNote": "Daily burndown is a trend snapshot from sprint dates and completed work.",
+  "reports.startSprintHint":
+    "Start a sprint to see its burndown. Estimates provide the most useful trend.",
+  "reports.burndownNote":
+    "Daily burndown is a trend snapshot from sprint dates and completed work.",
   "reports.sprintChartsAria": "Sprint progress charts",
   "reports.deliveryVsCapacity": "Sprint delivery vs capacity",
-  "reports.deliveryVsCapacityNote": "Planned points compared with completed points and sprint capacity.",
+  "reports.deliveryVsCapacityNote":
+    "Planned points compared with completed points and sprint capacity.",
   "reports.sprintActive": "{name} · Active",
   "reports.sprintClosed": "{name} · Closed",
   "reports.sprintPlanned": "{name} · Planned",

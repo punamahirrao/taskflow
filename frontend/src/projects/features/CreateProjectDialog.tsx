@@ -41,8 +41,17 @@ function CreateProject({ onClose, onCreated }: CreateProjectProps) {
   const handleCreateProject = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    const validationError = firstValidationError(projectSchema, { name: projectName, status: projectStatus, expectedStartDate, endDate });
-    if (validationError) { setError(validationError); toast("error", validationError); return; }
+    const validationError = firstValidationError(projectSchema, {
+      name: projectName,
+      status: projectStatus,
+      expectedStartDate,
+      endDate,
+    });
+    if (validationError) {
+      setError(validationError);
+      toast("error", validationError);
+      return;
+    }
 
     setSubmitting(true);
     setError("");
@@ -66,7 +75,8 @@ function CreateProject({ onClose, onCreated }: CreateProjectProps) {
       onClose();
     } catch (err) {
       const message = err instanceof Error ? err.message : t("projects.dialog.unableToCreate");
-      setError(message); toast("error", message);
+      setError(message);
+      toast("error", message);
     } finally {
       setSubmitting(false);
     }
@@ -78,15 +88,9 @@ function CreateProject({ onClose, onCreated }: CreateProjectProps) {
         if (e.target === e.currentTarget) requestClose();
       }}
     >
-      <CreateProjectPanel
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-project-title"
-      >
+      <CreateProjectPanel role="dialog" aria-modal="true" aria-labelledby="create-project-title">
         <CreateProjectHeader>
-          <CreateProjectTitle
-            id="create-project-title"
-          >
+          <CreateProjectTitle id="create-project-title">
             {t("projects.dialog.title")}
           </CreateProjectTitle>
 

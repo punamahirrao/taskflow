@@ -7,5 +7,7 @@ export function timeAgo(isoDate: string) {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return translate("projectDetail.time.hoursAgo", { count: hours });
   const days = Math.floor(hours / 24);
-  return translate(days === 1 ? "projectDetail.time.dayAgo" : "projectDetail.time.daysAgo", { count: days });
+  return translate(days === 1 ? "projectDetail.time.dayAgo" : "projectDetail.time.daysAgo", {
+    count: days,
+  });
 }

@@ -12,6 +12,8 @@ class TaskHistoryListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, task_id):
-        task = get_object_or_404(Task.objects.filter(project__in=visible_projects(request.user)), id=task_id)
+        task = get_object_or_404(
+            Task.objects.filter(project__in=visible_projects(request.user)), id=task_id
+        )
         entries = TaskHistory.objects.filter(task=task).select_related("actor")
         return Response(TaskHistorySerializer(entries, many=True).data)

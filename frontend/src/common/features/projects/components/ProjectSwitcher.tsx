@@ -1,62 +1,118 @@
-import { Check, ChevronDown, Layers } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { getAccessibleAgileBoards } from "../../../../project-detail/api/tasks";
-import type { AgileBoard } from "../../../entities/task";
+import { Check, ChevronDown, Layers, Search } from "lucide-react";
+import { useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useProjectContext } from "../context/useProjectContext";
 import { useTranslation } from "../../../shared/i18n/hooks/useTranslation";
 
-export default function ProjectSwitcher() {
+export default function ProjectSwitcher({ collapsed = false }: { collapsed?: boolean }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { projects, loading, selectedId, select } = useProjectContext();
-  const { pathname } = useLocation();
+  const { projects, loading, error, selectedId, select } = useProjectContext();
   const [open, setOpen] = useState(false);
-  const [boards, setBoards] = useState<AgileBoard[]>([]);
+  const [query, setQuery] = useState("");
+  const search = query.trim().toLowerCase();
+  const filteredProjects = projects.filter((project) =>
+    `${project.name} ${project.description}`.toLowerCase().includes(search),
+  );
   const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointer = (event: MouseEvent) => {
-      if (!ref.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onPointer);
-    return () => document.removeEventListener("mousedown", onPointer);
-  }, [open]);
-
-  const current = projects.find((project) => project.id === selectedId);
-  const label = loading ? t("common.loading") : current?.name ?? t("projectSwitcher.allProjects");
-
-  useEffect(() => {
-    let active = true;
-    void getAccessibleAgileBoards().then((result) => { if (active) setBoards(result); }).catch(() => { if (active) setBoards([]); });
-    return () => { active = false; };
-  }, [projects.length]);
-
-  function choose(projectId: number | null) {
-    select(projectId);
-    setOpen(false);
-    navigate(projectId === null ? "/projects" : `/project/${projectId}`);
-  }
-
-  const option = "flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-gray-700 hover:bg-purple-50";
-
-  return <div
-    ref={ref}
-    className="relative mb-6"
-    onFocus={() => setOpen(true)}
-    onBlur={(event) => { if (!ref.current?.contains(event.relatedTarget)) setOpen(false); }}
-    onKeyDown={(event) => { if (event.key === "Escape") setOpen(false); }}
-  >
-    <button type="button" aria-haspopup="listbox" aria-expanded={open} aria-label={t("projectSwitcher.projectAria", { label })} onClick={() => setOpen((value) => !value)} className={`flex w-full cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-left text-sm font-medium text-gray-800 focus:outline-none ${open ? "border-gray-300 bg-white shadow-sm" : "border-transparent hover:bg-gray-200/70"}`}>
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-purple-700 text-white"><Layers size={14} aria-hidden="true" /></span>
-      <span className="min-w-0 flex-1 truncate">{label}</span>
-      {open && <ChevronDown size={16} aria-hidden="true" className="shrink-0 text-gray-500" />}
-    </button>
-    {open && <ul role="listbox" aria-label={t("projectSwitcher.selectProject")} className="absolute left-0 right-0 z-30 mt-1 max-h-64 overflow-y-auto rounded-lg border border-gray-200 bg-white p-1 shadow-lg">
-      <li role="option" aria-selected={selectedId === null}><button type="button" onClick={() => choose(null)} className={option}><span className="flex-1">{t("projectSwitcher.allProjects")}</span>{selectedId === null && <Check size={14} aria-hidden="true" className="text-purple-700" />}</button></li>
-      {projects.map((project) => <li key={project.id} role="option" aria-selected={project.id === selectedId}><button type="button" onClick={() => choose(project.id)} className={option}><span className="min-w-0 flex-1 truncate">{project.name}</span>{project.is_default && <span className="rounded bg-purple-100 px-1.5 text-[10px] font-medium text-purple-700">{t("projectSwitcher.default")}</span>}{project.id === selectedId && <Check size={14} aria-hidden="true" className="text-purple-700" />}</button></li>)}
-      {pathname.startsWith("/boards/") && boards.length > 1 && <li className="mt-2 border-t border-slate-200 pt-2"><p className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">{t("boards.chooseBoard")}</p>{boards.slice(0, 8).map((board) => <button key={board.id} type="button" onClick={() => { setOpen(false); navigate(`/boards/${board.id}?project=${board.project}`); }} className={option}>{board.name}</button>)}</li>}
-    </ul>}
-  </div>;
+  const label =
+    projects.find((project) => project.id === selectedId)?.name ??
+    t("projectSwitcher.selectProject");
+  return (
+    <div
+      ref={ref}
+      className="project-switcher"
+      onBlur={(event) => {
+        if (!ref.current?.contains(event.relatedTarget)) setOpen(false);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setOpen(false);
+      }}
+    >
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={t("projectSwitcher.projectAria", { label })}
+        title={collapsed ? label : undefined}
+        onClick={() => setOpen(!open)}
+        className="project-switcher-trigger"
+      >
+        <span className="project-mark">
+          <Layers size={17} />
+        </span>
+        {!collapsed && (
+          <>
+            <span className="truncate">{label}</span>
+            <ChevronDown size={14} className="ml-auto shrink-0" />
+          </>
+        )}
+      </button>
+      {open && (
+        <>
+          <button
+            className="popover-dismiss"
+            aria-label="Close project picker"
+            onClick={() => setOpen(false)}
+            tabIndex={-1}
+          />
+          <div
+            role="dialog"
+            aria-label="Select project"
+            className={`project-picker ${collapsed ? "from-rail" : ""}`}
+          >
+            <label className="shell-search">
+              <Search size={16} />
+              <input
+                autoFocus
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search your projects…"
+                aria-label="Search your projects"
+              />
+            </label>
+            <p className="picker-caption">YOUR PROJECTS</p>
+            <div className="picker-results">
+              {loading && (
+                <p role="status" className="picker-message">
+                  Loading projects…
+                </p>
+              )}
+              {error && (
+                <p role="alert" className="picker-message">
+                  {error}
+                </p>
+              )}
+              {!loading && !error && !filteredProjects.length && (
+                <p className="picker-message">No projects found.</p>
+              )}
+              {filteredProjects.map((project) => (
+                <button
+                  key={project.id}
+                  type="button"
+                  className="project-option"
+                  onClick={() => {
+                    select(project.id);
+                    setOpen(false);
+                    navigate(`/project/${project.id}`);
+                  }}
+                >
+                  <Layers size={16} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate">{project.name}</span>
+                    <small>Open project</small>
+                  </span>
+                  {project.id === selectedId && <Check size={15} />}
+                </button>
+              ))}
+            </div>
+            <Link to="/projects" onClick={() => setOpen(false)} className="picker-footer">
+              Browse project directory →
+            </Link>
+          </div>
+        </>
+      )}
+    </div>
+  );
 }

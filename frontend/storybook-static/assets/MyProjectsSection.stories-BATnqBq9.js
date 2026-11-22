@@ -1,5 +1,0 @@
-import{n as e}from"./rolldown-runtime-DkW27tQK.js";import{n as t,t as n}from"./MyProjectsSection-CYVzmKep.js";var r,i,a,o;function s(){return(s=e((()=>{t(),r={title:`Dashboard/Sections/MyProjectsSection`,component:n,tags:[`autodocs`],parameters:{docs:{description:{component:`A dashboard section showing project health, progress, due dates, and team summaries.`}}}},i={},a={globals:{theme:`night`}},o=[`StandardPortfolio`,`DarkMode`],i.parameters={...i.parameters,docs:{...i.parameters?.docs,source:{originalSource:`{}`,...i.parameters?.docs?.source}}},a.parameters={...a.parameters,docs:{...a.parameters?.docs,source:{originalSource:`{
-  globals: {
-    theme: "night"
-  }
-}`,...a.parameters?.docs?.source}}}})))()}s();export{a as DarkMode,i as StandardPortfolio,o as __namedExportsOrder,r as default};

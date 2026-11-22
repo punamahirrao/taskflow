@@ -15,15 +15,21 @@ def keep_one_active_sprint_per_board(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [("tasks", "0015_remove_boardcolumn_unique_board_column_key_and_more")]
+    dependencies = [
+        ("tasks", "0015_remove_boardcolumn_unique_board_column_key_and_more")
+    ]
 
     operations = [
-        migrations.RunPython(keep_one_active_sprint_per_board, migrations.RunPython.noop),
+        migrations.RunPython(
+            keep_one_active_sprint_per_board, migrations.RunPython.noop
+        ),
         migrations.AddConstraint(
             model_name="sprint",
             constraint=models.UniqueConstraint(
                 fields=("board",),
-                condition=models.Q(is_active=True, is_closed=False, board__isnull=False),
+                condition=models.Q(
+                    is_active=True, is_closed=False, board__isnull=False
+                ),
                 name="unique_open_active_sprint_per_board",
             ),
         ),

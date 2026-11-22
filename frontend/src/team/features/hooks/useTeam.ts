@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { addProjectMember, removeProjectMember, scheduleProjectMemberRemoval } from "../../api/projectMembers";
+import {
+  addProjectMember,
+  removeProjectMember,
+  scheduleProjectMemberRemoval,
+} from "../../api/projectMembers";
 import { getUsers } from "../../../users/api/users";
 import type { TeamRosterMember } from "../../entities/team";
 import type { SiteUser } from "../../../common/entities/user";
@@ -9,7 +13,13 @@ import { ASSIGNABLE_ROLES, NO_ROLES } from "../teamPolicy";
 import { translate } from "../../../common/shared/i18n/translate";
 
 export function useTeam(forcedProjectId?: number) {
-  const { projects, selectedId, loading: projectsLoading, error: projectsError, reload } = useProjectContext();
+  const {
+    projects,
+    selectedId,
+    loading: projectsLoading,
+    error: projectsError,
+    reload,
+  } = useProjectContext();
   const [users, setUsers] = useState<SiteUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState("");
@@ -23,36 +33,55 @@ export function useTeam(forcedProjectId?: number) {
   useEffect(() => {
     let active = true;
     getUsers()
-      .then((result) => { if (active) setUsers(result.filter((user) => user.is_active)); })
-      .catch((cause: unknown) => { if (active) setUsersError(cause instanceof Error ? cause.message : translate("team.usersLoadFailed")); })
-      .finally(() => { if (active) setUsersLoading(false); });
-    return () => { active = false; };
+      .then((result) => {
+        if (active) setUsers(result.filter((user) => user.is_active));
+      })
+      .catch((cause: unknown) => {
+        if (active)
+          setUsersError(cause instanceof Error ? cause.message : translate("team.usersLoadFailed"));
+      })
+      .finally(() => {
+        if (active) setUsersLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const requestedProjectId = forcedProjectId ?? selectedId;
-  const projectId = projects.some((item) => item.id === requestedProjectId) ? requestedProjectId : null;
+  const projectId = projects.some((item) => item.id === requestedProjectId)
+    ? requestedProjectId
+    : null;
   const scopedProjects = useMemo(
-    () => projectId === null ? projects : projects.filter((project) => project.id === projectId),
+    () => (projectId === null ? projects : projects.filter((project) => project.id === projectId)),
     [projects, projectId],
   );
-  const project = projectId === null ? null : scopedProjects[0] ?? null;
+  const project = projectId === null ? null : (scopedProjects[0] ?? null);
   const allMembers = useMemo(() => buildTeamRoster(projects), [projects]);
   const members = useMemo(() => {
     if (!project) return allMembers;
     const rolesById = new Map((project.members ?? []).map((member) => [member.id, member.role]));
-    return sortTeamRoster(allMembers
-      .filter((member) => rolesById.has(member.id))
-      .map((member) => ({
-        ...member,
-        roles: [rolesById.get(member.id)!],
-        can_view_profile: project.my_role === "owner" || project.my_role === "admin",
-      })));
+    return sortTeamRoster(
+      allMembers
+        .filter((member) => rolesById.has(member.id))
+        .map((member) => ({
+          ...member,
+          roles: [rolesById.get(member.id)!],
+          can_view_profile: project.my_role === "owner" || project.my_role === "admin",
+        })),
+    );
   }, [allMembers, project]);
-  const projectMemberIds = useMemo(() => new Set((project?.members ?? []).map((member) => member.id)), [project]);
-  const candidates = useMemo(() => project ? users.filter((user) => !projectMemberIds.has(user.id)) : [], [project, users, projectMemberIds]);
+  const projectMemberIds = useMemo(
+    () => new Set((project?.members ?? []).map((member) => member.id)),
+    [project],
+  );
+  const candidates = useMemo(
+    () => (project ? users.filter((user) => !projectMemberIds.has(user.id)) : []),
+    [project, users, projectMemberIds],
+  );
   const selectedUser = candidates.find((user) => String(user.id) === selectedUserId) ?? null;
   const roles = ASSIGNABLE_ROLES[project?.my_role ?? ""] ?? NO_ROLES;
-  const effectiveRole = roles.includes(newRole) ? newRole : roles[0] ?? "member";
+  const effectiveRole = roles.includes(newRole) ? newRole : (roles[0] ?? "member");
   const loading = projectsLoading || usersLoading;
   const error = projectsError || usersError;
 
@@ -71,7 +100,10 @@ export function useTeam(forcedProjectId?: number) {
     }
   }
 
-  async function removeMember(member: TeamRosterMember, removalDate: string | null): Promise<boolean> {
+  async function removeMember(
+    member: TeamRosterMember,
+    removalDate: string | null,
+  ): Promise<boolean> {
     if (!project || busyMemberId !== null) return false;
     setBusyMemberId(member.id);
     setRemovalError("");

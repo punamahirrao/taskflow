@@ -36,14 +36,18 @@ def ensure_default_columns(project):
             key=key,
             defaults={"name": name, "position": position, "group_name": group_name},
         )
-        column.status_assignments.get_or_create(status=workflow_status, defaults={"position": 0})
+        column.status_assignments.get_or_create(
+            status=workflow_status, defaults={"position": 0}
+        )
 
     for column in project.board_columns.filter(board__isnull=True):
         if column.status_assignments.exists():
             continue
         workflow_status = status_for_project_or_default(project, column.key)
         if workflow_status:
-            column.status_assignments.get_or_create(status=workflow_status, defaults={"position": 0})
+            column.status_assignments.get_or_create(
+                status=workflow_status, defaults={"position": 0}
+            )
 
 
 def available_statuses(project):

@@ -1,6 +1,7 @@
 # Environment files (including templates and per-machine secrets)
 .env*
 **/.env*
+!**/.env*.example
 
 # Python bytecode and tool caches
 __pycache__/
@@ -30,3 +31,11 @@ venv/
 # Runtime logs, uploaded estimator files, and local editor metadata
 *.log
 ai-estimator-backend/uploads/
+backend/backups/
+backend/db.*.sqlite3
+backend/media/
+backend/PREPROD-ACCESS.local.md
+backend/*-ACCESS.local.md
+frontend/storybook-static/
+
+**/.artifacts/

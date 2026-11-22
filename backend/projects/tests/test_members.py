@@ -56,9 +56,9 @@ class MemberManagementTests(base.RolesBase):
             400,
         )
         self.assertEqual(
-            self.as_user(self.owner).post(
-                self.members_url, {"user_id": 99999, "role": "member"}, format="json"
-            ).status_code,
+            self.as_user(self.owner)
+            .post(self.members_url, {"user_id": 99999, "role": "member"}, format="json")
+            .status_code,
             400,
         )
         self.assertEqual(self.add(self.owner, self.member, "viewer").status_code, 400)

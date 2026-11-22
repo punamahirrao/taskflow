@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from projects.models import Project, ProjectMembership, ProjectRole
 from tasks.models import AgileBoard, Sprint, Task
+from accounts.models import Organization
 
 
 class Command(BaseCommand):
@@ -18,7 +19,12 @@ class Command(BaseCommand):
         user_model = get_user_model()
         roles = {
             name: ProjectRole.objects.get_or_create(role_name=name)[0]
-            for name in (ProjectRole.OWNER, ProjectRole.ADMIN, ProjectRole.MEMBER, ProjectRole.VIEWER)
+            for name in (
+                ProjectRole.OWNER,
+                ProjectRole.ADMIN,
+                ProjectRole.MEMBER,
+                ProjectRole.VIEWER,
+            )
         }
 
         users = []
@@ -27,9 +33,16 @@ class Command(BaseCommand):
             user, created = user_model.objects.get_or_create(
                 email=email,
                 defaults={
-                    "first_name": ("Avery", "Jordan", "Sam", "Riley", "Taylor")[index % 5],
+                    "first_name": ("Avery", "Jordan", "Sam", "Riley", "Taylor")[
+                        index % 5
+                    ],
                     "last_name": f"Contributor{index:02d}",
-                    "job_title": ("Product Manager", "Engineer", "Designer", "QA Engineer")[index % 4],
+                    "job_title": (
+                        "Product Manager",
+                        "Engineer",
+                        "Designer",
+                        "QA Engineer",
+                    )[index % 4],
                     "account_type": "organization",
                 },
             )
@@ -38,14 +51,40 @@ class Command(BaseCommand):
                 user.save(update_fields=["password"])
             users.append(user)
 
+        existing_project = Project.objects.filter(
+            name="Agile Sample Project 01"
+        ).first()
+        organization = (
+            existing_project.organization
+            if existing_project
+            else users[0].organizations.first()
+        )
+        if organization is None:
+            organization = Organization.objects.create(
+                name="Demo organization", owner=users[0]
+            )
+        for user in users:
+            if not user.organizations.filter(pk=organization.pk).exists():
+                if user.organizations.count() >= 2:
+                    raise CommandError(
+                        f"{user.email} has already reached the organization limit."
+                    )
+                organization.members.add(user)
+            if not user.active_organization_id:
+                user.active_organization = organization
+                user.save(update_fields=["active_organization"])
+
         projects = []
         for index in range(1, 11):
             owner = users[(index - 1) % len(users)]
             project, _ = Project.objects.get_or_create(
+                organization=organization,
                 name=f"Agile Sample Project {index:02d}",
                 defaults={
-                    "description": "A seeded delivery workspace for local development and API exploration.",
-                    "status": Project.STATUS_IN_PROGRESS if index <= 8 else Project.STATUS_UPCOMING,
+                    "description": "A seeded delivery project for local development and API exploration.",
+                    "status": Project.STATUS_IN_PROGRESS
+                    if index <= 8
+                    else Project.STATUS_UPCOMING,
                 },
             )
             ProjectMembership.objects.get_or_create(
@@ -73,7 +112,9 @@ class Command(BaseCommand):
                 },
             )
             board.members.add(owner)
-            board.members.add(users[index % len(users)], users[(index + 1) % len(users)])
+            board.members.add(
+                users[index % len(users)], users[(index + 1) % len(users)]
+            )
             boards.append(board)
 
         sprints = []
@@ -111,12 +152,16 @@ class Command(BaseCommand):
                     "rank": index,
                     "ready_for_sprint": index % 2 == 0,
                     "assignee": assignee,
-                    "sprint": sprint if sprint and sprint.project_id == project.id else None,
+                    "sprint": sprint
+                    if sprint and sprint.project_id == project.id
+                    else None,
                     "created_by": owner,
                 },
             )
 
-        self.stdout.write(self.style.SUCCESS(
-            f"Seeded {len(users)} users, {len(projects)} projects, {len(boards)} boards, "
-            f"{len(sprints)} sprints, and {Task.objects.filter(title__startswith='Sample delivery task ').count()} tasks."
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Seeded {len(users)} users, {len(projects)} projects, {len(boards)} boards, "
+                f"{len(sprints)} sprints, and {Task.objects.filter(title__startswith='Sample delivery task ').count()} tasks."
+            )
+        )

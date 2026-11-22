@@ -25,25 +25,40 @@ class SprintListCreateView(APIView):
             sprints = sprints.filter(project_id=request.query_params["project_id"])
         board_id = request.query_params.get("board_id")
         if board_id:
-            board = get_object_or_404(AgileBoard.objects.filter(project__in=projects, is_archived=False), id=board_id)
-            if not request.user.is_site_admin and get_role(request.user, board.project) not in EDIT_PROJECT_ROLES and board.owner_id != request.user.id and not board.members.filter(id=request.user.id).exists() and not board.sprints.filter(tasks__assignee=request.user).exists():
-                return Response({"detail": "You do not have access to this board."}, status=status.HTTP_404_NOT_FOUND)
+            board = get_object_or_404(
+                AgileBoard.objects.filter(project__in=projects, is_archived=False),
+                id=board_id,
+            )
+            if (
+                not request.user.is_site_admin
+                and get_role(request.user, board.project) not in EDIT_PROJECT_ROLES
+                and board.owner_id != request.user.id
+                and not board.members.filter(id=request.user.id).exists()
+                and not board.sprints.filter(tasks__assignee=request.user).exists()
+            ):
+                return Response(
+                    {"detail": "You do not have access to this board."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
             sprints = sprints.filter(board=board)
-        return Response(SprintSerializer(sprints, many=True).data)
+        return Response(SprintSerializer(sprints, many=True, context={"request": request}).data)
 
     @transaction.atomic
     def post(self, request):
         project_id = request.data.get("project_id")
         project = get_object_or_404(visible_projects(request.user), id=project_id)
         if get_role(request.user, project) not in EDIT_PROJECT_ROLES:
-            return Response({"detail": "Only owners and managers can create a sprint."}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"detail": "Only owners and managers can create a sprint."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         serializer = SprintSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         sprint = serializer.save(project=project)
         if sprint.is_active:
             sync_sprint_board(sprint, request.user)
             sprint.refresh_from_db()
-        return Response(SprintSerializer(sprint).data, status=status.HTTP_201_CREATED)
+        return Response(SprintSerializer(sprint, context={"request": request}).data, status=status.HTTP_201_CREATED)
 
 
 class SprintDetailView(APIView):
@@ -63,8 +78,21 @@ class SprintDetailView(APIView):
         serializer.is_valid(raise_exception=True)
         if serializer.validated_data.get("is_active"):
             if sprint.is_closed:
-                return Response({"detail": "A closed sprint cannot be restarted."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"detail": "A closed sprint cannot be restarted."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        activity_changed = (
+            "is_active" in serializer.validated_data
+            and serializer.validated_data["is_active"] != sprint.is_active
+        )
+        active_name_changed = (
+            sprint.is_active
+            and "name" in serializer.validated_data
+            and serializer.validated_data["name"] != sprint.name
+        )
         sprint = serializer.save()
-        sync_sprint_board(sprint, request.user)
+        if activity_changed or active_name_changed:
+            sync_sprint_board(sprint, request.user)
         sprint.refresh_from_db()
-        return Response(SprintSerializer(sprint).data)
+        return Response(SprintSerializer(sprint, context={"request": request}).data)

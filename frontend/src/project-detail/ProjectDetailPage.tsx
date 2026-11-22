@@ -1,9 +1,8 @@
-import "./project-detail.css";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useProject } from "./features/projects/hooks/useProject";
 import { useProjectTasks } from "./features/tasks/hooks/useProjectTasks";
-import type { Task } from "../common/entities/task";
+import type { Task } from "../features/tasks/entities/task";
 import { ProjectHeader } from "./sections/ProjectHeader";
 import { ProjectOverview } from "./sections/ProjectOverview";
 import type { ProjectTab } from "./entities/projectDetail";
@@ -25,19 +24,69 @@ export default function ProjectDetailPage() {
   const [tab, setTab] = useState<ProjectTab>("overview");
   const [editingProject, setEditingProject] = useState(false);
 
-  if (loading || tasksLoading) return <div role="status" className="flex min-h-screen items-center justify-center bg-gray-100">{t("projectDetail.loading")}</div>;
-  if (!project) return <main className="min-h-screen bg-gray-100 p-6"><p role="alert" className="text-red-600">{projectError || t("projectDetail.notFound")}</p><button type="button" onClick={() => navigate("/dashboard")} className="mt-4 text-cyan-700 hover:underline">{t("projectDetail.backToDashboard")}</button></main>;
+  if (loading || tasksLoading)
+    return (
+      <div role="status" className="flex min-h-screen items-center justify-center bg-gray-100">
+        {t("projectDetail.loading")}
+      </div>
+    );
+  if (!project)
+    return (
+      <main className="min-h-screen bg-gray-100 p-6">
+        <p role="alert" className="text-red-600">
+          {projectError || t("projectDetail.notFound")}
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate("/dashboard")}
+          className="mt-4 text-cyan-700 hover:underline"
+        >
+          {t("projectDetail.backToDashboard")}
+        </button>
+      </main>
+    );
 
   const completed = tasks.filter((task) => task.status === "done").length;
   const addTask = (task: Task) => setTasks((current) => [...current, task]);
 
-  return <main className="min-w-0"><div className="min-h-screen bg-gray-100 p-2">
-    <ProjectHeader project={project} completed={completed} total={tasks.length} onEdit={() => setEditingProject(true)} />
-    {editingProject && <EditProjectDialog project={project} onClose={() => setEditingProject(false)} onUpdated={(updated) => { setProject(updated); setEditingProject(false); void reload(); }} />}
-    <ProjectTabs active={tab} onChange={setTab} />
-    {tab === "overview" && <ProjectOverview project={project} tasks={tasks} />}
-    {tab === "timeline" && <ProjectTimelineCalendar project={project} tasks={tasks} />}
-    {tab === "files" && <div className="mt-2"><DocumentsPage key={project.id} projectId={project.id} /></div>}
-    {tab === "tasks" && <TaskBoard project={project} tasks={tasks} error={error} onAdd={addTask} onMove={(taskId, status) => void moveTask(taskId, status)} />}
-  </div></main>;
+  return (
+    <main className="min-w-0">
+      <div className="min-h-screen bg-gray-100 p-2">
+        <ProjectHeader
+          project={project}
+          completed={completed}
+          total={tasks.length}
+          onEdit={() => setEditingProject(true)}
+        />
+        {editingProject && (
+          <EditProjectDialog
+            project={project}
+            onClose={() => setEditingProject(false)}
+            onUpdated={(updated) => {
+              setProject(updated);
+              setEditingProject(false);
+              void reload();
+            }}
+          />
+        )}
+        <ProjectTabs active={tab} onChange={setTab} />
+        {tab === "overview" && <ProjectOverview project={project} tasks={tasks} />}
+        {tab === "timeline" && <ProjectTimelineCalendar project={project} tasks={tasks} />}
+        {tab === "files" && (
+          <div className="mt-2">
+            <DocumentsPage key={project.id} projectId={project.id} />
+          </div>
+        )}
+        {tab === "tasks" && (
+          <TaskBoard
+            project={project}
+            tasks={tasks}
+            error={error}
+            onAdd={addTask}
+            onMove={(taskId, status) => void moveTask(taskId, status)}
+          />
+        )}
+      </div>
+    </main>
+  );
 }

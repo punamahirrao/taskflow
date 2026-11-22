@@ -8,10 +8,19 @@ interface PageShellProps {
 
 export function PageShell({ subtitle, children }: PageShellProps) {
   const { t } = useTranslation();
-  return <main className="min-h-screen min-w-0 bg-slate-50 p-6 md:p-8"><div className="mx-auto max-w-7xl">
-    <header className="mb-6"><p className="text-sm text-slate-500">{subtitle}</p><p className="mt-2 inline-block rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">{t("calendar.mockupBadge")}</p></header>
-    {children}
-  </div></main>;
+  return (
+    <main className="min-h-screen min-w-0 bg-slate-50 p-6 md:p-8">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-6">
+          <p className="text-sm text-slate-500">{subtitle}</p>
+          <p className="mt-2 inline-block rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+            {t("calendar.mockupBadge")}
+          </p>
+        </header>
+        {children}
+      </div>
+    </main>
+  );
 }
 
 interface CardProps {
@@ -20,13 +29,27 @@ interface CardProps {
   className?: string;
 }
 
-export const Card = ({ title, children, className = "" }: CardProps) =>
-  <section className={`rounded-xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>{title && <h2 className="mb-4 text-sm font-semibold text-slate-900">{title}</h2>}{children}</section>;
+export const Card = ({ title, children, className = "" }: CardProps) => (
+  <section className={`rounded-xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>
+    {title && <h2 className="mb-4 text-sm font-semibold text-slate-900">{title}</h2>}
+    {children}
+  </section>
+);
 
 interface AvatarProps {
   name: string;
   color?: string;
 }
 
-export const Avatar = ({ name, color = "bg-purple-100 text-purple-700" }: AvatarProps) =>
-  <span aria-hidden="true" className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${color}`}>{name.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>;
+export const Avatar = ({ name, color = "bg-purple-100 text-purple-700" }: AvatarProps) => (
+  <span
+    aria-hidden="true"
+    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${color}`}
+  >
+    {name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)}
+  </span>
+);

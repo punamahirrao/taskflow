@@ -33,9 +33,16 @@ class TaskAccessTests(base.RolesBase):
 
     def test_bad_project_id_values(self):
         c = self.as_user(self.owner)
-        self.assertEqual(c.get("/tasks/").status_code, 400)
         self.assertEqual(c.get("/tasks/?project_id=abc").status_code, 400)
         self.assertEqual(c.get("/tasks/?project_id=99999").status_code, 404)
+
+    def test_no_project_filter_lists_tasks_from_accessible_projects(self):
+        response = self.as_user(self.member).get("/tasks/")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(
+            {task["id"] for task in response.json()},
+            {self.owner_task.id, self.member_task.id},
+        )
 
     def test_owner_admin_member_can_create_viewer_cannot(self):
         for user, expected in (

@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 
 from projects.models import Project, ProjectMembership, ProjectRole
 from tasks.models import Task
+from accounts.models import Organization
 
 User = get_user_model()
 PASSWORD = "Str0ng-Pass-123!"
@@ -11,7 +12,12 @@ FAST_HASHER = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 
 def make_user(email, **extra):
-    return User.objects.create_user(email=email, password=PASSWORD, **extra)
+    organization, _ = Organization.objects.get_or_create(name="Test organization")
+    user = User.objects.create_user(
+        email=email, password=PASSWORD, active_organization=organization, **extra
+    )
+    organization.members.add(user)
+    return user
 
 
 def add_member(project, user, role_name):
@@ -35,13 +41,17 @@ class RolesBase(APITestCase):
             role=ProjectRole.objects.get(role_name=ProjectRole.SITE_ADMIN),
         )
 
-        self.project = Project.objects.create(name="Alpha")
+        self.project = Project.objects.create(
+            name="Alpha", organization=self.owner.active_organization
+        )
         add_member(self.project, self.owner, "owner")
         add_member(self.project, self.padmin, "admin")
         add_member(self.project, self.member, "member")
         add_member(self.project, self.viewer, "viewer")
 
-        self.other = Project.objects.create(name="Beta")
+        self.other = Project.objects.create(
+            name="Beta", organization=self.owner.active_organization
+        )
         add_member(self.other, self.stranger, "owner")
 
         self.owner_task = Task.objects.create(

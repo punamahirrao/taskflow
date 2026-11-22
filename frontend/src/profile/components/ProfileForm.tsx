@@ -11,7 +11,11 @@ import {
   ProfileSectionTitle,
   ProfileSuccess,
 } from "../Profile.styles";
-import { firstValidationError, passwordChangeSchema, profileSchema } from "../../common/validation/schemas";
+import {
+  firstValidationError,
+  passwordChangeSchema,
+  profileSchema,
+} from "../../common/validation/schemas";
 import { useToast } from "../../common/features/notifications/useToast";
 
 interface ProfileFormProps {
@@ -42,11 +46,29 @@ export default function ProfileForm({ profile, onSaved }: ProfileFormProps) {
 
     const changingPassword = Boolean(currentPassword || newPassword || confirmPassword);
     if (changingPassword) {
-      const passwordError = firstValidationError(passwordChangeSchema, { currentPassword, newPassword, confirmPassword });
-      if (passwordError) { setError(passwordError); toast("error", passwordError); return; }
+      const passwordError = firstValidationError(passwordChangeSchema, {
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      });
+      if (passwordError) {
+        setError(passwordError);
+        toast("error", passwordError);
+        return;
+      }
     }
-    const profileError = firstValidationError(profileSchema, { firstName, lastName, jobTitle, department, aboutMe });
-    if (profileError) { setError(profileError); toast("error", profileError); return; }
+    const profileError = firstValidationError(profileSchema, {
+      firstName,
+      lastName,
+      jobTitle,
+      department,
+      aboutMe,
+    });
+    if (profileError) {
+      setError(profileError);
+      toast("error", profileError);
+      return;
+    }
 
     setSaving(true);
     try {
@@ -59,7 +81,11 @@ export default function ProfileForm({ profile, onSaved }: ProfileFormProps) {
       });
       onSaved(saved);
       if (changingPassword) {
-        await changePassword({ current_password: currentPassword, new_password: newPassword, confirm_password: confirmPassword });
+        await changePassword({
+          current_password: currentPassword,
+          new_password: newPassword,
+          confirm_password: confirmPassword,
+        });
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
@@ -68,7 +94,8 @@ export default function ProfileForm({ profile, onSaved }: ProfileFormProps) {
       toast("success", changingPassword ? t("profile.passwordUpdated") : t("profile.updated"));
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : t("profile.saveError");
-      setError(message); toast("error", message);
+      setError(message);
+      toast("error", message);
     } finally {
       setSaving(false);
     }
@@ -78,23 +105,103 @@ export default function ProfileForm({ profile, onSaved }: ProfileFormProps) {
     <ProfileFormPanel onSubmit={handleSubmit}>
       <ProfileSectionTitle>{t("profile.personalDetails")}</ProfileSectionTitle>
       <div className="grid gap-x-4 sm:grid-cols-2">
-        <ProfileField id="first-name" labelId="first-name-label" inputId="first-name-input" label="profile.firstName" value={firstName} onChange={setFirstName} maxLength={150} />
-        <ProfileField id="last-name" labelId="last-name-label" inputId="last-name-input" label="profile.lastName" value={lastName} onChange={setLastName} maxLength={150} />
+        <ProfileField
+          id="first-name"
+          labelId="first-name-label"
+          inputId="first-name-input"
+          label="profile.firstName"
+          value={firstName}
+          onChange={setFirstName}
+          maxLength={150}
+        />
+        <ProfileField
+          id="last-name"
+          labelId="last-name-label"
+          inputId="last-name-input"
+          label="profile.lastName"
+          value={lastName}
+          onChange={setLastName}
+          maxLength={150}
+        />
       </div>
-      <ProfileField id="job-title" labelId="job-title-label" inputId="job-title-input" label="profile.jobTitle" value={jobTitle} onChange={setJobTitle} maxLength={100} required />
-      <ProfileField id="department" labelId="department-label" inputId="department-input" label="profile.department" value={department} onChange={setDepartment} maxLength={100} />
-      <ProfileField id="about-me" labelId="about-me-label" inputId="about-me-input" label="profile.aboutMe" value={aboutMe} onChange={setAboutMe} type="textarea" maxLength={5000} rows={5} placeholder={t("profile.aboutMePlaceholder")} />
-      <ProfileField id="email" labelId="email-label" inputId="email-input" label="profile.email" value={profile.email} readOnly />
+      <ProfileField
+        id="job-title"
+        labelId="job-title-label"
+        inputId="job-title-input"
+        label="profile.jobTitle"
+        value={jobTitle}
+        onChange={setJobTitle}
+        maxLength={100}
+        required
+      />
+      <ProfileField
+        id="department"
+        labelId="department-label"
+        inputId="department-input"
+        label="profile.department"
+        value={department}
+        onChange={setDepartment}
+        maxLength={100}
+      />
+      <ProfileField
+        id="about-me"
+        labelId="about-me-label"
+        inputId="about-me-input"
+        label="profile.aboutMe"
+        value={aboutMe}
+        onChange={setAboutMe}
+        type="textarea"
+        maxLength={5000}
+        rows={5}
+        placeholder={t("profile.aboutMePlaceholder")}
+      />
+      <ProfileField
+        id="email"
+        labelId="email-label"
+        inputId="email-input"
+        label="profile.email"
+        value={profile.email}
+        readOnly
+      />
 
       <ProfileDivider />
       <ProfileSectionTitle>{t("profile.loginSecurity")}</ProfileSectionTitle>
-      <ProfileField id="current-password" labelId="current-password-label" inputId="current-password-input" label="profile.currentPassword" type="password" autoComplete="current-password" value={currentPassword} onChange={setCurrentPassword} />
-      <ProfileField id="new-password" labelId="new-password-label" inputId="new-password-input" label="profile.newPassword" type="password" autoComplete="new-password" value={newPassword} onChange={setNewPassword} />
-      <ProfileField id="confirm-password" labelId="confirm-password-label" inputId="confirm-password-input" label="profile.confirmPassword" type="password" autoComplete="new-password" value={confirmPassword} onChange={setConfirmPassword} />
+      <ProfileField
+        id="current-password"
+        labelId="current-password-label"
+        inputId="current-password-input"
+        label="profile.currentPassword"
+        type="password"
+        autoComplete="current-password"
+        value={currentPassword}
+        onChange={setCurrentPassword}
+      />
+      <ProfileField
+        id="new-password"
+        labelId="new-password-label"
+        inputId="new-password-input"
+        label="profile.newPassword"
+        type="password"
+        autoComplete="new-password"
+        value={newPassword}
+        onChange={setNewPassword}
+      />
+      <ProfileField
+        id="confirm-password"
+        labelId="confirm-password-label"
+        inputId="confirm-password-input"
+        label="profile.confirmPassword"
+        type="password"
+        autoComplete="new-password"
+        value={confirmPassword}
+        onChange={setConfirmPassword}
+      />
 
       {error && <ProfileError role="alert">{error}</ProfileError>}
       {success && <ProfileSuccess role="status">{success}</ProfileSuccess>}
-      <ProfileSaveButton type="submit" disabled={saving}>{saving ? t("profile.saving") : t("profile.saveChanges")}</ProfileSaveButton>
+      <ProfileSaveButton type="submit" disabled={saving}>
+        {saving ? t("profile.saving") : t("profile.saveChanges")}
+      </ProfileSaveButton>
     </ProfileFormPanel>
   );
 }

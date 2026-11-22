@@ -26,7 +26,9 @@ class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response(ProfileSerializer(request.user, context={"request": request}).data)
+        return Response(
+            ProfileSerializer(request.user, context={"request": request}).data
+        )
 
     def patch(self, request):
         serializer = ProfileSerializer(
@@ -51,19 +53,25 @@ class ProfilePhotoView(APIView):
         _delete_photo(request.user)
         request.user.profile_photo = upload
         request.user.save(update_fields=["profile_photo"])
-        return Response(ProfileSerializer(request.user, context={"request": request}).data)
+        return Response(
+            ProfileSerializer(request.user, context={"request": request}).data
+        )
 
     def delete(self, request):
         _delete_photo(request.user)
         request.user.save(update_fields=["profile_photo"])
-        return Response(ProfileSerializer(request.user, context={"request": request}).data)
+        return Response(
+            ProfileSerializer(request.user, context={"request": request}).data
+        )
 
 
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
+        serializer = ChangePasswordSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         request.user.set_password(serializer.validated_data["new_password"])
         request.user.save(update_fields=["password"])

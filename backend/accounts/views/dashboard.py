@@ -6,8 +6,6 @@ from rest_framework.views import APIView
 class DashboardView(APIView):
     def get(self, request):
         return Response(
-            {
-                "message": "Dashboard page is coming soon."
-            },
+            {"message": "Dashboard page is coming soon."},
             status=status.HTTP_200_OK,
         )

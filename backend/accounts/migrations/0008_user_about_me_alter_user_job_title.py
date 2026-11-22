@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0007_user_default_project'),
+        ("accounts", "0007_user_default_project"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='about_me',
+            model_name="user",
+            name="about_me",
             field=models.TextField(blank=True),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='job_title',
+            model_name="user",
+            name="job_title",
             field=models.CharField(max_length=100),
         ),
     ]

@@ -1,7 +1,20 @@
 from django.db import models
 
+
 class EstimationRun(models.Model):
-    STATES = [(x, x) for x in ("queued", "parsing", "extracting", "grouping", "estimating", "ready_for_review", "failed", "cancelled")]
+    STATES = [
+        (x, x)
+        for x in (
+            "queued",
+            "parsing",
+            "extracting",
+            "grouping",
+            "estimating",
+            "ready_for_review",
+            "failed",
+            "cancelled",
+        )
+    ]
     host_run_id = models.CharField(max_length=80, unique=True)
     project_id = models.PositiveIntegerField()
     document_id = models.PositiveIntegerField()
@@ -18,8 +31,11 @@ class EstimationRun(models.Model):
 
 class EstimatorDocument(models.Model):
     """Estimator-owned copy of an uploaded source file and its parsed text."""
+
     project_id = models.PositiveIntegerField(db_index=True)
-    source_document_id = models.PositiveIntegerField(null=True, blank=True, db_index=True)
+    source_document_id = models.PositiveIntegerField(
+        null=True, blank=True, db_index=True
+    )
     name = models.CharField(max_length=255)
     file = models.FileField(upload_to="estimator/%Y/%m/")
     size = models.PositiveBigIntegerField(default=0)
@@ -33,7 +49,10 @@ class EstimatorDocument(models.Model):
 
 class ExtractedRequirement(models.Model):
     """Normalized requirements extracted for an estimation run."""
-    run = models.ForeignKey(EstimationRun, on_delete=models.CASCADE, related_name="requirements")
+
+    run = models.ForeignKey(
+        EstimationRun, on_delete=models.CASCADE, related_name="requirements"
+    )
     external_id = models.CharField(max_length=40)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -45,4 +64,9 @@ class ExtractedRequirement(models.Model):
 
     class Meta:
         ordering = ("external_id", "id")
-        constraints = [models.UniqueConstraint(fields=("run", "external_id"), name="estimator_requirement_run_external_id_uniq")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=("run", "external_id"),
+                name="estimator_requirement_run_external_id_uniq",
+            )
+        ]

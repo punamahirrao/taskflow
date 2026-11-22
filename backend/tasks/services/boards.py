@@ -12,7 +12,9 @@ class BoardMembershipError(ValidationException):
 def validate_board_members(project, members):
     member_ids = {member.id for member in members}
     if not member_ids.issubset(active_project_member_ids(project)):
-        raise BoardMembershipError("Board members must be active members of the project.")
+        raise BoardMembershipError(
+            "Board members must be active members of the project."
+        )
     return member_ids
 
 

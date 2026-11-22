@@ -1,13 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { getProjects } from "../../../../projects/api/projects";
 import { getUsers } from "../../../../users/api/users";
-import { addProjectMember, removeProjectMember, updateProjectMember } from "../../../../team/api/projectMembers";
+import {
+  addProjectMember,
+  removeProjectMember,
+  updateProjectMember,
+} from "../../../../team/api/projectMembers";
 import type { Project, ProjectMember } from "../../../../common/entities/project";
 import type { SiteUser } from "../../../../common/entities/user";
 import { translate } from "../../../../common/shared/i18n/translate";
 import type { ProjectMemberRow } from "../../../entities/shareProject";
 
-const assignableRoles: Record<string, string[]> = { owner: ["admin", "member", "viewer"], admin: ["member", "viewer"] };
+const assignableRoles: Record<string, string[]> = {
+  owner: ["admin", "member", "viewer"],
+  admin: ["member", "viewer"],
+};
 const REMOVE = "__remove";
 const userName = (user: SiteUser) => `${user.first_name} ${user.last_name}`.trim() || user.email;
 
@@ -26,66 +33,143 @@ export function useProjectSharing(id: string | undefined) {
 
   useEffect(() => {
     let active = true;
-    Promise.all([getProjects(), getUsers()]).then(([projects, allUsers]) => {
-      if (!active) return;
-      const found = projects.find((item) => item.id === Number(id));
-      if (!found) setError(translate("shareProject.notFound"));
-      else setProject(found);
-      setUsers(allUsers.filter((user) => user.is_active));
-    }).catch((cause: unknown) => {
-      if (active) setError(cause instanceof Error ? cause.message : translate("shareProject.unableToLoad"));
-    }).finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+    Promise.all([getProjects(), getUsers()])
+      .then(([projects, allUsers]) => {
+        if (!active) return;
+        const found = projects.find((item) => item.id === Number(id));
+        if (!found) setError(translate("shareProject.notFound"));
+        else setProject(found);
+        setUsers(allUsers.filter((user) => user.is_active));
+      })
+      .catch((cause: unknown) => {
+        if (active)
+          setError(cause instanceof Error ? cause.message : translate("shareProject.unableToLoad"));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   const roles = assignableRoles[project?.my_role ?? ""] ?? [];
-  const members = project?.members ?? [];
+  const members = useMemo(() => project?.members ?? [], [project?.members]);
   const memberOf = (userId: number) => members.find((member) => member.id === userId);
-  const memberRows = useMemo(() => members.map((member) => ({ ...member, user: users.find((user) => user.id === member.id) })).filter((row): row is ProjectMemberRow => Boolean(row.user)), [members, users]);
-  const candidates = users.filter((user) => !memberOf(user.id) && (picked !== null || `${userName(user)} ${user.email}`.toLowerCase().includes(query.trim().toLowerCase())));
+  const memberRows = useMemo(
+    () =>
+      members
+        .map((member) => ({ ...member, user: users.find((user) => user.id === member.id) }))
+        .filter((row): row is ProjectMemberRow => Boolean(row.user)),
+    [members, users],
+  );
+  const candidates = users.filter(
+    (user) =>
+      !memberOf(user.id) &&
+      (picked !== null ||
+        `${userName(user)} ${user.email}`.toLowerCase().includes(query.trim().toLowerCase())),
+  );
 
   function setMembers(update: (current: ProjectMember[]) => ProjectMember[]) {
-    setProject((current) => current ? { ...current, members: update(current.members ?? []) } : current);
+    setProject((current) =>
+      current ? { ...current, members: update(current.members ?? []) } : current,
+    );
   }
 
   async function save(user: SiteUser, role: string) {
-    setActionError(""); setBusyId(user.id);
+    setActionError("");
+    setBusyId(user.id);
     try {
       const existing = memberOf(user.id);
-      const result = existing ? await updateProjectMember(id!, user.id, role) : await addProjectMember(id!, user.id, role);
-      setMembers((current) => existing ? current.map((member) => member.id === user.id ? result : member) : [...current, result]);
+      const result = existing
+        ? await updateProjectMember(id!, user.id, role)
+        : await addProjectMember(id!, user.id, role);
+      setMembers((current) =>
+        existing
+          ? current.map((member) => (member.id === user.id ? result : member))
+          : [...current, result],
+      );
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : translate("shareProject.unableToSaveRole"));
-    } finally { setBusyId(null); }
+      setActionError(
+        cause instanceof Error ? cause.message : translate("shareProject.unableToSaveRole"),
+      );
+    } finally {
+      setBusyId(null);
+    }
   }
 
   async function remove(user: SiteUser) {
-    setActionError(""); setBusyId(user.id);
+    setActionError("");
+    setBusyId(user.id);
     try {
       await removeProjectMember(id!, user.id);
       setMembers((current) => current.filter((member) => member.id !== user.id));
-      setChoices((current) => { const next = { ...current }; delete next[user.id]; return next; });
+      setChoices((current) => {
+        const next = { ...current };
+        delete next[user.id];
+        return next;
+      });
     } catch (cause) {
-      setActionError(cause instanceof Error ? cause.message : translate("shareProject.unableToRemoveMember"));
-    } finally { setBusyId(null); }
+      setActionError(
+        cause instanceof Error ? cause.message : translate("shareProject.unableToRemoveMember"),
+      );
+    } finally {
+      setBusyId(null);
+    }
   }
 
   async function commitRole(user: SiteUser, current: string, selected: string) {
     if (selected === current) return;
     if (selected === REMOVE) {
-      if (window.confirm(translate("shareProject.confirmRemove", { name: userName(user) }))) await remove(user);
-      setChoices((state) => { const next = { ...state }; delete next[user.id]; return next; });
+      if (window.confirm(translate("shareProject.confirmRemove", { name: userName(user) })))
+        await remove(user);
+      setChoices((state) => {
+        const next = { ...state };
+        delete next[user.id];
+        return next;
+      });
       return;
     }
     await save(user, selected);
-    setChoices((state) => { const next = { ...state }; delete next[user.id]; return next; });
+    setChoices((state) => {
+      const next = { ...state };
+      delete next[user.id];
+      return next;
+    });
   }
 
   async function addPicked() {
     if (!picked) return;
     await save(picked, newRole);
-    setPicked(null); setQuery("");
+    setPicked(null);
+    setQuery("");
   }
 
-  return { project, roles, users, choices, setChoices, query, setQuery, picked, setPicked, newRole, setNewRole, listOpen, setListOpen, loading, error, actionError, busyId, candidates, memberRows, userName, memberOf, save, remove, commitRole, addPicked };
+  return {
+    project,
+    roles,
+    users,
+    choices,
+    setChoices,
+    query,
+    setQuery,
+    picked,
+    setPicked,
+    newRole,
+    setNewRole,
+    listOpen,
+    setListOpen,
+    loading,
+    error,
+    actionError,
+    busyId,
+    candidates,
+    memberRows,
+    userName,
+    memberOf,
+    save,
+    remove,
+    commitRole,
+    addPicked,
+  };
 }

@@ -20,8 +20,19 @@ def align_active_sprint_boards(apps, schema_editor):
             seen_boards.add(sprint.board_id)
             continue
 
-        owner_id = ProjectMembership.objects.filter(project_id=sprint.project_id, role__role_name="owner").values_list("user_id", flat=True).first()
-        owner_id = owner_id or ProjectMembership.objects.filter(project_id=sprint.project_id).values_list("user_id", flat=True).first()
+        owner_id = (
+            ProjectMembership.objects.filter(
+                project_id=sprint.project_id, role__role_name="owner"
+            )
+            .values_list("user_id", flat=True)
+            .first()
+        )
+        owner_id = (
+            owner_id
+            or ProjectMembership.objects.filter(project_id=sprint.project_id)
+            .values_list("user_id", flat=True)
+            .first()
+        )
         if not owner_id:
             continue
         board = AgileBoard.objects.create(
@@ -37,16 +48,21 @@ def align_active_sprint_boards(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tasks', '0011_agileboard_ownership_and_sprint_board'),
+        ("tasks", "0011_agileboard_ownership_and_sprint_board"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sprint',
-            name='board',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='sprints', to='tasks.agileboard'),
+            model_name="sprint",
+            name="board",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="sprints",
+                to="tasks.agileboard",
+            ),
         ),
         migrations.RunPython(align_active_sprint_boards, migrations.RunPython.noop),
     ]

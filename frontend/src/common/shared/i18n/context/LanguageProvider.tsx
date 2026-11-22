@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { LanguageCode, TranslationKey } from "../../../entities/language";
-import { getStoredLanguage, LANGUAGE_STORAGE_KEY, translateLabel, type LabelParams } from "../translate";
+import {
+  getStoredLanguage,
+  LANGUAGE_STORAGE_KEY,
+  translateLabel,
+  type LabelParams,
+} from "../translate";
 import { LanguageContext } from "./LanguageContext";
 
 interface LanguageProviderProps {
@@ -14,9 +19,18 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     document.documentElement.lang = next;
     setCurrentLanguage(next);
   }, []);
-  const t = useCallback((key: TranslationKey, params?: LabelParams) => translateLabel(language, key, params), [language]);
+  const t = useCallback(
+    (key: TranslationKey, params?: LabelParams) => translateLabel(language, key, params),
+    [language],
+  );
 
-  useEffect(() => { document.documentElement.lang = language; }, [language]);
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
-  return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
 }

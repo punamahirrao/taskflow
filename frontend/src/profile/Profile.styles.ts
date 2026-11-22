@@ -35,8 +35,12 @@ const profileControl = `
   &:read-only { cursor: not-allowed; color: var(--profile-field-muted); }
 `;
 
-export const ProfileFieldInput = styled.input`${profileControl}`;
-export const ProfileFieldTextArea = styled.textarea`${profileControl} resize: vertical;`;
+export const ProfileFieldInput = styled.input`
+  ${profileControl}
+`;
+export const ProfileFieldTextArea = styled.textarea`
+  ${profileControl} resize: vertical;
+`;
 
 export const ProfileDivider = styled.hr`
   margin: 1.5rem 0;
@@ -65,5 +69,7 @@ export const ProfileSaveButton = styled.button`
   color: var(--profile-button-text);
   font-size: 0.875rem;
   font-weight: 500;
-  &:disabled { opacity: 0.5; }
+  &:disabled {
+    opacity: 0.5;
+  }
 `;

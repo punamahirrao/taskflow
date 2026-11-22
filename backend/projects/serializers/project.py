@@ -5,11 +5,13 @@ from projects.models import Project, ProjectRole
 from projects.serializers.membership import ProjectMemberSerializer
 from projects.repositories import active_project_memberships
 from projects.services import create_project
+from projects.serializers.owner import person_summary
 from common.validators import validate_project_dates
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     owner = serializers.SerializerMethodField()
+    owner_details = serializers.SerializerMethodField()
     my_role = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
     is_default = serializers.SerializerMethodField()
@@ -28,6 +30,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "progress",
             "can_create_board",
             "owner",
+            "owner_details",
             "my_role",
             "members",
             "is_default",
@@ -65,6 +68,12 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         return None
 
+    def get_owner_details(self, project):
+        for membership in self._memberships(project):
+            if membership.role.role_name == ProjectRole.OWNER:
+                return person_summary(membership.user, self.context.get("request"))
+        return None
+
     def get_progress(self, project):
         statuses = list(project.tasks.values_list("status", flat=True))
         if not statuses:
@@ -76,19 +85,38 @@ class ProjectSerializer(serializers.ModelSerializer):
         if request is None:
             return False
         role = self.get_my_role(project)
-        return role in (ProjectRole.OWNER, ProjectRole.ADMIN) or request.user.has_perm("tasks.create_agileboard")
+        return role in (ProjectRole.OWNER, ProjectRole.ADMIN) or request.user.has_perm(
+            "tasks.create_agileboard"
+        )
 
     def get_is_default(self, project):
         request = self.context.get("request")
-        return request is not None and request.user.default_project_id == project.pk
+        if request is None:
+            return False
+        if "_default_project_id" not in self.__dict__:
+            from accounts.models import OrganizationMembership
+
+            self._default_project_id = (
+                OrganizationMembership.objects.filter(
+                    user=request.user,
+                    organization_id=request.user.active_organization_id,
+                )
+                .values_list("default_project_id", flat=True)
+                .first()
+            )
+        return self._default_project_id == project.pk
 
     def validate(self, attrs):
-        start = attrs.get("expected_start_date", getattr(self.instance, "expected_start_date", None))
+        start = attrs.get(
+            "expected_start_date", getattr(self.instance, "expected_start_date", None)
+        )
         end = attrs.get("end_date", getattr(self.instance, "end_date", None))
         try:
             validate_project_dates(start, end)
         except DjangoValidationError as error:
-            raise serializers.ValidationError(error.message_dict if hasattr(error, "message_dict") else error.messages) from error
+            raise serializers.ValidationError(
+                error.message_dict if hasattr(error, "message_dict") else error.messages
+            ) from error
         return attrs
 
     def get_members(self, project):
@@ -97,4 +125,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         ).data
 
     def create(self, validated_data):
-        return create_project(owner=self.context["request"].user, validated_data=validated_data)
+        return create_project(
+            owner=self.context["request"].user, validated_data=validated_data
+        )

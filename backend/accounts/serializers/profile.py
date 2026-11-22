@@ -20,7 +20,9 @@ IMAGE_SIGNATURES = {
 class ProfileSerializer(serializers.ModelSerializer):
     photo_url = serializers.SerializerMethodField()
     job_title = serializers.CharField(max_length=100, allow_blank=False, required=True)
-    about_me = serializers.CharField(max_length=ABOUT_ME_MAX_LENGTH, allow_blank=True, required=False)
+    about_me = serializers.CharField(
+        max_length=ABOUT_ME_MAX_LENGTH, allow_blank=True, required=False
+    )
 
     class Meta:
         model = User

@@ -8,5 +8,16 @@ interface ProjectListSectionProps {
 }
 
 export function ProjectListSection({ projects, onOpen, onToggleDefault }: ProjectListSectionProps) {
-  return <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{projects.map((project) => <ProjectCard key={project.id} project={project} onOpen={() => onOpen(project.id)} onToggleDefault={() => onToggleDefault(project)} />)}</div>;
+  return (
+    <div className="project-directory-grid">
+      {projects.map((project) => (
+        <ProjectCard
+          key={project.id}
+          project={project}
+          onOpen={() => onOpen(project.id)}
+          onToggleDefault={() => onToggleDefault(project)}
+        />
+      ))}
+    </div>
+  );
 }

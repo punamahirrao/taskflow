@@ -14,18 +14,33 @@ export function useUsers() {
 
   useEffect(() => {
     let active = true;
-    getUsers().then((result) => { if (active) setUsers(result); })
-      .catch((cause: unknown) => { if (active) setError(cause instanceof Error ? cause.message : translate("users.loadFailed")); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+    getUsers()
+      .then((result) => {
+        if (active) setUsers(result);
+      })
+      .catch((cause: unknown) => {
+        if (active)
+          setError(cause instanceof Error ? cause.message : translate("users.loadFailed"));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const filteredUsers = useMemo(() => users.filter((user) => {
-    const text = `${user.first_name} ${user.last_name} ${user.email}`.toLowerCase();
-    const matchesRole = role === "all" || (role === "admin" ? user.is_staff : !user.is_staff);
-    const matchesStatus = status === "all" || (status === "active" ? user.is_active : !user.is_active);
-    return text.includes(search.trim().toLowerCase()) && matchesRole && matchesStatus;
-  }), [users, search, role, status]);
+  const filteredUsers = useMemo(
+    () =>
+      users.filter((user) => {
+        const text = `${user.first_name} ${user.last_name} ${user.email}`.toLowerCase();
+        const matchesRole = role === "all" || (role === "admin" ? user.is_staff : !user.is_staff);
+        const matchesStatus =
+          status === "all" || (status === "active" ? user.is_active : !user.is_active);
+        return text.includes(search.trim().toLowerCase()) && matchesRole && matchesStatus;
+      }),
+    [users, search, role, status],
+  );
 
   async function remove(user: SiteUser) {
     setActionError("");
@@ -37,5 +52,19 @@ export function useUsers() {
     }
   }
 
-  return { users, setUsers, loading, error, search, setSearch, role, setRole, status, setStatus, actionError, filteredUsers, remove };
+  return {
+    users,
+    setUsers,
+    loading,
+    error,
+    search,
+    setSearch,
+    role,
+    setRole,
+    status,
+    setStatus,
+    actionError,
+    filteredUsers,
+    remove,
+  };
 }

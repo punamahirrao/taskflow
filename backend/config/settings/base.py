@@ -4,14 +4,28 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR / ".env")
+DATA_ENV = os.environ.get("TASKFLOW_DATA_ENV", "development")
+if DATA_ENV not in {"development", "test", "preprod"}:
+    raise ValueError("TASKFLOW_DATA_ENV must be development, test, or preprod")
+load_dotenv(BASE_DIR / f".env.{DATA_ENV}")
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "insecure-development-only")
+BASE_SECRET_KEY = os.environ.get("SECRET_KEY", "insecure-development-only")
+# A token from one data environment must never authenticate a same-ID user in
+# another database. Keep the legacy development key; namespace other profiles.
+SECRET_KEY = os.environ.get(f"{DATA_ENV.upper()}_SECRET_KEY") or (
+    BASE_SECRET_KEY if DATA_ENV == "development" else f"{BASE_SECRET_KEY}:{DATA_ENV}"
+)
 DEBUG = False
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if host.strip()]
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if host.strip()
+]
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 MICROSOFT_CLIENT_ID = os.environ.get("MICROSOFT_CLIENT_ID", "")
@@ -44,30 +58,47 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "accounts.audit.AuditContextMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
-TEMPLATES = [{
-    "BACKEND": "django.template.backends.django.DjangoTemplates",
-    "DIRS": [],
-    "APP_DIRS": True,
-    "OPTIONS": {"context_processors": [
-        "django.template.context_processors.request",
-        "django.contrib.auth.context_processors.auth",
-        "django.contrib.messages.context_processors.messages",
-    ]},
-}]
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ]
+        },
+    }
+]
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "")
-DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600) if DATABASE_URL else {
-    "ENGINE": "django.db.backends.sqlite3",
-    "NAME": BASE_DIR / "db.sqlite3",
-}}
+DATABASE_URL = os.environ.get(f"{DATA_ENV.upper()}_DATABASE_URL", "")
+if DATA_ENV == "development":
+    DATABASE_URL = DATABASE_URL or os.environ.get("DATABASE_URL", "")
+DATABASE_PATH = BASE_DIR / (
+    "db.sqlite3" if DATA_ENV == "development" else f"db.{DATA_ENV}.sqlite3"
+)
+DATABASES = {
+    "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+    if DATABASE_URL
+    else {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": DATABASE_PATH,
+        "OPTIONS": {"timeout": 20},
+    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -81,20 +112,52 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.User"
-PROFILE_PICS_ROOT = Path(os.environ.get("PROFILE_PICS_ROOT", str(BASE_DIR / "media" / "profilepics")))
+MEDIA_ROOT = (
+    BASE_DIR / "media" if DATA_ENV == "development" else BASE_DIR / "media" / DATA_ENV
+)
+PROFILE_PICS_ROOT = Path(
+    os.environ.get(
+        f"{DATA_ENV.upper()}_PROFILE_PICS_ROOT",
+        os.environ.get("PROFILE_PICS_ROOT", str(MEDIA_ROOT / "profilepics"))
+        if DATA_ENV == "development"
+        else str(MEDIA_ROOT / "profilepics"),
+    )
+)
 PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024
-DOCUMENTS_ROOT = Path(os.environ.get("DOCUMENTS_ROOT", str(BASE_DIR / "media" / "documents")))
+DOCUMENTS_ROOT = Path(
+    os.environ.get(
+        f"{DATA_ENV.upper()}_DOCUMENTS_ROOT",
+        os.environ.get("DOCUMENTS_ROOT", str(MEDIA_ROOT / "documents"))
+        if DATA_ENV == "development"
+        else str(MEDIA_ROOT / "documents"),
+    )
+)
 DOCUMENTS_MAX_UPLOAD_BYTES = 25 * 1024 * 1024
-AI_ESTIMATOR_SERVICE_URL = os.environ.get("AI_ESTIMATOR_SERVICE_URL", "http://127.0.0.1:8100")
+AI_ESTIMATOR_SERVICE_URL = os.environ.get(
+    f"{DATA_ENV.upper()}_AI_ESTIMATOR_SERVICE_URL",
+    os.environ.get("AI_ESTIMATOR_SERVICE_URL", "http://127.0.0.1:8100"),
+)
 AI_ESTIMATOR_SERVICE_TOKEN = os.environ.get("AI_ESTIMATOR_SERVICE_TOKEN", "")
 
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.environ.get(
-    "CORS_ALLOWED_ORIGINS", "http://localhost:5174"
-).split(",") if origin.strip()]
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:5174").split(
+        ","
+    )
+    if origin.strip()
+]
+if DATA_ENV in {"preprod", "test"}:
+    CORS_ALLOWED_ORIGINS += [
+        "http://localhost:5175",
+        "http://127.0.0.1:5175",
+        "http://localhost:5176",
+        "http://127.0.0.1:5176",
+    ]
+CORS_ALLOW_HEADERS = (*default_headers, "x-organization-id")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "accounts.authentication.OrganizationJWTAuthentication",
     ),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",

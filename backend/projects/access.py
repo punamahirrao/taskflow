@@ -20,15 +20,26 @@ ASSIGNABLE_ROLES = {
 
 
 def visible_projects(user):
+    if (
+        not user.active_organization_id
+        or not user.organizations.filter(pk=user.active_organization_id).exists()
+    ):
+        return Project.objects.none()
+    projects = Project.objects.filter(organization_id=user.active_organization_id)
     if user.is_site_admin:
-        return Project.objects.all()
+        return projects
     active_membership = Q(memberships__removal_date__isnull=True) | Q(
         memberships__removal_date__gt=timezone.localdate()
     )
-    return Project.objects.filter(active_membership, memberships__user=user).distinct()
+    return projects.filter(active_membership, memberships__user=user).distinct()
 
 
 def get_role(user, project):
+    if (
+        project.organization_id != user.active_organization_id
+        or not user.organizations.filter(pk=project.organization_id).exists()
+    ):
+        return None
     # Site admins act as owner on every project.
     if user.is_site_admin:
         return OWNER

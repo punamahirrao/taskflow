@@ -5,20 +5,38 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tasks', '0004_task_blocked_by'),
+        ("tasks", "0004_task_blocked_by"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='parent',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='children', to='tasks.task'),
+            model_name="task",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="children",
+                to="tasks.task",
+            ),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='work_type',
-            field=models.CharField(choices=[('task', 'Task'), ('idea', 'Idea'), ('enhancement', 'Enhancement'), ('bug', 'Bug'), ('spike', 'Spike'), ('research', 'Research'), ('epic', 'Epic'), ('initiative', 'Initiative')], default='task', max_length=20),
+            model_name="task",
+            name="work_type",
+            field=models.CharField(
+                choices=[
+                    ("task", "Task"),
+                    ("idea", "Idea"),
+                    ("enhancement", "Enhancement"),
+                    ("bug", "Bug"),
+                    ("spike", "Spike"),
+                    ("research", "Research"),
+                    ("epic", "Epic"),
+                    ("initiative", "Initiative"),
+                ],
+                default="task",
+                max_length=20,
+            ),
         ),
     ]

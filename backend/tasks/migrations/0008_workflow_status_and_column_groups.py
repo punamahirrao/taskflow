@@ -33,7 +33,11 @@ def seed_workflow_statuses(apps, schema_editor):
         name = column.name if column else key.replace("_", " ").title()
         WorkflowStatus.objects.using(db).get_or_create(
             key=key,
-            defaults={"name": name[:80], "position": custom_position, "is_system": False},
+            defaults={
+                "name": name[:80],
+                "position": custom_position,
+                "is_system": False,
+            },
         )
         custom_position += 1
 
@@ -44,9 +48,14 @@ def seed_workflow_statuses(apps, schema_editor):
                 key=key,
                 defaults={"name": name, "position": position, "group_name": group},
             )
-        BoardColumn.objects.using(db).filter(project_id=project.id).exclude(key__in=[item[0] for item in DEFAULT_STATUSES]).update(group_name="Other")
+        BoardColumn.objects.using(db).filter(project_id=project.id).exclude(
+            key__in=[item[0] for item in DEFAULT_STATUSES]
+        ).update(group_name="Other")
         for offset, column in enumerate(
-            BoardColumn.objects.using(db).filter(project_id=project.id).exclude(key__in=[item[0] for item in DEFAULT_STATUSES]).order_by("position", "id")
+            BoardColumn.objects.using(db)
+            .filter(project_id=project.id)
+            .exclude(key__in=[item[0] for item in DEFAULT_STATUSES])
+            .order_by("position", "id")
         ):
             column.position = len(DEFAULT_STATUSES) + offset
             column.save(update_fields=["position"])
@@ -61,7 +70,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="WorkflowStatus",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("key", models.SlugField(max_length=40, unique=True)),
                 ("name", models.CharField(max_length=80)),
                 ("position", models.PositiveSmallIntegerField(default=0)),

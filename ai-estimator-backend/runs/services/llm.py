@@ -6,7 +6,9 @@ from openai import OpenAI
 
 def _json_response(instructions: str, payload: dict) -> dict:
     if not settings.OPENAI_API_KEY:
-        raise RuntimeError("OPENAI_API_KEY is not configured. Add it to ai-estimator-backend/.env and restart the estimator worker.")
+        raise RuntimeError(
+            "OPENAI_API_KEY is not configured. Add it to ai-estimator-backend/.env and restart the estimator worker."
+        )
     client = OpenAI(api_key=settings.OPENAI_API_KEY)
     response = client.responses.create(
         model=settings.OPENAI_MODEL,
@@ -17,7 +19,9 @@ def _json_response(instructions: str, payload: dict) -> dict:
     try:
         return json.loads(response.output_text)
     except (json.JSONDecodeError, TypeError) as exc:
-        raise RuntimeError("The AI provider returned invalid structured JSON. Retry the estimation.") from exc
+        raise RuntimeError(
+            "The AI provider returned invalid structured JSON. Retry the estimation."
+        ) from exc
 
 
 def extract_requirements(text: str) -> dict:
@@ -41,7 +45,12 @@ def extract_requirements_in_chunks(text: str) -> dict:
         chunks.append(remaining[:boundary])
         remaining = remaining[boundary:].lstrip()
 
-    merged = {"requirements": [], "assumptions": [], "ambiguities": [], "missing_information": []}
+    merged = {
+        "requirements": [],
+        "assumptions": [],
+        "ambiguities": [],
+        "missing_information": [],
+    }
     seen_ids = set()
     for index, chunk in enumerate(chunks, start=1):
         extracted = extract_requirements(chunk)
@@ -56,7 +65,9 @@ def extract_requirements_in_chunks(text: str) -> dict:
                 seen_ids.add(requirement_id)
                 merged["requirements"].append(requirement)
         for key in ("assumptions", "ambiguities", "missing_information"):
-            merged[key].extend(value for value in extracted.get(key, []) if isinstance(value, str))
+            merged[key].extend(
+                value for value in extracted.get(key, []) if isinstance(value, str)
+            )
     return merged
 
 
