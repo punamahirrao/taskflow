@@ -10,6 +10,7 @@ import { mockUser } from "../../mocks/users";
 import { mockSprints } from "../../mocks/sprints";
 import { mockTasks } from "../../mocks/tasks";
 import type { Sprint, Task } from "../../features/tasks/entities/task";
+import { capacityPlanningFixture, storyActivityFixture } from "./sprintTrainFixtures";
 
 function planningFixture() {
   let tasks: Task[] = [];
@@ -341,5 +342,99 @@ export const SilentStoryAssignment: Story = {
     await userEvent.click(drawer.getByRole("button", { name: "Add Story to Sprint" }));
     await expect(await canvas.findByText("Validate silent story creation")).toBeVisible();
     await expect(canvas.queryByText(/added to .*Sprint/)).not.toBeInTheDocument();
+  },
+};
+
+export const CreateSprint: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "New Sprint" }));
+    const dialog = within(canvas.getByRole("dialog", { name: "Create Sprint" }));
+    await userEvent.type(dialog.getByLabelText("Sprint name"), "Sprint UI refactor");
+    await fireEvent.change(dialog.getByLabelText("Start date"), {
+      target: { value: "2026-12-01" },
+    });
+    await fireEvent.change(dialog.getByLabelText("End date"), { target: { value: "2026-12-14" } });
+    await userEvent.type(dialog.getByLabelText("Capacity (points)"), "24");
+    await userEvent.type(dialog.getByLabelText("Sprint goal"), "Finish the planning flow");
+    await userEvent.click(dialog.getByRole("button", { name: "Create Sprint" }));
+    await waitFor(() => expect(canvas.queryByRole("dialog")).not.toBeInTheDocument());
+    await expect(
+      canvas.getByRole("heading", { name: "Sprint UI refactor — Sprint Stories List" }),
+    ).toBeVisible();
+  },
+};
+
+const activityFixture = storyActivityFixture();
+export const StoryCommentsAndHistory: Story = {
+  beforeEach: activityFixture.reset,
+  parameters: { msw: { handlers: { trainLayout: activityFixture.handlers } } },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(
+      await canvas.findByRole("article", { name: /Create release readiness checklist/ }),
+    );
+    const drawer = within(canvas.getByTestId("sprint-story-details"));
+    await userEvent.click(drawer.getByRole("button", { name: /^comments/ }));
+    await expect(await drawer.findByText("Review acceptance steps.")).toBeVisible();
+    await userEvent.type(drawer.getByLabelText("Add a comment"), "Ready for review.");
+    await userEvent.click(drawer.getByRole("button", { name: "Post comment" }));
+    const comment = within(
+      (await drawer.findByText("Ready for review.", { selector: "p" })).closest("article")!,
+    );
+    await userEvent.click(comment.getByRole("button", { name: "Edit comment" }));
+    await userEvent.clear(comment.getByRole("textbox"));
+    await userEvent.type(comment.getByRole("textbox"), "Reviewed and ready.");
+    await userEvent.click(comment.getByRole("button", { name: "Save edit" }));
+    await expect(await drawer.findByText("Reviewed and ready.", { selector: "p" })).toBeVisible();
+    const previousConfirm = window.confirm;
+    try {
+      window.confirm = () => true;
+      await userEvent.click(comment.getByRole("button", { name: "Delete comment" }));
+      await waitFor(() =>
+        expect(drawer.queryByText("Reviewed and ready.")).not.toBeInTheDocument(),
+      );
+    } finally {
+      window.confirm = previousConfirm;
+    }
+    await userEvent.click(drawer.getByRole("button", { name: "history" }));
+    await expect(await drawer.findByText(/todo → review/)).toBeVisible();
+  },
+};
+
+const capacityFixture = capacityPlanningFixture();
+export const CapacityPlanning: Story = {
+  beforeEach: capacityFixture.reset,
+  parameters: { msw: { handlers: { trainLayout: capacityFixture.handlers } } },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Team Capacity" }));
+    const points = await canvas.findByRole("spinbutton", {
+      name: "Full-sprint points for Avery Morgan",
+    });
+    await userEvent.clear(points);
+    await userEvent.type(points, "30");
+    const allocation = canvas.getByRole("spinbutton", {
+      name: "Allocation percent for Avery Morgan",
+    });
+    await userEvent.clear(allocation);
+    await userEvent.type(allocation, "50");
+    await userEvent.click(canvas.getByRole("button", { name: "Save team plan" }));
+    await expect(await canvas.findByText("Team plan saved.")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Use forecast for sprint" }));
+    await expect(await canvas.findByText("Sprint capacity set to 15 pts.")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Log absence" }));
+    const absence = within(canvas.getByRole("form", { name: "Log time off" }));
+    await userEvent.selectOptions(absence.getByLabelText("Time off type"), "absence");
+    await userEvent.selectOptions(absence.getByLabelText("Duration per day"), "0.5");
+    await userEvent.type(absence.getByLabelText("Note (optional)"), "Planning appointment");
+    await userEvent.click(absence.getByRole("button", { name: "Save time off" }));
+    await expect(await canvas.findByText("Planning appointment")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Remove absence for Avery Morgan" }));
+    await expect(await canvas.findByText("No time off logged for this sprint.")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Log holiday" }));
+    const holiday = within(canvas.getByRole("form", { name: "Log team holiday" }));
+    await userEvent.type(holiday.getByLabelText("Holiday name"), "Planning break");
+    await userEvent.click(holiday.getByRole("button", { name: "Save holiday" }));
+    await expect(await canvas.findByText("Planning break")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Remove holiday Planning break" }));
+    await expect(await canvas.findByText("No team holidays in this sprint.")).toBeVisible();
   },
 };

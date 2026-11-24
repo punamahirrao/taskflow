@@ -1,7 +1,30 @@
+import { useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within, waitFor } from "storybook/test";
 import { http, HttpResponse } from "msw";
 import ProjectsPage from "../ProjectsPage";
+import { ProjectContext } from "../../common/features/projects/context/ProjectContext";
+import { useProjectContext } from "../../common/features/projects/context/useProjectContext";
+
+function InteractiveProjectScope({ children }: { children: ReactNode }) {
+  const context = useProjectContext();
+  const [projects, setProjects] = useState(context.projects);
+  return (
+    <ProjectContext.Provider
+      value={{
+        ...context,
+        projects,
+        setDefault: async (id) => {
+          setProjects((current) =>
+            current.map((project) => ({ ...project, is_default: project.id === id })),
+          );
+        },
+      }}
+    >
+      {children}
+    </ProjectContext.Provider>
+  );
+}
 
 const meta = {
   title: "Projects/Pages/ProjectsPage",
@@ -40,6 +63,46 @@ export const Directory: Story = {
     await expect(
       await others.findByRole("heading", { name: "Organization Discovery Demo" }),
     ).toBeVisible();
+  },
+};
+
+export const CreateProject: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "+ Create" }));
+    const dialog = within(canvas.getByRole("dialog", { name: "Create new project" }));
+    await userEvent.click(dialog.getByRole("button", { name: "Create" }));
+    await expect(dialog.getByText("Project name is required")).toBeVisible();
+    await userEvent.type(dialog.getByLabelText("Project name"), "Release planning");
+    await userEvent.type(dialog.getByLabelText("Description"), "Prepare the next release.");
+    await userEvent.selectOptions(dialog.getByLabelText("Project status"), "upcoming");
+    await userEvent.click(dialog.getByRole("button", { name: "Create" }));
+    await waitFor(() => expect(canvas.queryByRole("dialog")).not.toBeInTheDocument());
+  },
+};
+
+export const DefaultProject: Story = {
+  decorators: [
+    (Story) => (
+      <InteractiveProjectScope>
+        <Story />
+      </InteractiveProjectScope>
+    ),
+  ],
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Set Mobile Checkout as default project" }),
+    );
+    const remove = await canvas.findByRole("button", {
+      name: "Remove Mobile Checkout as default project",
+    });
+    await expect(remove).toHaveAttribute("aria-pressed", "true");
+    await expect(
+      canvas.getByRole("button", { name: "Set Atlas Customer Platform as default project" }),
+    ).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(remove);
+    await expect(
+      await canvas.findByRole("button", { name: "Set Mobile Checkout as default project" }),
+    ).toHaveAttribute("aria-pressed", "false");
   },
 };
 

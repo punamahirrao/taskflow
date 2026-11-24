@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { mockProject, mockProjects } from "../../../mocks/projects";
-import { QuickCaptureDialog } from "../QuickCaptureDialog";
+import { QuickCaptureDialog } from "../../features/quick-capture/QuickCaptureDialog";
 
 const meta = {
   title: "Backlog/Features/QuickCapture",

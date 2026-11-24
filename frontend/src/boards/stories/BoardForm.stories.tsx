@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { FormEvent } from "react";
 import { expect, fn, userEvent, within } from "storybook/test";
 import { mockProject, mockProjects } from "../../mocks/projects";
-import { BoardForm, type BoardFormValues } from "../components/BoardForm";
+import { BoardForm, type BoardFormValues } from "../features/board-form/BoardForm";
 
 const initialValues: BoardFormValues = {
   name: "",
@@ -12,10 +11,7 @@ const initialValues: BoardFormValues = {
   members: [],
 };
 const submitSpy = fn();
-const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  submitSpy(event);
-};
+const handleSubmit = () => submitSpy();
 const meta = {
   title: "Boards/Features/CreateBoard",
   component: BoardForm,

@@ -1,0 +1,4 @@
+import type { ReactNode } from "react";
+export function WorkApprovalsPanel({ children }: { children: ReactNode }) {
+  return <section className="my-work-panel">{children}</section>;
+}

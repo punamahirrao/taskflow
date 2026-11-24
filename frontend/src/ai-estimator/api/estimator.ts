@@ -1,6 +1,5 @@
 import { apiFetch } from "../../common/api/client";
-import type { EstimationRun } from "../entities/estimator";
-import type { Epic, MacroStory } from "../entities/estimator";
+import type { Epic, EstimationRun, MacroStory } from "../entities/estimator";
 
 export const startEstimation = (projectId: number, documentId: number, idempotencyKey: string) =>
   apiFetch<EstimationRun>(`/api/ai-estimator/v1/projects/${projectId}/runs/`, {

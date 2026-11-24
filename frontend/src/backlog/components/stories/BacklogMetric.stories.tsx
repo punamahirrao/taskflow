@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CalendarClock } from "lucide-react";
-import { BacklogMetric } from "../BacklogMetric";
+import { BacklogMetric } from "../health-summary/BacklogMetric";
 
 const meta = {
   title: "Backlog/Components/BacklogMetric",

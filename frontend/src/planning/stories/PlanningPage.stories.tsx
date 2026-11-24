@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, within } from "storybook/test";
 import { http, HttpResponse } from "msw";
+import { expect, within } from "storybook/test";
 import PlanningPage from "../PlanningPage";
 import type { PlanningRecord } from "../entities/planning";
 
@@ -40,6 +40,23 @@ const meta = {
 } satisfies Meta<typeof PlanningPage>;
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+export const CreateGoal: Story = {
+  args: { kind: "goal" },
+  parameters: { route: "/goals" },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(await canvas.findByRole("button", { name: "Create goal" }));
+    const dialog = within(canvas.getByRole("dialog"));
+    await userEvent.type(
+      dialog.getByRole("textbox", { name: "Name" }),
+      "Improve release confidence",
+    );
+    await userEvent.click(dialog.getByRole("button", { name: "Create goal" }));
+    await expect(
+      await canvas.findByRole("cell", { name: "Improve release confidence" }),
+    ).toBeVisible();
+  },
+};
 
 export const CreateAndEditMilestone: Story = {
   play: async ({ canvas, userEvent }) => {

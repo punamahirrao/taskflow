@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { BoardPageSelectField } from "../components/BoardPageSelectField";
+import { BoardPageSelectField } from "../components/shared/BoardPageSelectField";
 
 const meta = {
   title: "Boards/Components/BoardPageSelectField",

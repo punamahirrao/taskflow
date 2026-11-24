@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { http, HttpResponse } from "msw";
-import { expect, waitFor } from "storybook/test";
+import { expect, waitFor, within } from "storybook/test";
 import { mockTask } from "../../mocks/tasks";
 import BacklogPage from "../BacklogPage";
 
@@ -31,6 +31,51 @@ export const EmptyBacklog: Story = {
   },
 };
 export const DarkMode: Story = { globals: { theme: "night" } };
+
+export const SearchAndGrouping: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await canvas.findByText("Add passkey sign-in");
+    await userEvent.type(canvas.getByRole("textbox", { name: "Search backlog" }), "identity");
+    await expect(canvas.getAllByRole("article")).toHaveLength(1);
+    await expect(canvas.getByText("Add passkey sign-in")).toBeVisible();
+    await userEvent.selectOptions(
+      canvas.getByRole("combobox", { name: "Group backlog by" }),
+      "theme",
+    );
+    await expect(canvas.getByRole("region", { name: "identity backlog" })).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Estimate" }));
+    await expect(canvas.getByText(/^Estimation mode:/)).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Refine" }));
+    await expect(canvas.queryByText(/^Estimation mode:/)).not.toBeInTheDocument();
+    await userEvent.clear(canvas.getByRole("textbox", { name: "Search backlog" }));
+    await userEvent.type(
+      canvas.getByRole("textbox", { name: "Search backlog" }),
+      "no matching item",
+    );
+    await expect(canvas.getByRole("heading", { name: "Your pipeline is clear" })).toBeVisible();
+  },
+};
+
+export const CaptureIdea: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await canvas.findByText("Add passkey sign-in");
+    await userEvent.click(canvas.getByRole("button", { name: "Capture idea" }));
+    const dialog = within(canvas.getByRole("dialog", { name: "Capture a work item" }));
+    await userEvent.click(dialog.getByRole("button", { name: "Add to backlog" }));
+    await expect(await dialog.findByRole("alert")).toHaveTextContent(/title.*required/i);
+    await userEvent.type(dialog.getByLabelText("Title"), "Refine release handoff");
+    await userEvent.type(dialog.getByLabelText("Description"), "Prepare the release checklist.");
+    await userEvent.selectOptions(dialog.getByLabelText("Work type"), "idea");
+    await userEvent.selectOptions(dialog.getByLabelText("Priority"), "urgent");
+    await userEvent.type(dialog.getByLabelText("Tags"), "release, handoff");
+    await userEvent.click(dialog.getByRole("button", { name: "Add to backlog" }));
+    await waitFor(() => expect(canvas.queryByRole("dialog")).not.toBeInTheDocument());
+    const card = within((await canvas.findByText("Refine release handoff")).closest("article")!);
+    await expect(card.getByText("idea")).toBeVisible();
+    await expect(card.getByText("urgent")).toBeVisible();
+    await expect(card.getByText("handoff")).toBeVisible();
+  },
+};
 
 function reorderFixture(fail = false) {
   let tasks = ["high", "medium", "low"].map((priority, rank) => ({

@@ -1,5 +1,5 @@
-import type { Epic, MacroStory, PipelineStep } from "../entities/estimator";
 import type { TranslationKey } from "../../common/entities/language";
+import type { Epic, MacroStory, PipelineStep } from "../entities/estimator";
 
 export const PIPELINE_STEPS: PipelineStep[] = [
   { titleKey: "aiEstimator.stepParsing", detailKey: "aiEstimator.stepParsingDetail" },

@@ -4,7 +4,7 @@ import { groupBacklogTasks } from "../../features/agile/utils/backlog";
 import { mockProjects } from "../../../mocks/projects";
 import { mockSprint } from "../../../mocks/sprints";
 import { mockTasks } from "../../../mocks/tasks";
-import { BacklogWorkList } from "../BacklogWorkList";
+import { BacklogWorkList } from "../../features/work-list/BacklogWorkList";
 
 const backlog = mockTasks.filter((task) => task.status === "backlog");
 const meta = {

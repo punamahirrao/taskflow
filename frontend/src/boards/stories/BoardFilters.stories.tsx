@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { BoardFilters } from "../components/BoardFilters";
+import { BoardFilters } from "../features/directory-filters/BoardFilters";
 
 const meta = {
   title: "Boards/Components/BoardFilters",

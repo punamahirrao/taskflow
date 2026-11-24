@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { mockTasks } from "../../mocks/tasks";
-import { BoardColumnLane } from "../components/BoardColumnLane";
+import { BoardColumnLane } from "../features/column-lane/BoardColumnLane";
 
 const inProgressTask = mockTasks.find((task) => task.status === "in_progress")!;
 const column = {

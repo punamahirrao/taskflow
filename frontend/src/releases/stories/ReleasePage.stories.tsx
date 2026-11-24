@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
 import { http, HttpResponse } from "msw";
+import { expect, within, waitFor } from "storybook/test";
 import { mockReleaseDirectory } from "../../mocks/releases";
 import ReleasePage from "../ReleasePage";
 
@@ -12,6 +12,32 @@ const meta = {
 } satisfies Meta<typeof ReleasePage>;
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+export const CreateReleaseDraft: Story = {
+  parameters: {
+    msw: {
+      handlers: {
+        releaseCreation: [
+          http.post("*/projects/releases/", async ({ request }) => {
+            const values = (await request.json()) as { name: string };
+            expect(values.name).toBe("Customer launch");
+            return HttpResponse.json(
+              { ...mockReleaseDirectory.items[0], name: values.name },
+              { status: 201 },
+            );
+          }),
+        ],
+      },
+    },
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(await canvas.findByRole("button", { name: "Create release" }));
+    const dialog = within(canvas.getByRole("dialog"));
+    await userEvent.type(dialog.getByRole("textbox", { name: "Release name" }), "Customer launch");
+    await userEvent.click(dialog.getByRole("button", { name: "Create release" }));
+    await waitFor(() => expect(canvas.queryByRole("dialog")).not.toBeInTheDocument());
+  },
+};
 
 export const ReviewingRelease: Story = {
   async play({ canvas, userEvent }) {

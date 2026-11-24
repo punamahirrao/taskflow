@@ -246,6 +246,9 @@ export const ReleaseStyles = createGlobalStyle`
   font-size: 0.85rem;
   font-weight: 710;
 }
+.release-step-header .release-muted {
+  color: color-mix(in srgb, var(--theme-muted) 90%, var(--theme-text));
+}
 .release-links ul {
   display: flex;
   flex-wrap: wrap;
